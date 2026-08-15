@@ -146,8 +146,7 @@ export default function TShirtCustomizerSection() {
         backUrl: backImageUrl,
       },
     });
-    openCart();
-    toast.success('Custom design added to cart!');
+    openCart(); // drawer provides the added feedback — no toast needed
   }, [frontUpload.designFile, backUpload.designFile, selectedSize, selectedColor, quantity, designNotes, placement, effectiveUnitPrice, addItem, openCart, getSetting, canAddToCart, frontMissing, backMissing]);
 
   return (

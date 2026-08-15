@@ -58,8 +58,12 @@ export const handleApiError = (err, fallback = 'Something went wrong') => {
 
 /* ── Cart / Bag ─────────────────────────────────── */
 
-export const addedToCart = (productName) =>
-  showSuccess(`${productName} added to bag`);
+/**
+ * Add-to-cart feedback is now handled by the cart drawer itself:
+ * `useCartStore.addItem` opens the drawer automatically, so no toast is
+ * shown. Kept as a no-op for call-site compatibility.
+ */
+export const addedToCart = () => {};
 
 export const removedFromCart = () =>
   showSuccess('Removed from cart');

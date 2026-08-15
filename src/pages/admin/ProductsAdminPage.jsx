@@ -680,14 +680,25 @@ export default function ProductsAdminPage() {
                   </div>
                 </div>
                 <div className="form-group form-full">
-                  <label>Product Video URL (shows a floating Reels bubble on the product page)</label>
+                  <ImageUploadZone
+                    label="Product Video (upload a file)"
+                    value={form.videoUrl || ''}
+                    onChange={url => setForm({ ...form, videoUrl: url })}
+                    multiple={false}
+                    accept="video/*"
+                    acceptHint="MP4, WEBM, MOV or OGG (Max 40MB)"
+                    isVideo
+                  />
+                </div>
+                <div className="form-group form-full">
+                  <label>Or paste a video link (YouTube, Vimeo or direct .mp4)</label>
                   <input
                     value={form.videoUrl || ''}
                     onChange={e => setForm({ ...form, videoUrl: e.target.value })}
-                    placeholder="https://example.com/video.mp4 or YouTube/Vimeo link"
+                    placeholder="https://www.youtube.com/watch?v=... or https://example.com/video.mp4"
                   />
                   <div style={{ fontSize: '0.72rem', color: 'var(--muted)', marginTop: '0.25rem' }}>
-                    💡 Paste a direct .mp4 link or a YouTube/Vimeo URL. Leave empty to hide the bubble.
+                    💡 Upload karo ya link paste karo — dono se product page par floating Reels bubble dikhega. Khaali chhodo to bubble nahi aayega.
                   </div>
                 </div>
                 <div className="form-group"><label>Status</label>

@@ -126,6 +126,8 @@ const useCartStore = create(
         } else {
           get().setItems([...items, { ...item, quantity: item.quantity || 1 }]);
         }
+        // Open the cart drawer so the user sees the added item immediately
+        set({ isOpen: true });
       },
 
       updateQuantity: (itemId, quantity) => {

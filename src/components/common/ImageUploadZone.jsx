@@ -1,16 +1,19 @@
-import { Upload, X, RefreshCw, Loader2 } from 'lucide-react';
+import { Upload, X, Loader2 } from 'lucide-react';
 import { useState, useRef } from 'react';
 ;
 import { adminAPI } from '../../api/admin';
 import toast from '../../utils/toast';
-import { getImageUrl } from '../../utils/formatters';
+import { getImageUrl, getVideoUrl } from '../../utils/formatters';
 
 export default function ImageUploadZone({
   label = 'Upload Image',
   value = '',
   onChange,
   multiple = false,
-  maxFiles = 10
+  maxFiles = 10,
+  accept = 'image/*',
+  acceptHint = 'PNG, JPG, JPEG or WEBP (Max 10MB)',
+  isVideo = false
 }) {
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef(null);
@@ -94,7 +97,7 @@ export default function ImageUploadZone({
           ref={fileInputRef}
           onChange={handleFileChange}
           multiple={multiple}
-          accept="image/*"
+          accept={accept}
           className="hidden"
         />
         
@@ -107,11 +110,22 @@ export default function ImageUploadZone({
         <div className="text-xs font-semibold text-text-secondary">
           {uploading ? 'Uploading assets...' : 'Drag & Drop or Click to Upload'}
         </div>
-        <p className="text-[10px] text-text-muted">PNG, JPG, JPEG or WEBP (Max 10MB)</p>
+        <p className="text-[10px] text-text-muted">{acceptHint}</p>
       </div>
 
       {/* Preview Section */}
-      {images.length > 0 && (
+      {isVideo && value ? (
+        <div className="relative rounded-lg overflow-hidden border border-border bg-black mt-1.5">
+          <video src={getVideoUrl(value)} controls className="w-full max-h-44 object-contain bg-black" />
+          <button
+            type="button"
+            onClick={() => handleRemove(value)}
+            className="absolute top-1.5 right-1.5 w-8 h-8 rounded-full bg-black/75 hover:bg-black text-white flex items-center justify-center shadow transition-colors"
+          >
+            <X size={14} />
+          </button>
+        </div>
+      ) : images.length > 0 && (
         <div className="grid grid-cols-4 sm:grid-cols-5 gap-2.5 mt-1.5">
           {images.map((imgUrl, idx) => (
             <div key={idx} className="relative aspect-square rounded-lg overflow-hidden border border-border group bg-white shadow-sm">

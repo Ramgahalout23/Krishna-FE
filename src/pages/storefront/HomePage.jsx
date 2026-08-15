@@ -114,6 +114,8 @@ export default function HomePage() {
     flashDealsDiscount: getSetting('homepageFlashDealsDiscount', 'Up to 40% OFF'),
     categoryTitle: getSetting('homepageCategoryTitle', 'Shop By Category'),
     categorySubtitle: getSetting('homepageCategorySubtitle', 'Curated Departments'),
+    bestSellerTitle: getSetting('homepageBestSellerTitle', 'Best Sellers'),
+    bestSellerSubtitle: getSetting('homepageBestSellerSubtitle', 'Most Viewed Picks'),
     testimonialTitle: getSetting('homepageTestimonialTitle', 'Loved By Thousands of Happy Shoppers'),
     testimonialSubtitle: getSetting('homepageTestimonialSubtitle', 'Real Customer Feedback'),
   };
@@ -176,6 +178,18 @@ export default function HomePage() {
     const combined = [...featured, ...newArrivals];
     return combined.filter((p, i, arr) => arr.findIndex(x => x.id === p.id) === i);
   }, [featured, newArrivals]);
+
+  // Best sellers — deduped against the featured/new-arrival grids so the
+  // same product never appears twice on the page
+  const bestSellers = useMemo(() => {
+    const raw = homepageRes?.bestSellers || [];
+    const list = Array.isArray(raw) ? raw.filter(p => p.status === 'PUBLISHED' || !p.status) : [];
+    if (list.length === 0) return [];
+    const seen = new Set(allProducts.map(p => p.id));
+    const unique = list.filter(p => !seen.has(p.id)).slice(0, 8);
+    // Fall back to the full list if deduping leaves too few cards
+    return unique.length >= 4 ? unique : list.slice(0, 8);
+  }, [homepageRes?.bestSellers, allProducts]);
 
   // Reviews (from the consolidated homepage payload)
   const reviews = useMemo(() => {
@@ -323,6 +337,21 @@ export default function HomePage() {
               ))}
             </div>
           </div>
+        </ScrollReveal>
+      )}
+
+      {/* Best Sellers — most-viewed products, deduped against Featured when the
+          catalog is big enough (small catalogs fall back to the full list) */}
+      {bestSellers.length > 0 && (
+        <ScrollReveal delay={0.12}>
+          <ProductGrid
+            products={bestSellers}
+            title={sectionTitles.bestSellerTitle}
+            subtitle={sectionTitles.bestSellerSubtitle}
+            showHeader={true}
+            viewAllLink="/products"
+            onQuickView={(p) => setQuickViewProduct(p)}
+          />
         </ScrollReveal>
       )}
 

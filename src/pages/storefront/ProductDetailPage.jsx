@@ -30,7 +30,7 @@ import FlashSaleCountdown from '../../components/storefront/FlashSaleCountdown';
 import OffersSection from '../../components/storefront/OffersSection';
 import BundleOffer from '../../components/storefront/BundleOffer';
 import ProductCard from '../../components/omni/ProductCard';
-import { addedToCart, removedFromWishlist, addedToWishlist, wishlistError, linkCopied } from '../../utils/toast';
+import { removedFromWishlist, addedToWishlist, wishlistError, linkCopied } from '../../utils/toast';
 
 /* ═══════════════════════════════════════════════════
    Product Detail Page — OmniStore stone/amber theme
@@ -103,7 +103,7 @@ export default function ProductDetailPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { settings, getSetting } = useSettings();
-  const { addItem } = useCartStore();
+  const { addItem, openCart } = useCartStore();
   const { isInWishlist, addItem: addToWL, removeItem: removeFromWL } = useWishlistStore();
   const { isAuthenticated } = useAuthStore();
   const queryClient = useQueryClient();
@@ -438,11 +438,10 @@ export default function ProductDetailPage() {
     trackAddToCart(product.id, product.name, qty, effectivePrice);
     try {
       addItem({ ...product, productId: product.id, quantity: qty, size: selectedSize, color: selectedColor, variantId: matchedVariant?.id || undefined });
-      if (!isAuthenticated) { addedToCart(product.name); navigate('/cart'); return; }
+      if (!isAuthenticated) { openCart(); return; }
       await cartAPI.add({ productId: product.id, quantity: qty, size: selectedSize || undefined, color: selectedColor || undefined, variantId: matchedVariant?.id || undefined });
-      addedToCart(product.name);
-      navigate('/cart');
-    } catch { addedToCart(product.name); navigate('/cart'); }
+      openCart();
+    } catch { openCart(); }
     finally { setIsAddingToCart(false); }
   };
 

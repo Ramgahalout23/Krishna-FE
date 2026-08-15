@@ -51,14 +51,14 @@ const CATEGORIES = [
   },
 ];
 
-function getIcon(iconName) {
+function getIcon(iconName, className = 'w-5 h-5') {
   switch (iconName) {
-    case 'Shirt': return <Shirt className="w-5 h-5 text-rose-600" />;
-    case 'UtensilsCrossed': return <UtensilsCrossed className="w-5 h-5 text-amber-600" />;
-    case 'Gamepad2': return <Gamepad2 className="w-5 h-5 text-amber-600" />;
-    case 'Armchair': return <Armchair className="w-5 h-5 text-emerald-600" />;
-    case 'Headphones': return <Headphones className="w-5 h-5 text-sky-600" />;
-    default: return <Sparkles className="w-5 h-5 text-rose-500" />;
+    case 'Shirt': return <Shirt className={`${className} text-rose-600`} />;
+    case 'UtensilsCrossed': return <UtensilsCrossed className={`${className} text-amber-600`} />;
+    case 'Gamepad2': return <Gamepad2 className={`${className} text-amber-600`} />;
+    case 'Armchair': return <Armchair className={`${className} text-emerald-600`} />;
+    case 'Headphones': return <Headphones className={`${className} text-sky-600`} />;
+    default: return <Sparkles className={`${className} text-rose-500`} />;
   }
 }
 
@@ -97,12 +97,19 @@ export default function CategoryGrid({
               onClick={() => onSelectCategory && onSelectCategory(cat.slug || cat.id)}
               className="group relative aspect-[4/5] overflow-hidden rounded-2xl bg-stone-900 border border-stone-200 transition-all duration-300 cursor-pointer hover:shadow-lg hover:border-amber-400"
             >
-              <img
-                src={cat.imageUrl || cat.image || ''}
-                alt={cat.name}
-                className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.07]"
-                loading="lazy"
-              />
+              {cat.imageUrl || cat.image ? (
+                <img
+                  src={cat.imageUrl || cat.image}
+                  alt={cat.name}
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.07]"
+                  loading="lazy"
+                  decoding="async"
+                />
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center bg-stone-800">
+                  {getIcon(cat.iconName || 'Sparkles', 'w-14 h-14 text-amber-500/70')}
+                </div>
+              )}
               {/* Warm scrim for the editorial overlay */}
               <div className="absolute inset-0 bg-gradient-to-t from-stone-950/90 via-stone-950/25 to-transparent" />
 

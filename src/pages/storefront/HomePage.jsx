@@ -12,10 +12,11 @@ import HeroBanner from '../../components/omni/HeroBanner';
 import FlashDeals from '../../components/omni/FlashDeals';
 import CategoryGrid from '../../components/omni/CategoryGrid';
 import ProductGrid from '../../components/omni/ProductGrid';
-import BrandStory from '../../components/omni/BrandStory';
-import Testimonials from '../../components/omni/Testimonials';
 import QuickViewModal from '../../components/omni/QuickViewModal';
 
+// Below-the-fold sections — lazy-loaded so they never block first paint
+const BrandStory = lazy(() => import('../../components/omni/BrandStory'));
+const Testimonials = lazy(() => import('../../components/omni/Testimonials'));
 // Heavy video-reel section — lazy-loaded so it never blocks first paint
 const ReelsSection = lazy(() => import('../../components/storefront/ReelsSection'));
 
@@ -355,18 +356,22 @@ export default function HomePage() {
         </ScrollReveal>
       )}
 
-      {/* Brand Story — absorbs the old trust strip */}
+      {/* Brand Story — absorbs the old trust strip (lazy) */}
       <ScrollReveal delay={0.14}>
-        <BrandStory />
+        <Suspense fallback={null}>
+          <BrandStory />
+        </Suspense>
       </ScrollReveal>
 
-      {/* Customer Reviews */}
+      {/* Customer Reviews (lazy) */}
       <ScrollReveal delay={0.16}>
-        <Testimonials
-          reviews={reviews}
-          title={sectionTitles.testimonialTitle}
-          subtitle={sectionTitles.testimonialSubtitle}
-        />
+        <Suspense fallback={null}>
+          <Testimonials
+            reviews={reviews}
+            title={sectionTitles.testimonialTitle}
+            subtitle={sectionTitles.testimonialSubtitle}
+          />
+        </Suspense>
       </ScrollReveal>
 
       {/* Watch & Buy — shoppable video reels (lazy-loaded) */}

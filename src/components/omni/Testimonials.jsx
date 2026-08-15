@@ -87,6 +87,8 @@ export default function Testimonials({
                 <img
                   src={r.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(r.name)}&background=amber&color=fff`}
                   alt={r.name}
+                  loading="lazy"
+                  decoding="async"
                   className="w-10 h-10 rounded-full object-cover border border-stone-200"
                 />
                 <div>

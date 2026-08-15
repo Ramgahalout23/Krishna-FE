@@ -21,16 +21,15 @@ import OmniFooter from './components/omni/Footer';
 import OmniCartDrawer from './components/omni/CartDrawer';
 import OmniMobileNav from './components/omni/MobileNav';
 // ── Admin Layout — Existing Components ──
-import Footer from './components/layout/Footer';
-import CartDrawer from './components/layout/CartDrawer';
-import MobileNav from './components/layout/MobileNav';
-import AdminSidebar from './components/layout/AdminSidebar';
+// Admin-only components are lazy-loaded so they never ship in the
+// storefront's initial bundle (only downloaded when /admin is entered).
+const AdminSidebar = lazy(() => import('./components/layout/AdminSidebar'));
+const SessionTimeoutModal = lazy(() => import('./components/common/SessionTimeoutModal'));
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import CookieConsent from './components/common/CookieConsent';
 import ScrollToTop from './components/layout/ScrollToTop';
 import ScrollToTopButton from './components/common/ScrollToTopButton';
 import PageTransition from './components/common/PageTransition';
-import SessionTimeoutModal from './components/common/SessionTimeoutModal';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import { initTracker, trackPageView } from './services/tracker';
 import { setDefaultCurrency, setDefaultTimezone } from './utils/formatters';
@@ -323,17 +322,21 @@ function AdminLayout() {
       <OmniHeader />
       <OmniCartDrawer />
       <div className="flex flex-col md:flex-row flex-1">
-        <AdminSidebar />
+        <Suspense fallback={null}>
+          <AdminSidebar />
+        </Suspense>
         <main className="flex-1 bg-stone-100 p-4 md:p-8">
           <Suspense fallback={<RouteFallback />}>
             <Outlet />
           </Suspense>
         </main>
       </div>
-      <SessionTimeoutModal
-        open={showTimeoutWarning}
-        onStayLoggedIn={handleStayLoggedIn}
-      />
+      <Suspense fallback={null}>
+        <SessionTimeoutModal
+          open={showTimeoutWarning}
+          onStayLoggedIn={handleStayLoggedIn}
+        />
+      </Suspense>
     </div>
   );
 }

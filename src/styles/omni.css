@@ -1,0 +1,12 @@
+/* ═══════════════════════════════════════════════════
+   OmniStore — Unique Utilities (not in globals.css)
+   ═══════════════════════════════════════════════════ */
+
+/* Scrollbar hide utility (unique to omni — globals.css has .scrollbar-hide) */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

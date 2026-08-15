@@ -1,0 +1,80 @@
+import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import SEOHead from '../../components/seo/SEOHead';
+import Breadcrumb from '../../components/common/Breadcrumb';
+import { useSettings } from '../../store/useSettings';
+import { pagesAPI } from '../../api/pages';
+import PageContentSkeleton from '../../components/ui/PageContentSkeleton';
+
+export default function PrivacyPage() {
+  const { t } = useTranslation();
+  const { getSetting } = useSettings();
+  const storeName = getSetting('storeName', 'THREVOLT');
+  const [content, setContent] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchPage = async () => {
+      try {
+        setLoading(true);
+        const res = await pagesAPI.getBySlug('privacy-policy');
+        const page = res.data?.data || null;
+        if (page && page.content) {
+          setContent(page);
+        } else {
+          setError(t('privacy.content_not_found'));
+        }
+      } catch (err) {
+        console.error('Failed to load privacy policy:', err);          setError(t('privacy.content_not_found'));
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPage();
+  }, []);
+
+  if (loading) {
+    return <PageContentSkeleton />;
+  }
+
+  if (error || !content) {
+    return (
+      <div className="flex-1 bg-surface flex items-center justify-center min-h-[50vh]">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-text-primary mb-2">{t('privacy.page_not_available')}</h2>
+          <p className="text-text-muted mb-4">{error || t('privacy.content_not_found')}</p>
+          <a href="/" className="text-primary hover:underline">{t('privacy.go_home')}</a>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="page-content bg-white">
+      <SEOHead
+        title={content?.title ? `${content.title} | ${storeName}` : `Privacy Policy | ${storeName}`}
+        description={content?.metaDescription || `Learn how ${storeName} collects, uses, and protects your personal information. Our privacy policy outlines our commitment to your data security.`}
+      />
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <Breadcrumb
+          items={[
+            { label: 'Home', href: '/' },
+            { label: content.title || 'Privacy Policy' },
+          ]}
+          variant="light"
+          className="mb-6"
+        />
+        <h1 className="font-display text-4xl font-bold text-text-primary mb-8">{content.title || 'Privacy Policy'}</h1>
+        {content.lastUpdated && (
+          <p className="text-text-muted mb-8">Last updated: {content.lastUpdated}</p>
+        )}
+        {content.content ? (
+          <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: content.content }} />
+        ) : (
+          <p className="text-text-secondary">{t('privacy.no_content')}</p>
+        )}
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,91 @@
+/* ═══ Component Styles — Veirdo Brand ═══ */
+
+/* ── Buttons ─────────────────── */
+.btn-outline{background:none;border:2px solid #e5e5ea;color:#1a1a2e;padding:0.85rem 2rem;font-weight:600;font-size:0.9rem;cursor:pointer;border-radius:12px;transition:all 0.3s ease}
+.btn-outline:hover{border-color:#f59e0b;color:#f59e0b}
+.btn-dark{background:#f59e0b;color:#fff;border:none;padding:0.5rem 1rem;font-size:0.85rem;border-radius:8px;font-weight:600;transition:all 0.3s ease}
+.btn-dark:hover{background:#d97706}
+.btn-ghost{background:none;border:1px solid #e5e5ea;color:#8a8a9a;padding:0.5rem 1rem;font-size:0.85rem;border-radius:8px;font-weight:500;transition:all 0.3s ease}
+.btn-ghost:hover{border-color:#f59e0b;color:#f59e0b}
+.btn-danger{background:#ef4444;color:#fff;border:none;padding:0.5rem 1rem;font-size:0.85rem;border-radius:8px;font-weight:600}
+.btn-sm{padding:0.4rem 1rem;font-size:0.8rem}
+.btn-lg{padding:1rem 3rem;font-size:1rem}
+.btn-full{width:100%}
+.btn-checkout{width:100%;background:#f59e0b;color:#fff;border:none;padding:1rem;font-weight:700;font-size:0.9rem;border-radius:12px;letter-spacing:0.02em;transition:all 0.3s ease;box-shadow:0 4px 14px rgba(245,158,11,0.25)}
+.btn-checkout:hover{background:#d97706;box-shadow:0 6px 20px rgba(245,158,11,0.35)}
+
+/* ── Status Badges ───────────── */
+.status-badge{display:inline-flex;align-items:center;padding:4px 12px;border-radius:20px;font-size:0.72rem;font-weight:600;letter-spacing:0.04em}
+.status-active,.status-delivered,.status-completed,.status-approved{background:#e8f8f1;color:#4db870}
+.status-pending,.status-warning{background:#fffbeb;color:#d97706}
+.status-processing,.status-info,.status-in-transit{background:#eff6ff;color:#3b82f6}
+.status-cancelled,.status-rejected,.status-failed{background:#fef2f2;color:#ef4444}
+.status-inactive,.status-archived,.status-draft{background:#f0f0f5;color:#8a8a9a}
+
+/* ── Forms ───────────────────── */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem}
+.form-group{display:flex;flex-direction:column;gap:0.4rem}
+.form-group label{font-size:0.78rem;font-weight:600;color:#8a8a9a;text-transform:uppercase;letter-spacing:0.05em}
+.form-group input,.form-group select,.form-group textarea{padding:0.75rem 1rem;border:2px solid #e5e5ea;border-radius:12px;font-size:1rem;background:#fafafa;color:#1a1a2e;transition:border-color 0.3s;outline:none}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:#f59e0b;box-shadow:0 0 0 3px rgba(245,158,11,0.12)}
+.form-full{grid-column:1/-1}
+.form-actions{display:flex;justify-content:flex-end;gap:0.75rem;padding-top:1rem;border-top:1px solid #e5e5ea}
+.form-error{font-size:0.72rem;color:#ef4444;margin-top:0.2rem}
+
+/* ── Modal ───────────────────── */
+.modal-overlay{position:fixed;inset:0;background:rgba(26,26,46,0.5);backdrop-filter:blur(4px);z-index:300;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.3s;padding:20px}
+.modal-overlay.open{opacity:1;pointer-events:auto}
+.modal{background:#fff;border-radius:20px;width:560px;max-width:90vw;max-height:90vh;overflow-y:auto;transform:scale(0.95);transition:all 0.3s;display:flex;flex-direction:column}
+.modal-overlay.open .modal{transform:scale(1)}
+.modal-header{padding:1.5rem;border-bottom:1px solid #e5e5ea;display:flex;align-items:center;justify-content:space-between}
+.modal-header h3{font-family:'Jost',sans-serif;font-size:1.2rem;font-weight:700;margin:0}
+.modal-body{padding:1.5rem;flex:1;overflow-y:auto}
+.modal-footer{padding:1.5rem;border-top:1px solid #e5e5ea;display:flex;gap:0.75rem;justify-content:flex-end}
+.modal-close{background:none;border:none;cursor:pointer;font-size:1.3rem;color:#8a8a9a;padding:4px;border-radius:8px}
+.modal-close:hover{color:#1a1a2e}
+
+/* ── Stat Cards ──────────────── */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.25rem;margin-bottom:2rem}
+.stat-card{background:#fff;border-radius:16px;padding:1.25rem;border:1px solid #e5e5ea}
+.stat-label{font-size:0.75rem;color:#8a8a9a;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.5rem;font-weight:600}
+.stat-val{font-family:'Jost',sans-serif;font-size:2rem;font-weight:700;color:#1a1a2e;line-height:1}
+.stat-change{font-size:0.78rem;margin-top:0.4rem;font-weight:600}
+.stat-up{color:#68d388}
+.stat-down{color:#ef4444}
+
+/* ── Tables ──────────────────── */
+.table-card{background:#fff;border-radius:16px;border:1px solid #e5e5ea;overflow:hidden}
+.table-head{padding:1.25rem 1.5rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e5e5ea}
+.table-head h3{font-family:'Jost',sans-serif;font-size:1.1rem;font-weight:700}
+.table-actions{display:flex;gap:0.5rem}
+.admin-table{width:100%;border-collapse:collapse}
+.admin-table th{text-align:left;padding:0.75rem 1.5rem;font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#8a8a9a;background:#fafafa;border-bottom:1px solid #e5e5ea}
+.admin-table td{padding:1rem 1.5rem;border-bottom:1px solid #f0f0f5;font-size:0.95rem;vertical-align:middle}
+.admin-table tr:last-child td{border-bottom:none}
+.admin-table tr:hover td{background:rgba(245,158,11,0.04)}
+
+/* ── Charts ──────────────────── */
+.chart-grid{display:grid;grid-template-columns:2fr 1fr;gap:1.25rem;margin-bottom:1.5rem}
+.chart-card{background:#fff;border-radius:16px;border:1px solid #e5e5ea;padding:1.5rem}
+.chart-title{font-family:'Jost',sans-serif;font-size:1rem;font-weight:700;margin-bottom:1.5rem}
+
+/* ── Loading ─────────────────── */
+.skeleton{background:linear-gradient(90deg,#f5f5f0 25%,#e7e5e4 50%,#f5f5f0 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:12px}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.animate-fadeIn{animation:fadeIn 0.2s ease-out}
+
+/* ── Dashboard Content Fade-in ── */
+.dashboard-content-enter{animation:fadeIn 0.45s cubic-bezier(0.16, 1, 0.3, 1)}
+
+/* ── Barcode Scanner ─────────── */
+@keyframes scanLine{0%,100%{top:0}50%{top:calc(100% - 3px)}}
+.scan-line{position:absolute;top:0;left:0;right:0;height:3px;background:#22c55e;animation:scanLine 1.5s ease-in-out infinite;border-radius:2px;box-shadow:0 0 8px rgba(34,197,94,0.6)}
+
+/* ── Empty State ─────────────── */
+.empty-state{text-align:center;padding:4rem 2rem;color:#8a8a9a}
+.empty-state-icon{font-size:4rem;margin-bottom:1rem;opacity:0.5}
+.empty-state h3{font-family:'Jost',sans-serif;font-size:1.3rem;color:#1a1a2e;margin-bottom:0.5rem;font-weight:700}
+
+@media(max-width:1024px){.stats-grid{grid-template-columns:repeat(2,1fr)}.chart-grid{grid-template-columns:1fr}}
+@media(max-width:768px){.form-grid{grid-template-columns:1fr}}
+@media(max-width:480px){.stats-grid{grid-template-columns:1fr}}

@@ -1,0 +1,165 @@
+/* ═══════════════════════════════════════════════════
+   KRISHNA — Design Tokens (Purple + Yellow Theme)
+   ═══════════════════════════════════════════════════ */
+
+:root {
+  /* ── Primary Colors (Amber — matching homepage) ── */
+  --primary: #f59e0b;
+  --primary-container: #fbbf24;
+  --on-primary: #ffffff;
+  --primary-fixed: #fef3c7;
+  --on-primary-fixed: #78350f;
+  --on-primary-fixed-variant: #92400e;
+  --surface-tint: #f59e0b;
+
+  /* ── Secondary Colors (Stone) ──────────────────── */
+  --secondary: #78716c;
+  --secondary-container: #a8a29e;
+  --on-secondary: #ffffff;
+  --on-secondary-container: #1c1917;
+  --secondary-fixed: #f5f5f4;
+  --on-secondary-fixed: #1c1917;
+  --on-secondary-fixed-variant: #57534e;
+  --secondary-fixed-dim: #e7e5e4;
+
+  /* ── Tertiary Colors (Rose) ────────────────────── */
+  --tertiary: #e11d48;
+  --tertiary-container: #fb7185;
+  --on-tertiary: #ffffff;
+  --on-tertiary-container: #881337;
+  --tertiary-fixed: #fdf2f8;
+  --on-tertiary-fixed: #881337;
+  --tertiary-fixed-dim: #fbcfe8;
+  --on-tertiary-fixed-variant: #be185d;
+
+  /* ── Surface Colors (Stone tones) ───────────────── */
+  --surface: #f5f5f4;
+  --surface-dim: #e7e5e4;
+  --surface-bright: #ffffff;
+  --surface-container-lowest: #ffffff;
+  --surface-container-low: #fafaf9;
+  --surface-container: #f5f5f4;
+  --surface-container-high: #e7e5e4;
+  --surface-container-highest: #d6d3d1;
+  --surface-variant: #e7e5e4;
+  --surface-grey: #f5f5f4;
+  --surface-off-white: #fafaf9;
+
+  /* ── On Colors ─────────────────────────────────── */
+  --on-surface: #1c1917;
+  --on-surface-variant: #78716c;
+  --on-background: #1c1917;
+
+  /* ── Outline Colors ────────────────────────────── */
+  --outline: #78716c;
+  --outline-variant: #d6d3d1;
+
+  /* ── Error Colors ─────────────────────────────── */
+  --error: #ef4444;
+  --on-error: #ffffff;
+  --error-container: #fef2f2;
+  --on-error-container: #991b1b;
+
+  /* ── Inverse Colors ─────────────────────────────── */
+  --inverse-surface: #292524;
+  --inverse-on-surface: #f5f5f4;
+  --inverse-primary: #fbbf24;
+
+  /* ── Brand Colors (Amber + Stone) ───────────────── */
+  --text-main: #1c1917;
+  --text-muted: #78716c;
+  --amber-cta: #f59e0b;
+  --gray-dark: #292524;
+
+  /* ── Legacy Colors (updated for Stone/Amber theme) ─ */
+  --gold: #f59e0b;
+  --gold-light: #fbbf24;
+  --gold-dark: #d97706;
+  --gold-hover: #fbbf24;
+  --charcoal: #292524;
+  --charcoal-light: #44403c;
+  --off-white: #fafaf9;
+  --cream: #f5f5f4;
+  --muted: #78716c;
+  --muted-light: #a8a29e;
+  --border: #e7e5e4;
+  --danger: #ef4444;
+  --danger-bg: #fef2f2;
+  --success: #22c55e;
+  --success-bg: #f0fdf4;
+  --info: #3b82f6;
+  --info-bg: #eff6ff;
+  --warning: #f59e0b;
+  --warning-bg: #fffbeb;
+
+  /* ── Typography ────────────────────────────────── */
+  --font-display: 'Jost', sans-serif;
+  --font-body: 'Jost', sans-serif;
+  --font-headline: 'Jost', sans-serif;
+  --font-label: 'Jost', sans-serif;
+
+  /* ── Font Sizes ─────────────────────────────────── */
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-md: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.5rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 2rem;
+  --text-4xl: 3rem;
+
+  /* ── Spacing ───────────────────────────────────── */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  /* ── Layout Spacing ─────────────────────────────── */
+  --margin-desktop: 40px;
+  --margin-mobile: 16px;
+  --gutter: 24px;
+  --stack-lg: 48px;
+  --stack-sm: 12px;
+  --stack-md: 24px;
+  --container-max: 1280px;
+
+  /* ── Borders & Radius ───────────────────────────── */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-full: 50%;
+
+  /* ── Shadows ───────────────────────────────────── */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.15);
+
+  /* ── Layout ─────────────────────────────────────── */
+  --sidebar-w: 240px;
+  --navbar-h: 0px;
+  --max-width: 1400px;
+  --cart-width: 400px;
+
+  /* ── Transitions ───────────────────────────────── */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 0.15s;
+  --duration-normal: 0.25s;
+  --duration-slow: 0.35s;
+
+  /* ── Z-index ───────────────────────────────────── */
+  --z-dropdown: 50;
+  --z-sticky: 100;
+  --z-overlay: 200;
+  --z-drawer: 201;
+  --z-modal: 300;
+  --z-toast: 999;
+}

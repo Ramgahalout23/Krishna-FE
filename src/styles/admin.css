@@ -1,0 +1,220 @@
+/* ═══════════════════════════════════════════════════
+   KRISHNA — Admin Panel Premium Styles
+   ═══════════════════════════════════════════════════ */
+
+/* ── Responsive Mobile Card Tables ────────────────
+   Converts <table className="admin-table"> into stacked
+   card layouts on mobile (≤640px). Each <td> shows its
+   column header label via the `data-label` attribute,
+   which is injected automatically by AdminLayout.
+   ───────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  /* Force table elements into block layout */
+  table.admin-table tbody,
+  table.admin-table tfoot {
+    display: block;
+  }
+
+  table.admin-table thead {
+    display: none;
+  }
+
+  table.admin-table tbody {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+  }
+
+  table.admin-table tbody tr {
+    display: block;
+    background: var(--surface, #fff);
+    border: 1px solid var(--border, #e5e5e5);
+    border-radius: var(--radius-lg, 12px);
+    padding: 0.75rem 0.875rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+
+  table.admin-table tbody tr:hover {
+    background: var(--surface, #fff);
+  }
+
+  table.admin-table tbody td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 0;
+    border: none;
+    font-size: 0.82rem;
+    text-align: right;
+  }
+
+  table.admin-table tbody td::before {
+    content: attr(data-label);
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted, #888);
+    flex-shrink: 0;
+    text-align: left;
+  }
+
+  /* Bold/highlighted values in cards */
+  table.admin-table tbody td strong {
+    font-size: 0.85rem;
+  }
+
+  /* Empty cells — hide them entirely */
+  table.admin-table tbody td:empty {
+    display: none;
+  }
+
+  /* Row actions — on their own line with a top separator */
+  table.admin-table tbody tr .row-actions {
+    justify-content: flex-end;
+    padding-top: 0.5rem;
+    margin-top: 0.5rem;
+    border-top: 1px solid var(--border, #eee);
+  }
+
+  /* Action buttons get full touch-friendly size */
+  table.admin-table tbody tr .row-actions button {
+    min-height: 36px;
+    padding: 0.4rem 0.7rem;
+    font-size: 0.75rem;
+  }
+
+  /* Status badges — stay inline */
+  table.admin-table tbody td .status-badge {
+    display: inline-block;
+  }
+
+  /* Empty state (colspan rows) — full width centered */
+  table.admin-table tbody tr td[colspan] {
+    display: block;
+    text-align: center;
+    padding: 2rem 0.5rem;
+  }
+  table.admin-table tbody tr td[colspan]::before {
+    display: none;
+  }
+
+  /* Detail panel inside table cells */
+  table.admin-table tbody td > div[style] {
+    width: 100%;
+  }
+
+  /* Nested tables inside a card */
+  table.admin-table tbody tr td table {
+    width: 100%;
+    margin-top: 0.5rem;
+  }
+
+  /* Pagination — stack on mobile */
+  .pagination-container {
+    flex-direction: column;
+    align-items: center !important;
+    gap: 0.5rem;
+  }
+}
+
+
+/* ── Stat Cards Premium ─────────────────────────── */
+.stats-grid .stat-card{position:relative;overflow:hidden;transition:all 0.25s ease}
+.stats-grid .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--primary);opacity:0;transition:opacity 0.25s ease}
+.stats-grid .stat-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.stats-grid .stat-card:hover::before{opacity:1}
+
+.stat-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;margin-bottom:0.75rem}
+.stat-icon.revenue{background:rgba(245,158,11,0.08);color:var(--primary)}
+.stat-icon.orders{background:linear-gradient(135deg,rgba(59,130,246,0.12),rgba(59,130,246,0.04));color:var(--info)}
+.stat-icon.users{background:linear-gradient(135deg,rgba(34,197,94,0.12),rgba(34,197,94,0.04));color:var(--success)}
+.stat-icon.alerts{background:linear-gradient(135deg,rgba(239,68,68,0.12),rgba(239,68,68,0.04));color:var(--danger)}
+
+/* ── Table Enhancements ─────────────────────────── */
+.table-card{transition:box-shadow 0.25s ease}
+.table-card:hover{box-shadow:var(--shadow-sm)}
+
+.table-toolbar{padding:1rem 1.5rem;display:flex;align-items:center;gap:0.75rem;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.table-search{flex:1;min-width:200px;padding:0.5rem 0.9rem;border:1px solid var(--border);border-radius:var(--radius-md);font-size:0.82rem;background:var(--off-white);outline:none;transition:all 0.2s ease}
+.table-search:focus{border-color:var(--primary);background:var(--surface);box-shadow:0 0 0 3px rgba(0,0,0,0.08)}
+
+.table-filter{padding:0.5rem 0.9rem;border:1px solid var(--border);border-radius:var(--radius-md);font-size:0.82rem;background:var(--surface);cursor:pointer;outline:none;color:var(--muted);transition:all 0.2s ease}
+.table-filter:focus{border-color:var(--primary)}
+
+.table-count{font-size:0.78rem;color:var(--muted);padding:0 0.5rem}
+
+.admin-table tbody tr{transition:background 0.15s ease}
+.admin-table tbody tr:hover td{background:rgba(0,0,0,0.03)}
+
+.row-actions{display:flex;align-items:center;gap:0.4rem}
+.row-actions button{padding:0.4rem 0.7rem;font-size:0.78rem;min-height:34px;border-radius:6px;cursor:pointer;transition:all 0.15s ease;border:1px solid var(--border);background:var(--surface);color:var(--muted);white-space:nowrap}
+.row-actions button:hover{border-color:var(--charcoal);color:var(--charcoal)}
+.row-actions .btn-edit{color:var(--info);border-color:rgba(59,130,246,0.3)}
+.row-actions .btn-edit:hover{background:var(--info-bg);border-color:var(--info)}
+.row-actions .btn-view{color:var(--primary);border-color:rgba(0,0,0,0.15)}
+.row-actions .btn-view:hover{background:rgba(0,0,0,0.05);border-color:var(--primary)}
+.row-actions .btn-del{color:var(--danger);border-color:rgba(239,68,68,0.2)}
+.row-actions .btn-del:hover{background:var(--danger-bg);border-color:var(--danger)}
+.row-actions .btn-approve{color:var(--success);border-color:rgba(34,197,94,0.3)}
+.row-actions .btn-approve:hover{background:var(--success-bg);border-color:var(--success)}
+
+/* ── Detail Panel (Slide-in / Inline) ───────────── */
+.detail-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);padding:1.75rem;margin-bottom:1.5rem;animation:fadeSlideIn 0.3s ease}
+@keyframes fadeSlideIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+
+.detail-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:1px solid var(--border)}
+.detail-header h3{font-family:var(--font-display);font-size:1.2rem;font-weight:600}
+.detail-header .detail-id{font-size:0.75rem;color:var(--muted);font-family:monospace;background:var(--off-white);padding:3px 8px;border-radius:4px}
+
+.detail-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1.25rem}
+.detail-item{display:flex;flex-direction:column;gap:0.3rem}
+.detail-item .label{font-size:0.68rem;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted)}
+.detail-item .value{font-size:0.92rem;font-weight:500;color:var(--charcoal)}
+
+/* ── Modal Premium Enhancements ─────────────────── */
+.modal-overlay.open .modal{animation:modalIn 0.3s ease}
+@keyframes modalIn{from{opacity:0;transform:scale(0.92) translateY(12px)}to{opacity:1;transform:scale(1) translateY(0)}}
+
+.modal{box-shadow:0 25px 60px rgba(0,0,0,0.25)}
+.modal-header{background:var(--off-white)}
+.modal-header h3{display:flex;align-items:center;gap:0.6rem}
+.modal-footer{padding:1rem 1.5rem;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:flex-end;gap:0.75rem;background:var(--off-white);border-radius:0 0 var(--radius-xl) var(--radius-xl)}
+
+/* ── Quick Stats Bar ────────────────────────────── */
+.quick-stats{display:flex;gap:1.5rem;padding:1rem 1.5rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:1.5rem}
+.quick-stat{display:flex;align-items:center;gap:0.6rem}
+.quick-stat-dot{width:8px;height:8px;border-radius:50%}
+.quick-stat-label{font-size:0.78rem;color:var(--muted)}
+.quick-stat-value{font-size:0.9rem;font-weight:600;color:var(--charcoal)}
+
+/* ── Shared utility classes for settings tabs ── */
+.field-hint{font-size:0.85rem;color:var(--muted);margin-bottom:1.5rem}
+.field-note{font-size:0.75rem;color:var(--muted)}
+.form-hint{font-size:0.8rem;color:var(--muted);margin-bottom:1rem}
+.form-section-spacing{margin-bottom:1.5rem}
+.section-label{font-weight:600;margin-bottom:0.75rem;display:block}
+.detail-header-inline{display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem}
+.newsletter-label{font-size:0.85rem}
+
+/* ── Card Grid (for dashboard widgets) ──────────── */
+.widget-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.5rem}
+.widget-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;transition:box-shadow 0.2s ease}
+.widget-card:hover{box-shadow:var(--shadow-sm)}
+.widget-header{padding:1.25rem 1.5rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
+.widget-header h4{font-family:var(--font-display);font-size:0.95rem;font-weight:600}
+.widget-body{padding:1.25rem 1.5rem}
+
+/* ── Responsive ─────────────────────────────────── */
+@media(max-width:1200px){.widget-grid{grid-template-columns:1fr}}
+@media(max-width:768px){
+  .detail-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:600px){
+  .detail-grid{grid-template-columns:1fr}
+}
+@media(max-width:480px){
+  .stats-grid{grid-template-columns:1fr}
+  .widget-grid{grid-template-columns:1fr;gap:0.75rem}
+}

@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { SlidersHorizontal, X, Grid2x2, List, Check, ArrowUpDown, Sparkles, UtensilsCrossed, Gamepad2, Armchair, Headphones, ShoppingBag } from 'lucide-react';
+import { SlidersHorizontal, X, Grid2x2, List, ArrowUpDown, Sparkles, UtensilsCrossed, Gamepad2, Armchair, Headphones, ShoppingBag } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import useCartStore from '../../store/cartStore';
 import ProductCard from './ProductCard';
@@ -150,8 +150,8 @@ export default function ProductGrid({
         {showHeader && (
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-8">
             <div>
-              <span className="text-xs font-bold text-amber-600 uppercase tracking-widest block mb-1">{subtitle}</span>
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-stone-900 tracking-tight">{title}</h2>
+              <span className="text-xs font-display text-amber-600 uppercase tracking-widest block mb-1">{subtitle}</span>
+              <h2 className="text-xl sm:text-3xl font-display font-bold text-stone-900 tracking-tight leading-tight">{title}</h2>
             </div>
           </div>
         )}

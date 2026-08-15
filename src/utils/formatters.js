@@ -38,6 +38,22 @@ export const setDefaultCurrency = (currency) => {
   _defaultCurrency = currency || 'INR';
 };
 
+export const getDefaultCurrency = () => _defaultCurrency;
+
+/**
+ * Compact premium price — modern symbol (₹) with Indian grouping and no
+ * forced decimals (₹499 instead of Rs. 499.00). Falls back to the standard
+ * formatter for non-INR currencies.
+ */
+export const formatPrice = (amount) => {
+  const num = Number(amount);
+  if (isNaN(num)) return formatCurrency(amount);
+  if (getDefaultCurrency() === 'INR') {
+    return `₹${num.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
+  }
+  return formatCurrency(amount);
+};
+
 /**
  * Map common timezone abbreviations to IANA timezone names for Intl.DateTimeFormat.
  * The timezone setting is stored as an abbreviation (e.g. 'IST'), but the Intl API

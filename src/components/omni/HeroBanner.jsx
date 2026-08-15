@@ -179,7 +179,7 @@ export default function HeroBanner({
             {/* Badge — shimmer effect with inline styles for combined animation */}
             {current.badge && (
               <span
-                className="inline-flex items-center gap-1.5 bg-amber-500/20 backdrop-blur-md border border-amber-400/30 text-amber-300 px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-semibold tracking-wide"
+                className="inline-flex items-center gap-1.5 bg-amber-500/20 backdrop-blur-md border border-amber-400/30 text-amber-300 px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-display tracking-wide"
                 style={{
                   opacity: 0,
                   animation: 'shimmerSlow 3s ease-in-out infinite, textRevealUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards',
@@ -192,7 +192,7 @@ export default function HeroBanner({
 
             {/* Title */}
             <h1
-              className="text-2xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white leading-tight drop-shadow-sm animate-text-reveal-stagger-2 opacity-0"
+              className="text-2xl sm:text-4xl lg:text-5xl font-display font-bold tracking-tight text-white leading-tight drop-shadow-sm animate-text-reveal-stagger-2 opacity-0"
             >
               {current.title}
             </h1>

@@ -40,10 +40,10 @@ export default function FlashDeals({
             </div>
             <div className="space-y-0">
               <div className="flex items-center gap-1.5">
-                <span className="text-[10px] sm:text-xs font-bold text-rose-500 uppercase tracking-widest">{badge}</span>
+                <span className="text-[10px] sm:text-xs font-display text-rose-500 uppercase tracking-widest">{badge}</span>
                 <span className="bg-rose-500 text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded-full">{discountLabel}</span>
               </div>
-              <h2 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">{title}</h2>
+              <h2 className="text-lg sm:text-2xl font-display font-bold text-white tracking-tight leading-tight">{title}</h2>
             </div>
           </div>
 

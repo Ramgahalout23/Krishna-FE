@@ -76,8 +76,8 @@ export default function CategoryGrid({
         
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6 sm:mb-8">
           <div>
-            <span className="text-xs font-bold text-amber-600 uppercase tracking-widest block mb-1">{subtitle}</span>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-stone-900 tracking-tight">{title}</h2>
+            <span className="text-xs font-display text-amber-600 uppercase tracking-widest block mb-1">{subtitle}</span>
+            <h2 className="text-xl sm:text-3xl font-display font-bold text-stone-900 tracking-tight leading-tight">{title}</h2>
           </div>
           <button
             onClick={() => onSelectCategory && onSelectCategory('all')}

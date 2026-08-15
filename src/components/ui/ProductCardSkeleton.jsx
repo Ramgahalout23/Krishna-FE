@@ -2,25 +2,23 @@ import Skeleton from './Skeleton';
 
 /**
  * ProductCardSkeleton — Placeholder for a single product card
- * Matches the dimensions of ProductCard (3:4 aspect ratio image, info below).
+ * Matches the dimensions of ProductCard (4:5 image + info block below).
  */
 export default function ProductCardSkeleton({ className = '' }) {
   return (
-    <div className={`bg-white rounded-2xl overflow-hidden border border-border ${className}`}>
-      {/* Image area — 3:4 aspect ratio */}
-      <Skeleton className="!w-full !aspect-[3/4] !rounded-none" />
+    <div className={`bg-white rounded-xl overflow-hidden border border-stone-200/80 ${className}`}>
+      {/* Image area — 4:5 aspect ratio */}
+      <Skeleton className="!w-full !aspect-[4/5] !rounded-none !bg-stone-100" />
       {/* Info area */}
-      <div className="p-4 space-y-3">
-        <Skeleton className="!w-16 !h-3 !rounded-md" />
-        <Skeleton className="!w-40 !h-4 !rounded-md" />
+      <div className="p-3 space-y-2">
+        <Skeleton className="!w-16 !h-2.5 !rounded !bg-stone-200" />
+        <Skeleton className="!w-32 !h-3.5 !rounded !bg-stone-200" />
         <div className="flex items-center gap-1.5">
-          <Skeleton className="!w-14 !h-5 !rounded" />
-          <Skeleton className="!w-12 !h-3 !rounded-md" />
+          <Skeleton className="!w-10 !h-4 !rounded-sm !bg-stone-200" />
+          <Skeleton className="!w-8 !h-2.5 !rounded !bg-stone-200" />
         </div>
-        <div className="flex items-center gap-2">
-          <Skeleton className="!w-20 !h-7 !rounded-md" />
-          <Skeleton className="!w-14 !h-4 !rounded-md" />
-        </div>
+        <Skeleton className="!w-24 !h-5 !rounded !bg-stone-200" />
+        <Skeleton className="!w-full !h-9 !rounded-lg !bg-stone-100" />
       </div>
     </div>
   );

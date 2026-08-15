@@ -53,12 +53,11 @@ export default function Testimonials({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <div className="text-center max-w-2xl mx-auto mb-12">
-          <span className="text-xs font-bold text-amber-600 uppercase tracking-widest block mb-1">
+          <span className="text-xs font-display text-amber-600 uppercase tracking-widest block mb-1">
             {subtitle}
-          </span>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-stone-900 tracking-tight">
-            {title}
-          </h2>
+          </span>            <h2 className="text-xl sm:text-3xl font-display font-bold text-stone-900 tracking-tight leading-tight">
+              {title}
+            </h2>
           <p className="text-xs sm:text-sm text-stone-500 mt-1">
             Verified buyer reviews across all our product categories.
           </p>

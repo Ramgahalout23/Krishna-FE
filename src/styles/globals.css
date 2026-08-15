@@ -101,7 +101,7 @@
   --color-muted: #78716c;
   --color-muted-light: #a8a29e;
 
-  --font-display: 'Baloo 2', 'Roboto', 'system-ui', 'sans-serif';
+  --font-display: 'Space Grotesk', 'Inter', 'sans-serif';
   /* font-headline, font-body, font-label, font-baloo, font-roboto removed — unused */
 
   /* Radius overrides removed — using default Tailwind v4 radius tokens */
@@ -120,6 +120,12 @@
   --animate-fade-in: fadeIn 0.3s ease-out;
   --animate-badge-pop: badgePop .35s ease;
   --animate-shimmer: shimmer 2s linear infinite;
+}
+
+/* Unlayered override — beats tokens.css `--font-display: 'Jost'` because plain
+   :root rules win over Tailwind's @theme layer in the cascade. */
+:root {
+  --font-display: 'Space Grotesk', 'Inter', 'sans-serif';
 }
 
 @keyframes slideUp {

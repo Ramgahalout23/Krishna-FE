@@ -115,30 +115,30 @@ export function SettingsProvider({ children }) {
 
  
 function getDefaultSettings() {
-  const DEFAULT_STORE_NAME = 'THREVOLT';
+  const DEFAULT_STORE_NAME = 'Krishna Store';
   return {
     storeName: DEFAULT_STORE_NAME,
-    brandTagline: 'Premium Fashion & Lifestyle', // used in invoices — matches InvoiceService PHP fallback
-    contactEmail: 'support@threvolt.com',
-    storeEmail: 'support@threvolt.com',
+    brandTagline: 'Premium Quality, Fair Prices', // used in invoices — matches InvoiceService PHP fallback
+    contactEmail: 'support@krishnastore.in',
+    storeEmail: 'support@krishnastore.in',
     currency: 'INR',
     timezone: 'IST',
     storeAddress: `${DEFAULT_STORE_NAME} Headquarters, Bangalore, Karnataka, India`,
     shippingPickupAddress: `${DEFAULT_STORE_NAME} Fulfillment Center, Bangalore, Karnataka, India`,
     shippingReturnAddress: `${DEFAULT_STORE_NAME} Returns, Bangalore, Karnataka, India`,
     shippingQueryMobile: '+91 98765 43210',
-    shippingQueryEmail: 'support@threvolt.com',
+    shippingQueryEmail: 'support@krishnastore.in',
     shippingLabelLogo: '',
-    shippingLabelNote: `Thank you for shopping at ${DEFAULT_STORE_NAME}! For returns or support, please email support@threvolt.com`,
+    shippingLabelNote: `Thank you for shopping at ${DEFAULT_STORE_NAME}! For returns or support, please email support@krishnastore.in`,
     taxRate: '18.0',
     taxCalculation: 'inclusive',
     freeShippingThreshold: '499',
     shippingFlatRate: '50',
     smtpHost: 'smtp.gmail.com',
     smtpPort: '587',
-    smtpUsername: 'admin@threvolt.com',
+    smtpUsername: 'admin@krishnastore.in',
     smtpPassword: '',
-    fromEmailAddress: 'support@threvolt.com',
+    fromEmailAddress: 'support@krishnastore.in',
     emailTemplate: 'default',
     // Email Notifications
     emailEnabled: 'true',
@@ -234,7 +234,7 @@ function getDefaultSettings() {
     chatAutoReplyEnabled: 'true',
     chatAutoReplyMessage: 'Thank you for your message! One of our team members will get back to you shortly.',
     // Footer settings
-    footerBrandTagline: "India's favorite t-shirt brand. Premium quality, bold designs, and unbeatable comfort — all at prices that make you smile.",
+    footerBrandTagline: 'Your one-stop store for everything you need — premium quality products at prices that make you smile.',
     footerNewsletterEnabled: 'true',
     footerNewsletterTitle: 'Get 10% Off',
     footerNewsletterSubtitle: 'Subscribe for early access to new drops & exclusive deals!',

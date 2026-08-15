@@ -50,15 +50,16 @@ export default function Testimonials({
 
   return (
     <section className="py-16 bg-stone-50 border-b border-stone-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        <div className="text-center max-w-2xl mx-auto mb-12">
-          <span className="text-xs font-display text-amber-600 uppercase tracking-widest block mb-1">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">        <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-14">
+          <span className="inline-flex items-center justify-center gap-2.5 text-[11px] sm:text-xs font-display font-semibold text-amber-600 uppercase tracking-[0.22em]">
+            <span className="w-8 h-px bg-amber-500" />
             {subtitle}
-          </span>            <h2 className="text-xl sm:text-3xl font-display font-bold text-stone-900 tracking-tight leading-tight">
-              {title}
-            </h2>
-          <p className="text-xs sm:text-sm text-stone-500 mt-1">
+            <span className="w-8 h-px bg-amber-500" />
+          </span>
+          <h2 className="mt-2.5 text-2xl sm:text-4xl font-display font-bold text-stone-900 tracking-tight leading-tight">
+            {title}
+          </h2>
+          <p className="text-xs sm:text-sm text-stone-500 mt-2">
             Verified buyer reviews across all our product categories.
           </p>
         </div>
@@ -67,9 +68,9 @@ export default function Testimonials({
           {displayReviews.map((r) => (
             <div
               key={r.id}
-              className="bg-white rounded-3xl p-6 border border-stone-200 shadow-sm hover:shadow-md transition-shadow relative flex flex-col justify-between"
+              className="bg-white rounded-2xl p-6 sm:p-7 border border-stone-200/80 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative flex flex-col justify-between"
             >
-              <Quote className="w-8 h-8 text-amber-500/20 absolute top-6 right-6" />
+              <Quote className="w-8 h-8 text-amber-500/15 absolute top-6 right-6" />
 
               <div>
                 <div className="flex items-center text-amber-400 mb-3">

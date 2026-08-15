@@ -297,6 +297,9 @@ const DEFAULT_EN_TRANSLATIONS = {
   'product.oos': 'OOS',
   'product.quick_add': 'Quick Add',
   'product.add_price': 'Add · {{price}}',
+  'product.select': 'Select',
+  'product.unavailable': 'Unavailable',
+  'product.add_price': 'Add · {{price}}',
   'product.sold_out': 'Sold Out',
   'product.sale_badge': 'Sale',
   'product.new_badge': 'New',
@@ -948,6 +951,14 @@ const DEFAULT_EN_TRANSLATIONS = {
   'reels.watch_youtube': 'Watch on YouTube',
   'reels.youtube': 'YouTube',
   'reels.retry_video': 'Retry Video',
+  'reels.down_to_close': 'Drag to close',
+  'reels.off': '{{percent}}% OFF',
+  'reels.back_home': 'Back to Home',
+  'reels.like_error': 'Could not update like',
+  'reels.mute': 'Mute',
+  'reels.share_error': 'Could not share this reel',
+  'reels.unmute': 'Unmute',
+  'reels.view_all': 'View All',
 };
 
 /**

@@ -55,6 +55,30 @@ export const formatPrice = (amount) => {
 };
 
 /**
+ * Product-card price format — same compact ₹ style as formatPrice (e.g. ₹499).
+ * Used by the reel cards so video cards match the rest of the storefront.
+ */
+export const formatProductCardPrice = (amount) => formatPrice(amount);
+
+/**
+ * Get a fully-qualified video URL (same resolution as getImageUrl, minus
+ * Cloudinary image proxy — videos are served directly).
+ */
+export const getVideoUrl = (url) => {
+  if (!url) return '';
+  // Normalize Windows-style backslashes to standard forward slashes
+  const normalizedUrl = url.replace(/\\/g, '/');
+  // Data URIs and absolute URLs are returned as-is
+  if (normalizedUrl.startsWith('data:')) return normalizedUrl;
+  if (normalizedUrl.startsWith('http://') || normalizedUrl.startsWith('https://')) return normalizedUrl;
+  // Resolve relative URLs against the backend base (same origin via vite proxy)
+  const apiBase = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || '/api/v1';
+  const backendBase = apiBase.replace(/\/?api(\/v\d+)?\/?$/, '') || '';
+  const cleanUrl = normalizedUrl.startsWith('/') ? normalizedUrl : `/${normalizedUrl}`;
+  return `${backendBase}${cleanUrl}`;
+};
+
+/**
  * Map common timezone abbreviations to IANA timezone names for Intl.DateTimeFormat.
  * The timezone setting is stored as an abbreviation (e.g. 'IST'), but the Intl API
  * requires IANA names (e.g. 'Asia/Kolkata').

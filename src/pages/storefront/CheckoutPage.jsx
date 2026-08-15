@@ -12,7 +12,7 @@ import { cartAPI } from '../../api/cart';
 import { checkoutAPI } from '../../api/checkout';
 import { couponsAPI } from '../../api/coupons';
 import { promotionsAPI } from '../../api/promotions';
-import { formatCurrency, getImageUrl } from '../../utils/formatters';
+import { formatPrice, getImageUrl } from '../../utils/formatters';
 import { showError, couponApplied, couponRemoved, fillRequiredFields, invalidCoupon, orderPlaced, paymentSuccessful, accountCreated } from '../../utils/toast';
 import { paymentsAPI } from '../../api/payments';
 import { ordersAPI } from '../../api/orders';
@@ -85,7 +85,7 @@ export default function CheckoutPage() {
       setAutoDiscountPromos([{
         id: bestOffer.id,
         title: bestOffer.title,
-        discountLabel: `-${formatCurrency(roundedDiscount)}`,
+        discountLabel: `-${formatPrice(roundedDiscount)}`,
         offerBadge: bestOffer.offerBadge || 'OFFER',
         offerHighlight: bestOffer.offerHighlight || bestOffer.title,
         offerTagline: bestOffer.offerTagline,
@@ -221,7 +221,7 @@ export default function CheckoutPage() {
         setDiscount(discountAmount);
         setAppliedCoupon(codeToApply);
         if (code) setCoupon(code);
-        couponApplied(formatCurrency(discountAmount));
+        couponApplied(formatPrice(discountAmount));
       } else {
         invalidCoupon();
       }
@@ -718,30 +718,34 @@ export default function CheckoutPage() {
         />
       </div>
 
-      {/* Progress Steps Bar */}
+      {/* Progress Steps Bar — premium numbered steps */}
       <div className="border-b border-stone-200 bg-stone-50 mt-4 sm:mt-6">
         <div className="max-w-6xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-sm overflow-x-auto">
-            <button
-              onClick={() => navigate('/cart')}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-lg transition-colors text-stone-500 hover:text-stone-900 hover:bg-stone-100 font-semibold"
-            >
-              Cart
-            </button>
-            <ChevronLeft size={12} className="rotate-180 text-stone-300 shrink-0" />
-            <button
-              onClick={() => document.querySelector('.shipping-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-lg transition-colors bg-amber-100 text-amber-800 font-bold"
-            >
-              Information
-            </button>
-            <ChevronLeft size={12} className="rotate-180 text-stone-300 shrink-0" />
-            <button
-              onClick={() => document.querySelector('.payment-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-lg transition-colors text-stone-500 hover:text-stone-900 hover:bg-stone-100 font-semibold"
-            >
-              Payment
-            </button>
+          <div className="flex items-center justify-center gap-4 sm:gap-6 text-xs sm:text-sm overflow-x-auto">
+            {[
+              { label: 'Cart', onClick: () => navigate('/cart'), active: false, done: false },
+              { label: 'Information', onClick: () => document.querySelector('.shipping-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), active: true, done: false },
+              { label: 'Payment', onClick: () => document.querySelector('.payment-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), active: false, done: false },
+            ].map((step, i) => (
+              <div key={step.label} className="flex items-center gap-2">
+                {i > 0 && <div className="w-6 sm:w-10 h-px bg-stone-300" />}
+                <button
+                  onClick={step.onClick}
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-full transition-all ${
+                    step.active
+                      ? 'bg-stone-950 text-amber-400 shadow-md'
+                      : 'text-stone-500 hover:text-stone-900 hover:bg-stone-100 font-semibold'
+                  }`}
+                >
+                  <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black ${
+                    step.active ? 'bg-amber-500 text-stone-950' : 'bg-stone-200 text-stone-600'
+                  }`}>
+                    {i + 1}
+                  </span>
+                  <span className="font-bold uppercase tracking-wider text-[11px]">{step.label}</span>
+                </button>
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -775,7 +779,11 @@ export default function CheckoutPage() {
               </div>
             )}
 
-            <h2 className="font-bold text-xl text-stone-900 mb-4">Shipping Address</h2>
+            <span className="inline-flex items-center gap-2.5 text-[11px] sm:text-xs font-display font-semibold text-amber-600 uppercase tracking-[0.22em]">
+              <span className="w-8 sm:w-10 h-px bg-amber-500" />
+              Step 1 · Delivery Details
+            </span>
+            <h2 className="mt-2 mb-4 text-xl sm:text-2xl font-display font-bold text-stone-900 tracking-tight">Shipping Address</h2>
             <div className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
@@ -989,9 +997,13 @@ export default function CheckoutPage() {
 
           {/* ── Order Summary (2nd on mobile, right col on desktop) ── */}
           <div className="order-summary order-2 md:col-start-2 md:row-start-1 lg:sticky lg:top-8 h-fit">
-            <div className="bg-white rounded-2xl border border-stone-200 p-5 md:p-6 shadow-sm">
-              <span className="text-xs font-bold text-amber-600 uppercase tracking-widest block mb-1">ORDER SUMMARY</span>
-              <h3 className="text-xl font-extrabold text-stone-900 tracking-tight">Summary</h3>
+            <div className="relative overflow-hidden bg-stone-950 rounded-2xl p-5 md:p-6 border border-stone-800 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.5)]">
+              <div className="absolute -top-20 -right-20 w-56 h-56 rounded-full bg-amber-500/15 blur-3xl pointer-events-none" />
+              <span className="inline-flex items-center gap-2.5 text-[11px] sm:text-xs font-display font-semibold text-amber-400 uppercase tracking-[0.22em] relative">
+                <span className="w-8 sm:w-10 h-px bg-amber-500" />
+                Order Summary
+              </span>
+              <h3 className="mt-1.5 text-xl font-display font-bold text-white tracking-tight relative">Summary</h3>
 
               {/* Cart Items */}
               <div className="space-y-4 mb-6">
@@ -1000,7 +1012,7 @@ export default function CheckoutPage() {
                   const isOOS = itemStock !== null && itemStock !== undefined && itemStock <= 0;
                   return (
                   <div key={item.id} className={`flex gap-4 ${isOOS ? 'opacity-60' : ''}`}>
-                    <div className="w-20 h-20 bg-stone-100 rounded-xl overflow-hidden flex-shrink-0 border border-stone-200">
+                    <div className="w-20 h-20 bg-stone-800 rounded-xl overflow-hidden flex-shrink-0 border border-stone-700">
                       {item.imageUrl ? (
                         <img loading="lazy" src={getImageUrl(item.imageUrl)} alt={item.name} className={`w-full h-full object-cover ${isOOS ? 'grayscale' : ''}`} />
                       ) : (
@@ -1008,7 +1020,7 @@ export default function CheckoutPage() {
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className={`font-medium text-sm line-clamp-1 ${isOOS ? 'text-stone-400' : 'text-stone-900'}`}>{item.name}</p>
+                      <p className={`font-medium text-sm line-clamp-1 ${isOOS ? 'text-stone-500' : 'text-white'}`}>{item.name}</p>
                       {(item.size || item.color) && (
                         <p className="text-stone-400 text-xs mt-0.5">
                           {[item.size, item.color].filter(Boolean).join(' / ')}
@@ -1028,7 +1040,7 @@ export default function CheckoutPage() {
                         </span>
                       )}
                     </div>
-                    <p className={`font-semibold ${isOOS ? 'text-stone-400 line-through' : 'text-stone-900'}`}>{formatCurrency(item.price * item.quantity)}</p>
+                    <p className={`font-semibold ${isOOS ? 'text-stone-500 line-through' : 'text-white'}`}>{formatPrice(item.price * item.quantity)}</p>
                   </div>
                 );})}
               </div>
@@ -1039,17 +1051,17 @@ export default function CheckoutPage() {
                     {autoDiscountPromos.map((promo) => (
                       <div
                         key={promo.id}
-                        className="flex items-center justify-between px-3 py-2.5 bg-amber-50 border border-amber-200 rounded-lg shadow-sm"
+                        className="flex items-center justify-between px-3 py-2.5 bg-amber-500/10 border border-amber-500/20 rounded-lg"
                       >
                         <div className="flex items-center gap-2 min-w-0">
-                          <span className="text-[10px] font-bold text-amber-800 bg-amber-100 px-1.5 py-0.5 rounded shrink-0">
+                          <span className="text-[10px] font-bold text-amber-800 bg-amber-400/20 px-1.5 py-0.5 rounded shrink-0">
                             {promo.offerBadge || 'OFFER'}
                           </span>
-                          <span className="text-xs font-semibold text-amber-900 truncate">
+                          <span className="text-xs font-semibold text-amber-200 truncate">
                             {promo.offerHighlight || promo.title}
                           </span>
                         </div>
-                        <span className="text-[10px] text-amber-700 font-semibold shrink-0 ml-2">
+                        <span className="text-[10px] text-amber-400 font-semibold shrink-0 ml-2">
                           {promo.discountLabel}
                         </span>
                       </div>
@@ -1058,14 +1070,14 @@ export default function CheckoutPage() {
                 )}
 
                 {discount > 0 && appliedCoupon ? (
-                <div className="flex items-center justify-between mb-6 px-4 py-3 bg-green-50 border border-green-200 rounded-xl">
+                <div className="flex items-center justify-between mb-6 px-4 py-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl">
                   <div className="flex items-center gap-2">
-                    <span className="text-green-700 font-semibold text-sm uppercase">{appliedCoupon}</span>
-                    <span className="text-green-600 text-xs">-{formatCurrency(discount)}</span>
+                    <span className="text-emerald-400 font-semibold text-sm uppercase">{appliedCoupon}</span>
+                    <span className="text-emerald-400 text-xs">-{formatPrice(discount)}</span>
                   </div>
                   <button
                     onClick={handleRemoveCoupon}
-                    className="text-green-600 hover:text-red-600 transition-colors p-1"
+                    className="text-emerald-400 hover:text-rose-400 transition-colors p-1"
                     title="Remove coupon"
                   >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -1078,7 +1090,7 @@ export default function CheckoutPage() {
                 <>
                   <div className="flex gap-2 mb-3">
                     <input
-                      className="flex-1 px-4 py-3 border border-stone-200 rounded-xl text-sm"
+                      className="flex-1 px-4 py-3 bg-stone-900 border border-stone-700 rounded-xl text-sm text-white placeholder-stone-500 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all"
                       placeholder="Coupon code"
                       value={coupon}
                       onChange={(e) => {
@@ -1089,7 +1101,7 @@ export default function CheckoutPage() {
                     <button
                       onClick={() => handleApplyCoupon()}
                       disabled={couponLoading}
-                      className="px-4 py-2 text-sm font-medium text-stone-700 border border-stone-200 rounded-xl hover:border-stone-900 transition-colors disabled:opacity-50"
+                      className="px-4 py-2 text-sm font-medium text-amber-400 bg-amber-500/10 border border-amber-500/30 rounded-xl hover:bg-amber-500/20 transition-colors disabled:opacity-50"
                     >
                       {couponLoading ? 'Applying...' : 'Apply'}
                     </button>
@@ -1102,7 +1114,7 @@ export default function CheckoutPage() {
                           const isUsed = appliedCoupon === c.code;
                           const desc = c.discountType === 'PERCENTAGE'
                             ? `${c.discountValue}% OFF`
-                            : formatCurrency(c.discountValue) + ' OFF';
+                            : formatPrice(c.discountValue) + ' OFF';
                           return (
                             <button
                               key={c.code}
@@ -1115,18 +1127,18 @@ export default function CheckoutPage() {
                               disabled={isUsed}
                               className={`group relative px-3 py-2 rounded-lg border text-xs font-semibold transition-all ${
                                 isUsed
-                                  ? 'border-green-300 bg-green-50 text-green-700 cursor-default'
-                                  : 'border-stone-200 bg-white text-stone-700 hover:border-amber-500 hover:bg-amber-50 cursor-pointer'
+                                  ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-400 cursor-default'
+                                  : 'border-stone-700 bg-stone-900 text-stone-200 hover:border-amber-500 hover:bg-stone-800 cursor-pointer'
                               }`}
                               title={c.description || desc}
                             >
                               <span className="uppercase tracking-wide">{c.code}</span>
-                              <span className={`ml-1.5 ${isUsed ? 'text-green-600' : 'text-stone-500 group-hover:text-stone-900'}`}>
+                              <span className={`ml-1.5 ${isUsed ? 'text-emerald-400' : 'text-stone-400 group-hover:text-amber-400'}`}>
                                 {desc}
                               </span>
                               {c.minOrderValue > 0 && (
-                                <span className="block text-[10px] text-stone-400 font-normal mt-0.5">
-                                  Min. {formatCurrency(c.minOrderValue)}
+                                <span className="block text-[10px] text-stone-500 font-normal mt-0.5">
+                                  Min. {formatPrice(c.minOrderValue)}
                                 </span>
                               )}
                             </button>
@@ -1139,39 +1151,39 @@ export default function CheckoutPage() {
               )}
 
               {/* Price Breakdown */}
-              <div className="space-y-3 border-t pt-4">
+              <div className="space-y-3 border-t border-stone-800 pt-4">
                 <div className="flex justify-between text-sm">
-                  <span className="text-stone-600">Subtotal</span>
-                  <span className="text-stone-900">{formatCurrency(subtotal)}</span>
+                  <span className="text-stone-400">Subtotal</span>
+                  <span className="text-white">{formatPrice(subtotal)}</span>
                 </div>
                 {autoDiscount > 0 && (
                   <div className="flex justify-between text-sm">
-                    <span className="text-stone-500">Store Offer Discount</span>
-                    <span className="text-stone-600">-{formatCurrency(autoDiscount)}</span>
+                    <span className="text-stone-400">Store Offer Discount</span>
+                    <span className="text-stone-300">-{formatPrice(autoDiscount)}</span>
                   </div>
                 )}
                 {volumeDiscount > 0 && (
                   <div className="flex justify-between text-sm">
-                    <span className="text-amber-700 flex items-center gap-1">
+                    <span className="text-amber-400 flex items-center gap-1">
                       Volume Discount
                       {volumeDiscountItems.length > 0 && (
-                        <span className="text-[10px] font-bold text-amber-800 bg-amber-100 px-1.5 py-0.5 rounded-full">
+                        <span className="text-[10px] font-bold text-amber-300 bg-amber-500/20 px-1.5 py-0.5 rounded-full">
                           {volumeDiscountItems.map(d => `${d.tierDiscountPct}% off`).filter((v,i,a) => a.indexOf(v)===i).join(', ')}
                         </span>
                       )}
                     </span>
-                    <span className="text-amber-700">-{formatCurrency(volumeDiscount)}</span>
+                    <span className="text-amber-400">-{formatPrice(volumeDiscount)}</span>
                   </div>
                 )}
                 {discount > 0 && (
                   <div className="flex justify-between text-sm">
                     <span className="text-green-600">Coupon Discount</span>
-                    <span className="text-green-600">-{formatCurrency(discount)}</span>
+                    <span className="text-emerald-400">-{formatPrice(discount)}</span>
                   </div>
                 )}
                 <div className="flex justify-between text-sm">
-                  <span className="text-stone-600">Shipping</span>
-                  <span className="text-stone-900">{shippingCost === 0 ? 'Free' : formatCurrency(shippingCost)}</span>
+                  <span className="text-stone-400">Shipping</span>
+                  <span className="text-white">{shippingCost === 0 ? 'Free' : formatPrice(shippingCost)}</span>
                 </div>
                 {items.some(item => {
                   const s = item.variantStock ?? item.productStock;
@@ -1179,14 +1191,14 @@ export default function CheckoutPage() {
                 }) && (
                   <div className="flex items-start gap-1.5 pt-1">
                     <AlertTriangle size={12} className="text-amber-500 mt-0.5 shrink-0" />
-                    <p className="text-[10px] text-amber-700 leading-relaxed">
+                    <p className="text-[10px] text-amber-300 leading-relaxed">
                       Out-of-stock items are shown for reference and included in the total above. They will be skipped when your order is placed.
                     </p>
                   </div>
                 )}
-                <div className="flex justify-between text-lg font-bold pt-3 border-t">
-                  <span className="text-stone-900">Total</span>
-                  <span className="text-stone-900">{formatCurrency(total)}</span>
+                <div className="flex justify-between text-lg font-bold pt-3 border-t border-stone-800">
+                  <span className="text-white">Total</span>
+                  <span className="text-amber-400 font-black text-xl">{formatPrice(total)}</span>
                 </div>
               </div>
 
@@ -1214,11 +1226,11 @@ export default function CheckoutPage() {
                         transition={{ duration: 0.4, delay: i * 0.08, ease: [0.16, 1, 0.3, 1] }}
                         className="group"
                       >
-                        <div className="relative w-10 h-10 rounded-xl bg-white border border-stone-200 flex items-center justify-center mx-auto mb-1.5 group-hover:shadow-md group-hover:border-amber-200 group-hover:scale-110 transition-all duration-300 ease-out">
+                        <div className="relative w-10 h-10 rounded-xl bg-stone-900 border border-stone-700 flex items-center justify-center mx-auto mb-1.5 group-hover:shadow-md group-hover:border-amber-500/50 group-hover:scale-110 transition-all duration-300 ease-out">
                           <div className="absolute inset-0 bg-gradient-to-br from-gray-100/0 to-gray-100/0 md:group-hover:from-gray-100/30 md:group-hover:to-transparent transition-all duration-500" />
                           <IconComponent className="relative w-[17px] h-[17px] text-amber-600 group-hover:text-amber-700 transition-all duration-300" />
                         </div>
-                        <p className="text-[10px] text-stone-500 font-bold group-hover:text-stone-700 transition-colors duration-300">
+                        <p className="text-[10px] text-stone-400 font-bold group-hover:text-amber-400 transition-colors duration-300">
                           {badge.label}<br/>{badge.sub}
                         </p>
                       </motion.div>
@@ -1231,7 +1243,11 @@ export default function CheckoutPage() {
 
           {/* ── Payment Methods (3rd on mobile, left col 2nd row on desktop) ── */}
           <div className="payment-section order-3 md:col-start-1 md:row-start-2">
-            <h2 className="font-display text-xl font-bold text-stone-900 mb-4">Payment Method</h2>
+            <span className="inline-flex items-center gap-2.5 text-[11px] sm:text-xs font-display font-semibold text-amber-600 uppercase tracking-[0.22em]">
+              <span className="w-8 sm:w-10 h-px bg-amber-500" />
+              Step 2 · Checkout
+            </span>
+            <h2 className="mt-2 mb-4 text-xl sm:text-2xl font-display font-bold text-stone-900 tracking-tight">Payment Method</h2>
             <div className="space-y-3">
               {paymentMethods.map((m) => {
                 const { icon: IconComponent, bg: iconBg, color: iconColor } = getPaymentIcon(m.id);
@@ -1239,8 +1255,8 @@ export default function CheckoutPage() {
                 return (
                   <label
                     key={m.id}
-                    className={`group flex items-center gap-4 p-4 border-2 rounded-xl cursor-pointer transition-all ${
-                      isSelected ? 'border-amber-500 bg-amber-50/30 shadow-sm' : 'border-stone-200 hover:border-amber-500/40'
+                    className={`group relative flex items-center gap-4 p-4 border-2 rounded-2xl cursor-pointer transition-all overflow-hidden ${
+                      isSelected ? 'border-amber-500 bg-amber-50/60 shadow-md shadow-amber-500/10' : 'border-stone-200 bg-white hover:border-amber-500/40 hover:shadow-sm'
                     }`}
                   >
                     <input
@@ -1248,7 +1264,7 @@ export default function CheckoutPage() {
                       name="payment"
                       checked={isSelected}
                       onChange={() => setPaymentMethod(m.id)}
-                      className="w-4 h-4 text-stone-900 shrink-0"
+                      className="w-4 h-4 text-stone-900 shrink-0 accent-amber-500"
                     />
                     <div className={`w-12 h-12 rounded-xl ${iconBg} flex items-center justify-center shrink-0 transition-all duration-300 group-hover:scale-105 ${
                       isSelected ? 'scale-110 shadow-md' : ''
@@ -1271,13 +1287,13 @@ export default function CheckoutPage() {
               <button
                 onClick={handleCheckout}
                 disabled={processing}
-                className="w-full bg-amber-500 text-stone-950 py-4 rounded-xl font-bold hover:bg-amber-400 transition-all duration-200 flex items-center justify-center gap-2 shadow-md shadow-amber-500/20 active:scale-[0.98]"
+                className="w-full bg-amber-500 text-stone-950 py-4 rounded-2xl font-black uppercase tracking-wide text-sm hover:bg-amber-400 transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-amber-500/30 active:scale-[0.98]"
               >
                 {processing ? (
                   <><span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Processing...</>
                 ) : (
                   <>
-                    <Lock size={18} /> Place Order - {formatCurrency(total)}
+                    <Lock size={18} /> Place Order - {formatPrice(total)}
                   </>
                 )}
               </button>

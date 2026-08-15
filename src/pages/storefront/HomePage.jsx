@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
@@ -12,10 +12,12 @@ import HeroBanner from '../../components/omni/HeroBanner';
 import FlashDeals from '../../components/omni/FlashDeals';
 import CategoryGrid from '../../components/omni/CategoryGrid';
 import ProductGrid from '../../components/omni/ProductGrid';
-import CuratedCollection from '../../components/omni/CuratedCollection';
+import BrandStory from '../../components/omni/BrandStory';
 import Testimonials from '../../components/omni/Testimonials';
-import TrustFeatures from '../../components/omni/TrustFeatures';
 import QuickViewModal from '../../components/omni/QuickViewModal';
+
+// Heavy video-reel section — lazy-loaded so it never blocks first paint
+const ReelsSection = lazy(() => import('../../components/storefront/ReelsSection'));
 
 /* ── Skeleton Loading ── */
 function HomepageSkeleton() {
@@ -107,8 +109,6 @@ export default function HomePage() {
   const sectionTitles = {
     featured: getSetting('homepageFeaturedTitle', 'Featured Products'),
     featuredSubtitle: getSetting('homepageFeaturedSubtitle', 'Trending Now'),
-    curated: getSetting('homepageCuratedTitle', 'Premium Picks'),
-    curatedSubtitle: getSetting('homepageCuratedSubtitle', 'Curated Picks'),
     flashDealsTitle: getSetting('homepageFlashDealsTitle', 'Flash Deals of the Day'),
     flashDealsBadge: getSetting('homepageFlashDealsBadge', 'Limited Time Offers'),
     flashDealsDiscount: getSetting('homepageFlashDealsDiscount', 'Up to 40% OFF'),
@@ -183,6 +183,13 @@ export default function HomePage() {
     const list = Array.isArray(data.reviews) ? data.reviews : [];
     return list.slice(0, 3);
   }, [homepageRes?.reviews]);
+
+  // Reels — shoppable video reels (shipped inside the consolidated payload)
+  const reelsEnabled = getSetting('reelsEnabled', 'true') !== 'false';
+  const reels = useMemo(() => {
+    const r = homepageRes?.reels;
+    return Array.isArray(r) ? r : [];
+  }, [homepageRes?.reels]);
 
   // Determine if there are active sales/promotions (from the homepage payload)
   const activePromotions = useMemo(() => {
@@ -319,19 +326,13 @@ export default function HomePage() {
         </ScrollReveal>
       )}
 
-      {/* Curated Collection */}
-      {allProducts.length > 0 && (
-        <ScrollReveal delay={0.12}>
-          <CuratedCollection
-            products={allProducts}
-            title={sectionTitles.curated}
-            subtitle={sectionTitles.curatedSubtitle}
-          />
-        </ScrollReveal>
-      )}
+      {/* Brand Story — absorbs the old trust strip */}
+      <ScrollReveal delay={0.14}>
+        <BrandStory />
+      </ScrollReveal>
 
       {/* Customer Reviews */}
-      <ScrollReveal delay={0.14}>
+      <ScrollReveal delay={0.16}>
         <Testimonials
           reviews={reviews}
           title={sectionTitles.testimonialTitle}
@@ -339,10 +340,14 @@ export default function HomePage() {
         />
       </ScrollReveal>
 
-      {/* Trust Features */}
-      <ScrollReveal delay={0.16}>
-        <TrustFeatures />
-      </ScrollReveal>
+      {/* Watch & Buy — shoppable video reels (lazy-loaded) */}
+      {reelsEnabled && reels.length > 0 && (
+        <ScrollReveal delay={0.18}>
+          <Suspense fallback={null}>
+            <ReelsSection reels={reels} />
+          </Suspense>
+        </ScrollReveal>
+      )}
 
       {/* Quick View Modal */}
       <QuickViewModal

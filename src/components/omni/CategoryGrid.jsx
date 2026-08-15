@@ -74,14 +74,17 @@ export default function CategoryGrid({
     <section className="py-8 sm:py-12 bg-stone-50 border-b border-stone-200">
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
         
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6 sm:mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6 sm:mb-10">
           <div>
-            <span className="text-xs font-display text-amber-600 uppercase tracking-widest block mb-1">{subtitle}</span>
-            <h2 className="text-xl sm:text-3xl font-display font-bold text-stone-900 tracking-tight leading-tight">{title}</h2>
+            <span className="inline-flex items-center gap-2.5 text-[11px] sm:text-xs font-display font-semibold text-amber-600 uppercase tracking-[0.22em]">
+              <span className="w-8 sm:w-10 h-px bg-amber-500" />
+              {subtitle}
+            </span>
+            <h2 className="mt-2.5 text-2xl sm:text-4xl font-display font-bold text-stone-900 tracking-tight leading-tight">{title}</h2>
           </div>
           <button
             onClick={() => onSelectCategory && onSelectCategory('all')}
-            className="text-xs font-bold text-stone-700 hover:text-amber-600 flex items-center gap-1.5 transition-colors self-start sm:self-auto"
+            className="text-xs font-display font-semibold text-stone-700 hover:text-amber-600 flex items-center gap-1.5 transition-colors self-start sm:self-auto uppercase tracking-wider"
           >
             Explore All Products <ArrowRight className="w-3.5 h-3.5" />
           </button>
@@ -91,34 +94,39 @@ export default function CategoryGrid({
           {displayCategories.map((cat) => (
             <div
               key={cat.id || cat.slug}
-              onClick={() => onSelectCategory && onSelectCategory(cat.id || cat.slug)}
-              className="group relative bg-white rounded-2xl overflow-hidden border border-stone-200 transition-all cursor-pointer shadow-sm hover:shadow-md hover:border-amber-500"
+              onClick={() => onSelectCategory && onSelectCategory(cat.slug || cat.id)}
+              className="group relative aspect-[4/5] overflow-hidden rounded-2xl bg-stone-900 border border-stone-200 transition-all duration-300 cursor-pointer hover:shadow-lg hover:border-amber-400"
             >
-              <div className="h-36 overflow-hidden relative bg-stone-100">
-                <img
-                  src={cat.imageUrl || cat.image || ''}
-                  alt={cat.name}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  loading="lazy"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-stone-950/80 via-stone-950/20 to-transparent" />
-                
-                <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-md p-2 rounded-xl shadow-md">
-                  {getIcon(cat.iconName || 'Sparkles')}
-                </div>
+              <img
+                src={cat.imageUrl || cat.image || ''}
+                alt={cat.name}
+                className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.07]"
+                loading="lazy"
+              />
+              {/* Warm scrim for the editorial overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-stone-950/90 via-stone-950/25 to-transparent" />
 
-                <span className="absolute top-3 right-3 bg-stone-900/80 backdrop-blur-md text-stone-200 text-[10px] font-bold px-2 py-0.5 rounded-full">
-                  {cat.itemCount || cat._count?.products || 0} items
-                </span>
-
-                <div className="absolute bottom-3 left-3 right-3 text-white">
-                  <h3 className="text-sm font-bold truncate group-hover:text-amber-300 transition-colors">{cat.name}</h3>
-                </div>
+              {/* Glass icon chip */}
+              <div className="absolute top-3 left-3 bg-white/10 backdrop-blur-md border border-white/20 p-2 rounded-xl shadow-md">
+                {getIcon(cat.iconName || 'Sparkles')}
               </div>
-              <div className="p-3 bg-white flex items-center justify-between">
-                <p className="text-[11px] text-stone-500 line-clamp-1 pr-2">{cat.tagline || ''}</p>
-                <div className="w-6 h-6 rounded-full bg-stone-100 group-hover:bg-amber-500 group-hover:text-stone-950 text-stone-600 flex items-center justify-center transition-colors flex-shrink-0">
-                  <ArrowRight className="w-3 h-3" />
+
+              <span className="absolute top-3 right-3 bg-stone-950/60 backdrop-blur-sm border border-white/15 text-white text-[10px] font-semibold px-2.5 py-1 rounded-full">
+                {cat.itemCount || cat._count?.products || 0} items
+              </span>
+
+              {/* Name + tagline overlay */}
+              <div className="absolute inset-x-0 bottom-0 p-3.5">
+                <h3 className="text-sm sm:text-base font-display font-bold text-white tracking-tight group-hover:text-amber-300 transition-colors">
+                  {cat.name}
+                </h3>
+                <div className="mt-1.5 flex items-center justify-between gap-2">
+                  <p className="text-[10px] sm:text-[11px] text-stone-300/90 line-clamp-1">
+                    {cat.tagline || 'Shop the collection'}
+                  </p>
+                  <span className="w-6 h-6 shrink-0 rounded-full bg-white/10 border border-white/20 text-white flex items-center justify-center transition-all duration-300 group-hover:bg-amber-500 group-hover:border-amber-500 group-hover:text-stone-950">
+                    <ArrowRight className="w-3 h-3" />
+                  </span>
                 </div>
               </div>
             </div>

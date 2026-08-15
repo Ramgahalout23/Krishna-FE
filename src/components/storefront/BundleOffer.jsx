@@ -123,10 +123,6 @@ export default function BundleOffer({
             transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
             className="overflow-hidden"
           >
-            <p className="text-[11px] text-text-muted mb-3.5 leading-relaxed">
-              Add more items to your bag and unlock exclusive volume discounts automatically applied at checkout.
-            </p>
-
             {/* Tier Cards — premium gradient design */}
             <div className="grid grid-cols-4 gap-2.5 mb-3.5">                {tierPrices.map((tier, idx) => {
                 const isSelected = tier.minQty === currentTier.minQty;

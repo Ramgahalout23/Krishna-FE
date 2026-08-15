@@ -1,4 +1,4 @@
-import { Minus, Plus, Star, ChevronDown, Share2, X, ChevronLeft, ChevronRight, Zap, Heart, ShieldCheck, Truck, RotateCcw, ShoppingBag, CheckCircle, ArrowRight } from 'lucide-react';
+import { Minus, Plus, Star, ChevronDown, Share2, X, ChevronLeft, ChevronRight, Zap, Heart, ShieldCheck, Truck, RotateCcw, ShoppingBag, CheckCircle, ArrowRight, Play, Volume2, ExternalLink } from 'lucide-react';
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -9,7 +9,7 @@ import useInterval from '../../hooks/useInterval';
 import Breadcrumb from '../../components/common/Breadcrumb';
 import SEOHead from '../../components/seo/SEOHead';
 import { productsAPI } from '../../api/products';
-import { recentlyViewedAPI } from '../../api/recentlyViewed';
+
 import { seoAPI } from '../../api/seo';
 import { reviewsAPI } from '../../api/reviews';
 import useCartStore from '../../store/cartStore';
@@ -19,7 +19,7 @@ import { cartAPI } from '../../api/cart';
 import { wishlistAPI } from '../../api/wishlist';
 import SizeGuideModal from '../../components/product/SizeGuideModal';
 import ReviewFormModal from '../../components/product/ReviewFormModal';
-import { formatCurrency, formatDate, getImageUrl, getProductImages } from '../../utils/formatters';
+import { formatPrice, formatDate, getImageUrl, getProductImages, getVideoUrl } from '../../utils/formatters';
 import ReviewImageLightbox from '../../components/product/ReviewImageLightbox';
 import { useTranslation } from 'react-i18next';
 import { useSettings } from '../../store/useSettings';
@@ -30,7 +30,6 @@ import FlashSaleCountdown from '../../components/storefront/FlashSaleCountdown';
 import OffersSection from '../../components/storefront/OffersSection';
 import BundleOffer from '../../components/storefront/BundleOffer';
 import ProductCard from '../../components/omni/ProductCard';
-import ProductCardSkeleton from '../../components/ui/ProductCardSkeleton';
 import { addedToCart, removedFromWishlist, addedToWishlist, wishlistError, linkCopied } from '../../utils/toast';
 
 /* ═══════════════════════════════════════════════════
@@ -122,21 +121,17 @@ export default function ProductDetailPage() {
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [showStickyBar, setShowStickyBar] = useState(false);
   const [openAccordion, setOpenAccordion] = useState('details');
-  const [viewerCount, setViewerCount] = useState(() => Math.floor(Math.random() * 30) + 18);
   const [galleryLightboxOpen, setGalleryLightboxOpen] = useState(false);
   const [galleryLightboxIdx, setGalleryLightboxIdx] = useState(0);
   const [recentPurchase, setRecentPurchase] = useState(null);
-  const [recentlyViewed, setRecentlyViewed] = useState([]);
-  const [recentlyViewedLoaded, setRecentlyViewedLoaded] = useState(false);
   const hasAutoSelected = useRef(false);
   const sentinelRef = useRef(null);
   const mobileGalleryRef = useRef(null);
   const offersRef = useRef(null);
   const realOrdersRef = useRef([]);
 
-  // ── Live viewer count & FOMO ──
+  // ── FOMO recent-purchase notifications ──
   useInterval(() => {
-    setViewerCount(prev => Math.max(5, Math.min(60, prev + (Math.random() > 0.5 ? 1 : -1))));
     if (Math.random() > 0.85) {
       const realOrders = realOrdersRef.current;
       let name, city;
@@ -297,23 +292,12 @@ export default function ProductDetailPage() {
     hasAutoSelected.current = true;
   }, [product]);
 
-  // ── Tracking & Recently Viewed ──
+  // ── Tracking (view count) ──
   useEffect(() => {
     if (!product) return;
     const catName = typeof product.category === 'object' ? product.category.name : product.category;
     trackProductView(product.id, product.name, catName);
-    let viewed = JSON.parse(localStorage.getItem('luxe_recently_viewed') || '[]');
-    viewed = viewed.filter(v => v.id !== product.id);
-    viewed.unshift(product);
-    viewed = viewed.slice(0, 5);
-    localStorage.setItem('luxe_recently_viewed', JSON.stringify(viewed));
-    setRecentlyViewed(viewed.filter(v => v.id !== product.id));
-    const timer = setTimeout(() => setRecentlyViewedLoaded(true), 400);
-    if (isAuthenticated && product.id) {
-      recentlyViewedAPI.trackView(product.id).catch(() => {});
-    }
-    return () => clearTimeout(timer);
-  }, [product, isAuthenticated]);
+  }, [product]);
 
   // ── Wishlist server sync ──
   useEffect(() => {
@@ -600,11 +584,237 @@ export default function ProductDetailPage() {
         .skeleton-pulse {
           animation: skeleton-pulse 1.5s ease-in-out infinite;
         }
+        /* ── Floating Product Video ── */
+        .fpv-bubble {
+          position: fixed;
+          left: 20px;
+          bottom: 24px;
+          z-index: 70;
+          width: 68px;
+          aspect-ratio: 9 / 16;
+          border-radius: 18px;
+          padding: 0;
+          border: none;
+          background: #141416;
+          cursor: grab;
+          touch-action: none;
+          user-select: none;
+          -webkit-user-select: none;
+          box-shadow: 0 10px 30px rgba(0,0,0,0.35), 0 0 0 2px rgba(255,255,255,0.92), 0 0 0 3.5px rgba(0,0,0,0.16);
+          transition: box-shadow 0.25s ease, transform 0.25s ease, opacity 0.25s ease;
+          animation: fpv-bubble-in 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.6s backwards;
+        }
+        .fpv-bubble:hover {
+          box-shadow: 0 14px 38px rgba(0,0,0,0.4), 0 0 0 2px rgba(255,255,255,0.92), 0 0 0 3.5px rgba(0,0,0,0.16);
+          transform: scale(1.05);
+        }
+        .fpv-bubble:active {
+          transform: scale(0.97);
+          cursor: grabbing;
+        }
+        .fpv-bubble-dragging {
+          cursor: grabbing;
+          transform: scale(1.06);
+          box-shadow: 0 18px 44px rgba(0,0,0,0.45), 0 0 0 2px rgba(255,255,255,0.92), 0 0 0 3.5px rgba(0,0,0,0.16);
+          transition: box-shadow 0.15s ease;
+        }
+        .fpv-bubble-hidden {
+          opacity: 0;
+          pointer-events: none;
+        }
+        @keyframes fpv-bubble-in {
+          0% { opacity: 0; transform: translateY(20px) scale(0.5); }
+          60% { opacity: 1; transform: translateY(-3px) scale(1.06); }
+          100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .fpv-ring {
+          position: absolute;
+          inset: -6px;
+          border-radius: 22px;
+          border: 2px solid rgba(255,255,255,0.5);
+          animation: fpv-ring 2.4s ease-out infinite;
+          pointer-events: none;
+        }
+        .fpv-ring-delay { animation-delay: 1.2s; }
+        @keyframes fpv-ring {
+          0% { transform: scale(0.95); opacity: 0.8; }
+          100% { transform: scale(1.25); opacity: 0; }
+        }
+        .fpv-bubble-media {
+          position: absolute;
+          inset: 0;
+          border-radius: 18px;
+          overflow: hidden;
+          background: #000;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .fpv-bubble-video {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          pointer-events: none;
+        }
+        .fpv-bubble-img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+        .fpv-bubble-fallback {
+          position: absolute;
+          inset: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: rgba(20,20,22,0.45);
+        }
+        .fpv-bubble-play {
+          position: absolute;
+          inset: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: rgba(0,0,0,0.25);
+        }
+        .fpv-bubble-badge {
+          position: absolute;
+          right: 6px;
+          bottom: 6px;
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          background: #ffffff;
+          color: #000;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 4px 10px rgba(0,0,0,0.35);
+          z-index: 2;
+          transition: transform 0.2s ease;
+        }
+        .fpv-bubble:hover .fpv-bubble-badge { transform: scale(1.12); }
+        .fpv-reels-tag {
+          position: absolute;
+          top: 6px;
+          left: 50%;
+          transform: translateX(-50%);
+          z-index: 3;
+          font-family: 'Space Grotesk', sans-serif;
+          font-size: 6.5px;
+          font-weight: 800;
+          letter-spacing: 0.18em;
+          text-transform: uppercase;
+          color: #fff;
+          background: rgba(0,0,0,0.45);
+          backdrop-filter: blur(6px);
+          -webkit-backdrop-filter: blur(6px);
+          border: 1px solid rgba(255,255,255,0.25);
+          padding: 2px 7px;
+          border-radius: 999px;
+          pointer-events: none;
+          white-space: nowrap;
+        }
+        .fpv-dismiss-btn {
+          position: absolute;
+          top: 4px;
+          right: 4px;
+          z-index: 4;
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
+          border: none;
+          background: rgba(0,0,0,0.55);
+          backdrop-filter: blur(6px);
+          -webkit-backdrop-filter: blur(6px);
+          color: #fff;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          padding: 0;
+          transition: background 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
+        }
+        .fpv-dismiss-btn:hover {
+          background: rgba(0,0,0,0.85);
+          transform: scale(1.1);
+        }
+        .floating-video-panel {
+          position: fixed;
+          left: 20px;
+          bottom: 88px;
+          z-index: 71;
+          width: min(220px, calc(100vw - 32px));
+          max-height: calc(100vh - 96px);
+          display: flex;
+          flex-direction: column;
+          background: #141416;
+          color: #fff;
+          border-radius: 20px;
+          overflow: hidden;
+          box-shadow: 0 24px 60px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.08);
+        }
+        .floating-video-panel-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 10px;
+          padding: 10px 12px;
+          border-bottom: 1px solid rgba(255,255,255,0.08);
+          font-family: 'Space Grotesk', sans-serif;
+          flex-shrink: 0;
+          cursor: grab;
+          touch-action: none;
+          user-select: none;
+          -webkit-user-select: none;
+        }
+        .floating-video-panel-header.fpv-header-dragging,
+        .floating-video-panel-header:active { cursor: grabbing; }
+        .floating-video-panel-body {
+          flex: 1 1 auto;
+          min-height: 0;
+          aspect-ratio: 9 / 16;
+          width: 100%;
+          max-height: calc(100vh - 150px);
+          background: #000;
+        }
+        .fpv-header-link { color: rgba(255,255,255,0.75); transition: color 0.2s; }
+        .fpv-header-link:hover { color: #ffffff; }
+        .fpv-close-btn {
+          background: rgba(255,255,255,0.12);
+          border: none;
+          color: #fff;
+          width: 28px;
+          height: 28px;
+          border-radius: 8px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: background 0.2s;
+        }
+        .fpv-close-btn:hover { background: rgba(255,255,255,0.25); }
+        @media (max-width: 767px) {
+          .fpv-bubble {
+            left: 14px;
+            bottom: 92px;
+            width: 54px;
+          }
+          .floating-video-panel {
+            left: 12px;
+            bottom: 150px;
+            width: min(280px, calc(100vw - 24px));
+            max-height: calc(100vh - 160px);
+          }
+          .floating-video-panel-body {
+            max-height: calc(100vh - 215px);
+          }
+        }
       `}</style>
 
       {/* Breadcrumb */}
       <div className="max-w-7xl mx-auto px-4 pt-4 pb-0">
-        <nav className="flex items-center gap-1.5 text-xs text-stone-400 tracking-wide">
+        <nav className="flex items-center gap-1.5 text-xs text-stone-400 tracking-wide overflow-x-auto whitespace-nowrap scrollbar-none">
           <a href="/" className="hover:text-amber-600 transition-colors">Home</a>
           <span className="text-stone-300">/</span>
           <a
@@ -638,7 +848,7 @@ export default function ProductDetailPage() {
               {/* Discount Badge */}
               {discount && (
                 <div className="absolute top-3 left-3 z-10 flex flex-col gap-1.5">
-                  <span className="bg-rose-600 text-white text-xs font-bold px-2.5 py-1 rounded-lg shadow-md">
+                  <span className="bg-emerald-600 text-white text-xs font-bold px-2.5 py-1 rounded-lg shadow-md">
                     {discount}% OFF
                   </span>
                 </div>
@@ -706,7 +916,7 @@ export default function ProductDetailPage() {
             </div>
 
             {/* Product Title */}
-            <h1 className="text-xl md:text-3xl font-extrabold text-stone-900 leading-tight mb-2">
+            <h1 className="text-xl md:text-3xl font-display font-bold text-stone-950 leading-tight tracking-tight mb-2">
               {product.name}
             </h1>
 
@@ -734,29 +944,32 @@ export default function ProductDetailPage() {
                   {reviews.length} Reviews
                 </span>
               )}
-              <span className="text-xs text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded font-medium flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                {viewerCount} watching
-              </span>
             </div>
 
             {/* Price Row */}
-            <div className="flex items-baseline gap-2.5 mb-4 p-3 bg-amber-50/80 rounded-xl border border-amber-200/30">
-              <span className="text-2xl md:text-4xl font-black text-rose-600 leading-none">
-                {formatCurrency(effectivePrice)}
-              </span>
-              {effectiveOldPrice && (
-                <>
-                  <span className="text-base text-stone-400 line-through">{formatCurrency(effectiveOldPrice)}</span>
-                  <span className="text-xs font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded border border-rose-200/50">
+            {/* Price — clean premium light block (matches product-card pricing) */}
+            <div className="mb-5">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-xl md:text-2xl font-black text-stone-950 tracking-tight leading-none">
+                  {formatPrice(effectivePrice)}
+                </span>
+                {effectiveOldPrice && (
+                  <span className="text-xs md:text-sm text-stone-400 line-through font-medium">
+                    {formatPrice(effectiveOldPrice)}
+                  </span>
+                )}
+                {effectiveOldPrice && discount > 0 && (
+                  <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-emerald-600 text-white text-[11px] font-bold tracking-wide">
                     {discount}% off
                   </span>
-                  <span className="text-xs text-emerald-700 font-semibold">
-                    Save {formatCurrency(effectiveOldPrice - effectivePrice)}
-                  </span>
-                </>
-              )}
-              <div className="w-full text-[11px] text-stone-400 mt-0.5">inclusive of all taxes</div>
+                )}
+              </div>
+              <div className="flex items-center gap-2 mt-1.5 text-[11px]">
+                {effectiveOldPrice && discount > 0 && (
+                  <span className="font-bold text-emerald-700">Save {formatPrice(effectiveOldPrice - effectivePrice)}</span>
+                )}
+                <span className="text-stone-400">inclusive of all taxes</span>
+              </div>
             </div>
 
             {/* Flash Sale */}
@@ -918,7 +1131,7 @@ export default function ProductDetailPage() {
               )}
               <div className="flex gap-2.5">
                 <button
-                  className="flex-1 h-12 rounded-xl text-sm font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 bg-stone-900 hover:bg-amber-600 text-white shadow-md hover:shadow-lg disabled:bg-stone-300 disabled:cursor-not-allowed disabled:shadow-none"
+                  className="flex-1 h-12 rounded-xl text-sm font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-400 text-stone-950 shadow-md hover:shadow-lg active:scale-[0.99] disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed disabled:shadow-none"
                   onClick={handleAddToCart}
                   disabled={!canAddToCart || isAddingToCart}
                 >
@@ -940,7 +1153,7 @@ export default function ProductDetailPage() {
                 </button>
               </div>
               <button
-                className="w-full h-12 border-2 border-stone-900 rounded-xl text-xs font-bold uppercase tracking-wider transition-all bg-transparent text-stone-900 hover:bg-stone-900 hover:text-white disabled:border-stone-200 disabled:text-stone-300 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                className="w-full h-12 rounded-xl text-xs font-bold uppercase tracking-wider transition-all bg-stone-950 text-white hover:bg-stone-800 active:scale-[0.99] disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed disabled:shadow-none shadow-md"
                 onClick={handleBuyNow}
                 disabled={!canAddToCart || isAddingToCart}
               >
@@ -951,7 +1164,7 @@ export default function ProductDetailPage() {
             {/* Trust Badges */}
             <div className="grid grid-cols-3 gap-3 mb-6">
               {[
-                { icon: Truck, label: 'Free Express Shipping', sub: `On orders above ${formatCurrency(499)}` },
+                { icon: Truck, label: 'Free Express Shipping', sub: `On orders above ${formatPrice(499)}` },
                 { icon: RotateCcw, label: '7-Day Returns', sub: 'Hassle-free return policy' },
                 { icon: ShieldCheck, label: 'Secure Checkout', sub: '100% protected payments' },
               ].map((item) => {
@@ -1012,7 +1225,7 @@ export default function ProductDetailPage() {
                 </button>
                 <div className={`overflow-hidden transition-all duration-350 ${openAccordion === 'shipping' ? 'max-h-[2000px] pb-5' : 'max-h-0'}`}>
                   <div className="text-sm text-stone-500 leading-relaxed space-y-1.5">
-                    <p>• Free shipping on orders above {formatCurrency(499)}</p>
+                    <p>• Free shipping on orders above {formatPrice(499)}</p>
                     <p>• Standard delivery: 3-5 business days</p>
                     <p>• Easy 7-day return policy — no questions asked</p>
                     <p>• Cash on Delivery available</p>
@@ -1049,8 +1262,11 @@ export default function ProductDetailPage() {
           <div id="pd-reviews" className="mb-8">
           <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
             <div>
-              <span className="text-xs font-bold text-amber-600 uppercase tracking-widest block mb-1">Customer Feedback</span>
-              <h2 className="text-2xl font-extrabold text-stone-900 tracking-tight">Customer Reviews ({reviews.length})</h2>
+              <span className="inline-flex items-center gap-2.5 text-[11px] sm:text-xs font-display font-semibold text-amber-600 uppercase tracking-[0.22em]">
+                <span className="w-8 sm:w-10 h-px bg-amber-500" />
+                Customer Feedback
+              </span>
+              <h2 className="mt-2 text-xl sm:text-2xl font-display font-bold text-stone-900 tracking-tight leading-tight">Customer Reviews ({reviews.length})</h2>
             </div>
             <div className="flex gap-2">
               {isAuthenticated && (
@@ -1170,8 +1386,11 @@ export default function ProductDetailPage() {
           <div className="mb-10">
             <div className="flex items-center justify-between mb-5">
               <div>
-                <span className="text-xs font-bold text-amber-600 uppercase tracking-widest block mb-1">Customers Also Bought</span>
-                <h2 className="text-2xl font-extrabold text-stone-900 tracking-tight">You May Also Like</h2>
+                <span className="inline-flex items-center gap-2.5 text-[11px] sm:text-xs font-display font-semibold text-amber-600 uppercase tracking-[0.22em]">
+                  <span className="w-8 sm:w-10 h-px bg-amber-500" />
+                  Customers Also Bought
+                </span>
+                <h2 className="mt-2 text-xl sm:text-2xl font-display font-bold text-stone-900 tracking-tight leading-tight">You May Also Like</h2>
               </div>
               <button
                 className="text-xs font-semibold text-amber-700 hover:text-amber-800 flex items-center gap-1 transition-all hover:gap-2"
@@ -1189,39 +1408,6 @@ export default function ProductDetailPage() {
         </div>
       )}
 
-      {/* ═══ RECENTLY VIEWED ═══ */}
-      {(recentlyViewedLoaded ? recentlyViewed.length > 0 : true) && (
-        <div className="max-w-7xl mx-auto px-4 py-8">
-          <div className="mb-10">
-            <div className="flex items-center justify-between mb-5">
-              <div>
-                <span className="text-xs font-bold text-amber-600 uppercase tracking-widest block mb-1">Recently Viewed</span>
-                <h2 className="text-2xl font-extrabold text-stone-900 tracking-tight">Your Recent Products</h2>
-              </div>
-              {recentlyViewedLoaded && recentlyViewed.length > 0 && (
-                <button
-                  className="text-xs font-semibold text-amber-700 hover:text-amber-800 flex items-center gap-1 transition-all hover:gap-2"
-                  onClick={() => navigate('/products')}
-                >
-                  View All <ArrowRight size={14} />
-                </button>
-              )}
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-              {!recentlyViewedLoaded ? (
-                /* ── Skeleton loading placeholders ── */
-                Array.from({ length: 4 }).map((_, i) => (
-                  <ProductCardSkeleton key={i} />
-                ))
-              ) : (
-                recentlyViewed.slice(0, 4).map((prod) => (
-                  <ProductCard key={prod.id} product={prod} navigate={navigate} />
-                ))
-              )}
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* ═══ STICKY BOTTOM BAR ═══ */}
       <div className={`fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-xl border-t border-stone-200 px-4 py-2.5 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] transition-transform duration-350 ${
@@ -1237,7 +1423,7 @@ export default function ProductDetailPage() {
           />
           <div className="flex-1 min-w-0 hidden md:block">
             <div className="text-xs font-semibold text-stone-800 truncate">{product.name}</div>
-            <div className="text-sm font-bold text-rose-600">{formatCurrency(effectivePrice)}</div>
+            <div className="text-sm font-extrabold text-stone-950">{formatPrice(effectivePrice)}</div>
           </div>
 
           {/* Sticky Size Select */}
@@ -1289,7 +1475,7 @@ export default function ProductDetailPage() {
           )}
 
           <button
-            className="h-10 px-6 rounded-xl text-xs font-bold uppercase tracking-wide transition-all bg-stone-900 hover:bg-amber-600 text-white shadow-md whitespace-nowrap disabled:bg-stone-300 disabled:cursor-not-allowed disabled:shadow-none"
+            className="h-10 px-6 rounded-xl text-xs font-bold uppercase tracking-wide transition-all bg-amber-500 hover:bg-amber-400 text-stone-950 shadow-md whitespace-nowrap disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed disabled:shadow-none"
             onClick={handleAddToCart}
             disabled={!canAddToCart || isAddingToCart}
           >
@@ -1378,6 +1564,335 @@ export default function ProductDetailPage() {
           </div>
         </div>
       )}
+
+      {/* Floating product video player (only when admin uploaded a video) */}
+      <FloatingProductVideo key={product.id} product={product} poster={galleryImages[0]} />
     </div>
+  );
+}
+
+/* ════════════════════════════════════════ */
+/* Floating Product Video Player          */
+/* ════════════════════════════════════════ */
+function FloatingProductVideo({ product, poster }) {
+  const [open, setOpen] = useState(false);
+  const [videoError, setVideoError] = useState(false);
+  const [dragging, setDragging] = useState(false);
+  // Dismissal is session-only (in memory): it hides the bubble for the current
+  // page view only, so refreshing the page brings it back.
+  const [dismissed, setDismissed] = useState(false);
+  const bubbleRef = useRef(null);
+  const previewVideoRef = useRef(null);
+  const dragState = useRef(null);
+  const wasDragRef = useRef(false);
+  const panelRef = useRef(null);
+  const panelRootRef = useRef(null);
+  const panelDragState = useRef(null);
+  const [panelDragging, setPanelDragging] = useState(false);
+  const [panelPos, setPanelPos] = useState(null);
+  const videoUrl = product?.videoUrl || product?.video_url;
+
+  // Keep the preview video muted so browsers allow autoplay
+  useEffect(() => {
+    if (previewVideoRef.current) previewVideoRef.current.muted = true;
+  }, [videoUrl]);
+
+  // Close the player on Escape
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e) => {
+      if (e.key === 'Escape') {
+        setOpen(false);
+        previewVideoRef.current?.play().catch(() => {});
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [open]);
+
+  // YouTube / Vimeo embed detection (external links open in a new tab)
+  const youTubeId = (() => {
+    if (!videoUrl) return null;
+    const m = videoUrl.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{11})/);
+    return m?.[1] || null;
+  })();
+  const vimeoId = (() => {
+    if (!videoUrl) return null;
+    const m = videoUrl.match(/vimeo\.com\/(\d+)/);
+    return m?.[1] || null;
+  })();
+  const isExternalEmbed = Boolean(youTubeId || vimeoId);
+  const embedSrc = youTubeId
+    ? `https://www.youtube.com/embed/${youTubeId}?autoplay=1&rel=0`
+    : vimeoId
+      ? `https://player.vimeo.com/video/${vimeoId}?autoplay=1`
+      : null;
+
+  if (!videoUrl || dismissed) return null;
+
+  const openPlayer = () => {
+    setVideoError(false);
+    setOpen(true);
+    previewVideoRef.current?.pause();
+  };
+
+  const closePlayer = () => {
+    setOpen(false);
+    previewVideoRef.current?.play().catch(() => {});
+  };
+
+  const dismissVideo = () => {
+    setDismissed(true);
+  };
+
+  // ── Drag & drop the bubble ──
+  const onPointerDown = (e) => {
+    if (e.button !== 0) return;
+    wasDragRef.current = false;
+    const el = bubbleRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    dragState.current = {
+      pointerId: e.pointerId,
+      startX: e.clientX,
+      startY: e.clientY,
+      baseLeft: rect.left,
+      baseTop: rect.top,
+    };
+    el.setPointerCapture(e.pointerId);
+    // Drop the hover/entrance transform so the grab scale doesn't pop mid-drag
+    el.style.transform = 'none';
+    setDragging(true);
+  };
+
+  const onPointerMove = (e) => {
+    const st = dragState.current;
+    const el = bubbleRef.current;
+    if (!st || !el || st.pointerId !== e.pointerId) return;
+    const dx = e.clientX - st.startX;
+    const dy = e.clientY - st.startY;
+    if (Math.abs(dx) + Math.abs(dy) > 6) wasDragRef.current = true;
+    if (!wasDragRef.current) return;
+    el.style.left = `${st.baseLeft + dx}px`;
+    el.style.top = `${st.baseTop + dy}px`;
+    el.style.right = 'auto';
+  };
+
+  const onPointerUp = () => {
+    const st = dragState.current;
+    const el = bubbleRef.current;
+    dragState.current = null;
+    setDragging(false);
+    if (!st || !el) return;
+    // A plain click (no drag) must not re-position the bubble
+    if (!wasDragRef.current) {
+      el.style.transform = '';
+      return;
+    }
+    const rect = el.getBoundingClientRect();
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const w = rect.width;
+    const h = rect.height;
+    const top = Math.min(Math.max(rect.top, 12), vh - h - 12);
+    const snapToLeft = rect.left + w / 2 < vw / 2;
+    el.style.transition = 'left 0.3s cubic-bezier(0.22, 1, 0.36, 1), top 0.3s cubic-bezier(0.22, 1, 0.36, 1)';
+    el.style.left = snapToLeft ? '14px' : `${vw - w - 14}px`;
+    el.style.right = 'auto';
+    el.style.top = `${top}px`;
+    // Restore hover scaling now that dragging is done
+    el.style.transform = '';
+    window.setTimeout(() => { if (el) el.style.transition = ''; }, 320);
+  };
+
+  // ── Drag & drop the player panel (grab the header) ──
+  const onPanelPointerDown = (e) => {
+    if (e.button !== 0) return;
+    const el = panelRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    panelDragState.current = {
+      pointerId: e.pointerId,
+      startX: e.clientX,
+      startY: e.clientY,
+      baseLeft: rect.left,
+      baseTop: rect.top,
+    };
+    el.setPointerCapture(e.pointerId);
+    setPanelDragging(true);
+  };
+
+  const onPanelPointerMove = (e) => {
+    const st = panelDragState.current;
+    const el = panelRef.current;
+    if (!st || !el || st.pointerId !== e.pointerId) return;
+    const dx = e.clientX - st.startX;
+    const dy = e.clientY - st.startY;
+    if (Math.abs(dx) + Math.abs(dy) < 3) return;
+    const rootRect = (panelRootRef.current || el).getBoundingClientRect();
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const left = Math.min(Math.max(st.baseLeft + dx, 8), Math.max(8, vw - rootRect.width - 8));
+    const top = Math.min(Math.max(st.baseTop + dy, 8), Math.max(8, vh - rootRect.height - 8));
+    setPanelPos({ left, top });
+  };
+
+  const onPanelPointerUp = () => {
+    panelDragState.current = null;
+    setPanelDragging(false);
+  };
+
+  const handleBubbleClick = () => {
+    if (wasDragRef.current) { wasDragRef.current = false; return; }
+    openPlayer();
+  };
+
+  return (
+    <>
+      {/* Floating video bubble — live muted preview, draggable, click to expand */}
+      <div
+        ref={bubbleRef}
+        className={`fpv-bubble${dragging ? ' fpv-bubble-dragging' : ''}${open ? ' fpv-bubble-hidden' : ''}`}
+        role="button"
+        tabIndex={0}
+        aria-label="Watch product video"
+        onClick={handleBubbleClick}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openPlayer(); }
+        }}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerUp}
+      >
+        <span className="fpv-ring" />
+        <span className="fpv-ring fpv-ring-delay" />
+        <span className="fpv-bubble-media">
+          {isExternalEmbed || videoError ? (
+            <span className="fpv-bubble-fallback">
+              {poster ? <img src={poster} alt="" className="fpv-bubble-img" /> : null}
+              <span className="fpv-bubble-play"><Play size={22} fill="#fff" /></span>
+            </span>
+          ) : (
+            <video
+              ref={previewVideoRef}
+              src={getVideoUrl(videoUrl)}
+              poster={poster || undefined}
+              muted
+              loop
+              autoPlay
+              playsInline
+              preload="metadata"
+              className="fpv-bubble-video"
+              onError={() => setVideoError(true)}
+            />
+          )}
+        </span>
+        <span className="fpv-bubble-badge"><Play size={10} fill="#000" /></span>
+        <span className="fpv-reels-tag">Reels</span>
+        <button
+          type="button"
+          className="fpv-dismiss-btn"
+          aria-label="Dismiss video preview"
+          title="Dismiss video preview"
+          onClick={(e) => { e.stopPropagation(); dismissVideo(); }}
+          onPointerDown={(e) => e.stopPropagation()}
+          onKeyDown={(e) => e.stopPropagation()}
+        >
+          <X size={10} strokeWidth={2.5} />
+        </button>
+      </div>
+
+      {/* Floating player panel */}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: 40, scale: 0.92 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 40, scale: 0.92 }}
+            transition={{ type: 'spring', stiffness: 260, damping: 26 }}
+            ref={panelRootRef}
+            className="floating-video-panel"
+            style={panelPos ? { left: `${panelPos.left}px`, top: `${panelPos.top}px`, right: 'auto', bottom: 'auto' } : undefined}
+            role="dialog"
+            aria-label="Product video player"
+          >
+            <div
+              ref={panelRef}
+              className={`floating-video-panel-header${panelDragging ? ' fpv-header-dragging' : ''}`}
+              onPointerDown={onPanelPointerDown}
+              onPointerMove={onPanelPointerMove}
+              onPointerUp={onPanelPointerUp}
+              onPointerCancel={onPanelPointerUp}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+                <Volume2 size={14} strokeWidth={2} />
+                <span style={{ fontWeight: 700, fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.08em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {product?.name || 'Product Video'}
+                </span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                {isExternalEmbed && (
+                  <a
+                    href={videoUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="fpv-header-link"
+                    style={{ display: 'flex', alignItems: 'center', padding: 6, borderRadius: 8 }}
+                    aria-label="Open video in new tab"
+                    onPointerDown={(e) => e.stopPropagation()}
+                  >
+                    <ExternalLink size={15} />
+                  </a>
+                )}
+                <button
+                  onClick={closePlayer}
+                  className="fpv-close-btn"
+                  aria-label="Close video player"
+                  onPointerDown={(e) => e.stopPropagation()}
+                >
+                  <X size={15} />
+                </button>
+              </div>
+            </div>
+
+            <div className="floating-video-panel-body">
+              {isExternalEmbed ? (
+                <iframe
+                  src={embedSrc}
+                  title="Product video"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  style={{ width: '100%', height: '100%', border: 'none' }}
+                />
+              ) : videoError ? (
+                <div style={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, color: 'rgba(255,255,255,0.7)', padding: 24, textAlign: 'center' }}>
+                  <X size={24} />
+                  <p style={{ fontSize: 12, lineHeight: 1.5 }}>This video could not be played.</p>
+                  <a
+                    href={getVideoUrl(videoUrl)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: '#fff', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em', textDecoration: 'underline' }}
+                  >
+                    Open video instead
+                  </a>
+                </div>
+              ) : (
+                <video
+                  src={getVideoUrl(videoUrl)}
+                  poster={poster || undefined}
+                  controls
+                  autoPlay
+                  playsInline
+                  style={{ width: '100%', height: '100%', objectFit: 'contain', background: '#000' }}
+                  onError={() => setVideoError(true)}
+                />
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 }

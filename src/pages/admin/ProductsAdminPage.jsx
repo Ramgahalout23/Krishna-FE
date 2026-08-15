@@ -229,7 +229,8 @@ export default function ProductsAdminPage() {
       images: imgsStr,
       status: p.status || 'DRAFT',
       badge: p.badge || '',
-      hoverImageUrl: p.hoverImageUrl || p.hover_image_url || ''
+      hoverImageUrl: p.hoverImageUrl || p.hover_image_url || '',
+      videoUrl: p.videoUrl || p.video_url || ''
     });
     // Show modal immediately, load variants async
     setShowVariants(false);
@@ -257,7 +258,8 @@ export default function ProductsAdminPage() {
       quantity: form.quantity ? Number(form.quantity) : 0,
       images: form.images ? form.images.split(',').map(url => url.trim()).filter(Boolean) : [],
       badge: form.badge || null,
-      hoverImageUrl: form.hoverImageUrl || null
+      hoverImageUrl: form.hoverImageUrl || null,
+      videoUrl: form.videoUrl || null
     };
     try {
       if (editing) {
@@ -675,6 +677,17 @@ export default function ProductsAdminPage() {
                     >
                       {aiLoading.image ? <span className="spinner" style={{ width: 12, height: 12 }} /> : '🖼️'} {aiLoading.image ? 'Generating...' : 'AI Generate Image'}
                     </button>
+                  </div>
+                </div>
+                <div className="form-group form-full">
+                  <label>Product Video URL (shows a floating Reels bubble on the product page)</label>
+                  <input
+                    value={form.videoUrl || ''}
+                    onChange={e => setForm({ ...form, videoUrl: e.target.value })}
+                    placeholder="https://example.com/video.mp4 or YouTube/Vimeo link"
+                  />
+                  <div style={{ fontSize: '0.72rem', color: 'var(--muted)', marginTop: '0.25rem' }}>
+                    💡 Paste a direct .mp4 link or a YouTube/Vimeo URL. Leave empty to hide the bubble.
                   </div>
                 </div>
                 <div className="form-group"><label>Status</label>

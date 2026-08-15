@@ -78,7 +78,7 @@ export default function ProductCard({ product, onQuickView }) {
       onClick={() => navigate(`/products/${product.slug || product.id}`)}
     >
       {/* ════ Image Area ════ */}
-      <div className="relative aspect-[4/5] bg-stone-50 overflow-hidden">
+      <div className="relative aspect-square sm:aspect-[4/5] bg-stone-50 overflow-hidden">
         <img
           src={getImageUrl(currentImgIndex === 1 && hoverImgUrl ? hoverImgUrl : imgUrl)}
           alt={product.name}
@@ -117,7 +117,7 @@ export default function ProductCard({ product, onQuickView }) {
           <button
             onClick={handleWishlist}
             aria-label={inWishlist ? 'Remove from Wishlist' : 'Add to Wishlist'}
-            className={`w-8 h-8 rounded-full bg-white border flex items-center justify-center shadow-sm transition-all duration-200 ${
+            className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white border flex items-center justify-center shadow-sm transition-all duration-200 ${
               inWishlist
                 ? 'border-rose-200 text-rose-500 scale-110'
                 : 'border-stone-100 text-stone-500 hover:text-rose-500 hover:shadow-md hover:scale-110'
@@ -125,15 +125,15 @@ export default function ProductCard({ product, onQuickView }) {
           >
             <Heart
               key={inWishlist ? 'in' : 'out'}
-              className={`w-4 h-4 ${inWishlist ? 'fill-current animate-[badgePop_.35s_ease]' : ''}`}
+              className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${inWishlist ? 'fill-current animate-[badgePop_.35s_ease]' : ''}`}
             />
           </button>
           <button
             onClick={handleWhatsappShare}
             aria-label="Share on WhatsApp"
-            className="w-8 h-8 rounded-full bg-white border border-stone-100 text-stone-500 shadow-sm transition-all duration-200 hover:text-emerald-600 hover:shadow-md hover:scale-110 sm:opacity-0 sm:pointer-events-none sm:group-hover:opacity-100 sm:group-hover:pointer-events-auto"
+            className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white border border-stone-100 text-stone-500 shadow-sm transition-all duration-200 hover:text-emerald-600 hover:shadow-md hover:scale-110 sm:opacity-0 sm:pointer-events-none sm:group-hover:opacity-100 sm:group-hover:pointer-events-auto"
           >
-            <Share2 className="w-3.5 h-3.5 mx-auto" />
+            <Share2 className="w-3 h-3 sm:w-3.5 sm:h-3.5 mx-auto" />
           </button>
         </div>
 
@@ -153,9 +153,9 @@ export default function ProductCard({ product, onQuickView }) {
       </div>
 
       {/* ════ Product Info ════ */}
-      <div className="p-2.5 sm:p-3 flex flex-col flex-1">
+      <div className="p-2 sm:p-3 flex flex-col flex-1">
         {/* Name */}
-        <h3 className="text-[13px] sm:text-base font-semibold text-stone-900 leading-snug line-clamp-2 mb-1.5 transition-colors group-hover:text-amber-700">
+        <h3 className="text-[11px] sm:text-xs font-semibold text-stone-900 leading-snug line-clamp-2 mb-1.5 transition-colors group-hover:text-amber-700">
           {product.name}
         </h3>
 
@@ -167,17 +167,17 @@ export default function ProductCard({ product, onQuickView }) {
         )}
 
         {/* Price row */}
-        <div className="flex items-baseline gap-1.5 flex-wrap">
-          <span className="text-lg sm:text-xl font-extrabold tracking-tight text-stone-900">
+        <div className="flex items-baseline gap-1 sm:gap-1.5 flex-wrap">
+          <span className="text-xs sm:text-sm font-extrabold tracking-tight text-stone-900">
             {formatPrice(price)}
           </span>
           {oldPrice && (
-            <span className="text-[11px] sm:text-xs text-stone-400 line-through font-medium">
+            <span className="text-[9px] sm:text-[11px] text-stone-400 line-through font-medium">
               {formatPrice(oldPrice)}
             </span>
           )}
           {!isOutOfStock && discount > 0 && (
-            <span className="text-[11px] sm:text-xs font-bold text-emerald-600">
+            <span className="text-[9px] sm:text-[11px] font-bold text-emerald-600">
               {discount}% off
             </span>
           )}
@@ -188,7 +188,7 @@ export default function ProductCard({ product, onQuickView }) {
           <button
             onClick={handleAddToCart}
             disabled={isOutOfStock}
-            className={`w-full h-9 rounded-lg text-[11px] sm:text-xs font-bold tracking-wide transition-all duration-200 flex items-center justify-center gap-1.5 ${
+            className={`w-full h-8 sm:h-9 rounded-lg text-[10px] sm:text-xs font-bold tracking-wide transition-all duration-200 flex items-center justify-center gap-1 ${
               isOutOfStock
                 ? 'bg-stone-100 text-stone-400 cursor-not-allowed'
                 : isAddedAnim

@@ -540,8 +540,8 @@ export default function ProductsPage() {
         const params = { page, limit: PAGE_LIMIT };
         const catSlug = searchParams.get('category');
         if (catSlug) {
-          // Resolve slug to numeric ID for backend filtering
-          const matchedCat = categories.find(c => c.slug === catSlug);
+          // Resolve slug (or raw id) to the category id for backend filtering
+          const matchedCat = categories.find(c => c.slug === catSlug) || categories.find(c => c.id === catSlug);
           if (matchedCat?.id) {
             params.category_id = matchedCat.id;
           }
@@ -666,12 +666,12 @@ export default function ProductsPage() {
   ].filter(Boolean).length;
 
   const pageTitle = selectedCategory
-    ? categories.find(c => c.slug === selectedCategory)?.name || selectedCategory
+    ? (categories.find(c => c.slug === selectedCategory) || categories.find(c => c.id === selectedCategory))?.name || selectedCategory
     : searchParams.get('q')
       ? `"${searchParams.get('q')}"`
       : 'All Products';
 
-  const currentCategory = categories.find(c => c.slug === selectedCategory);
+  const currentCategory = categories.find(c => c.slug === selectedCategory) || categories.find(c => c.id === selectedCategory);
   const categoryImage = currentCategory ? getCategoryImage(currentCategory) : null;
 
   // ── React Query: Category SEO (cached for 5 min) ──
@@ -817,7 +817,7 @@ export default function ProductsPage() {
           <span className="text-[11px] md:text-sm text-text-muted font-medium leading-tight">
             <strong className="text-text-primary">{total}</strong> <span className="hidden sm:inline">{t('products.results')}</span>
             {selectedCategory && categories.find(c => c.slug === selectedCategory)?.name && (
-              <> <span className="hidden sm:inline">{t('products.in_category')}</span> <strong className="text-primary">{categories.find(c => c.slug === selectedCategory)?.name}</strong></>
+              <> <span className="hidden sm:inline">{t('products.in_category')}</span> <strong className="text-primary">{(categories.find(c => c.slug === selectedCategory) || categories.find(c => c.id === selectedCategory))?.name}</strong></>
             )}
           </span>
           <div className="flex items-center gap-1.5 md:gap-2">
@@ -865,7 +865,7 @@ export default function ProductsPage() {
                 transition={{ duration: 0.2, delay: 0.05 }}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary rounded-full text-xs font-semibold border border-primary/20"
               >
-                {categories.find(c => c.slug === selectedCategory)?.name || selectedCategory}
+                {(categories.find(c => c.slug === selectedCategory) || categories.find(c => c.id === selectedCategory))?.name || selectedCategory}
                 <button onClick={() => handleCategoryChange('')} className="hover:bg-primary/20 rounded-full p-0.5 transition-colors">
                   <X size={12} />
                 </button>

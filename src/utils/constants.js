@@ -49,6 +49,13 @@ export const getColorHex = (colorName) => {
 };
 
 /**
+ * Detect light color shades so white/cream swatches get a visible border.
+ */
+export const isLightColor = (colorName = '') =>
+  ['white','cream','beige','ivory','silver','light','blush','nude','pearl','bone','almond','vanilla']
+    .some(l => String(colorName).toLowerCase().includes(l));
+
+/**
  * Custom T-Shirt design product constants.
  *
  * CUSTOM_TEE_PRODUCT_ID — The UUID of the dedicated "Custom T-Shirt Design"

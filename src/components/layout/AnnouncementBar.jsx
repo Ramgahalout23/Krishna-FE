@@ -5,9 +5,10 @@ export default memo(function AnnouncementBar() {
   const { getSetting } = useSettings();
 
   const enabled = getSetting('announcementEnabled', 'true') !== 'false';
+  const storeName = getSetting('storeName', 'Our Store');
   const text = getSetting(
     'announcementText',
-    'THREVOLT  ✦  Premium Quality Guaranteed  ✦  Free Shipping on orders above ₹499'
+    `${storeName}  ✦  Premium Quality Guaranteed  ✦  Free Shipping on orders above ₹499`
   );
 
   if (!enabled) return null;
@@ -38,8 +39,8 @@ export default memo(function AnnouncementBar() {
           width: 100%;
           max-width: 100%;
           overflow-x: hidden;
-          background: #f59e0b;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+          background: #1c1917;
+          border-bottom: 1px solid rgba(245, 158, 11, 0.25);
           height: 36px;
           display: flex;
           align-items: center;
@@ -66,18 +67,18 @@ export default memo(function AnnouncementBar() {
 
 .announcement-dot {
           font-size: 0.35rem;
-          color: #FFB800;
-          opacity: 0.7;
+          color: #d97706;
+          opacity: 0.9;
           margin: 0 0.75rem;
         }
 
         .announcement-item span:last-child {
-          font-family: 'Inter', sans-serif;
+          font-family: 'Space Grotesk', 'Inter', sans-serif;
           font-size: 0.7rem;
           font-weight: 600;
-          letter-spacing: 0.1em;
+          letter-spacing: 0.12em;
           text-transform: uppercase;
-          color: rgba(255, 255, 255, 0.85);
+          color: #fbbf24;
         }
 
         @keyframes announcement-scroll {

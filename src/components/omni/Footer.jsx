@@ -1,12 +1,11 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Mail, Check, ShieldCheck, Phone, MapPin, Send } from 'lucide-react';
 import { useSettings } from '../../store/useSettings';
 import { marketingAPI } from '../../api/marketing';
 import toast from '../../utils/toast';
 
 export default function Footer() {
-  const navigate = useNavigate();
   const { getSetting } = useSettings();
   const siteName = getSetting('storeName', 'Krishna Store');
   const [email, setEmail] = useState('');
@@ -47,7 +46,7 @@ export default function Footer() {
               Get ₹100 Off Your First Order
             </h3>
             <p className="text-xs text-stone-400">
-              Subscribe for exclusive flash deal notifications, new trending drops, and direct WhatsApp offers. Works for new users.
+              Subscribe for exclusive flash deal notifications, new arrivals, and direct WhatsApp offers. Works for new users.
             </p>
           </div>
 

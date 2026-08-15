@@ -18,9 +18,7 @@ import LanguageSwitcher from '../common/LanguageSwitcher';
 
 // ── Premium header — refined, minimal, luxury-inspired ───
 const BRAND = '#ffffff';
-const BRAND_ACCENT = '#f59e0b';
 const TEXT_DARK = '#111111';
-const TEXT_MUTED = '#6b7280';
 const BORDER_LIGHT = 'rgba(0,0,0,0.06)';
 
 /* ── Navbar Skeleton — shimmer placeholders while app init loads ── */
@@ -124,10 +122,10 @@ export default function Navbar() {
 
   // Use consolidated app-init data for nav — replaces 2 individual API calls
   const { data: appInitData, loading: appInitLoading } = useAppInit();
-  const activePromotions = appInitData?.promotions || [];
   const customPages = appInitData?.pages || [];
-  const keySettings = appInitData?.keySettings || {};
-  const hasActivePromotions = activePromotions.length > 0;
+  // The API now ships a lightweight hasActivePromotions boolean — the nav only
+  // needs to know whether any promotion exists, not the full list.
+  const hasActivePromotions = !!appInitData?.hasActivePromotions;
 
   // Sync brand colors from settings onto CSS custom properties
   useEffect(() => {

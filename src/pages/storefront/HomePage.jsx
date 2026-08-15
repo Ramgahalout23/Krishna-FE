@@ -167,8 +167,8 @@ export default function HomePage() {
   }, [homepageRes?.newArrivals]);
 
   const categories = useMemo(() => {
-    const all = Array.isArray(homepageRes?.categories) ? homepageRes.categories : [];
-    return all.slice(0, 6);
+    const all = homepageRes?.categories;
+    return Array.isArray(all) ? all.slice(0, 6) : [];
   }, [homepageRes?.categories]);
 
   // All products combined
@@ -186,8 +186,8 @@ export default function HomePage() {
 
   // Determine if there are active sales/promotions (from the homepage payload)
   const activePromotions = useMemo(() => {
-    const promos = Array.isArray(homepageRes?.promotions) ? homepageRes.promotions : [];
-    return promos.filter(p => {
+    const promos = homepageRes?.promotions;
+    return (Array.isArray(promos) ? promos : []).filter(p => {
       if (p.isActive === false) return false;
       if (p.status && p.status !== 'ACTIVE') return false;
       return true;

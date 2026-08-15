@@ -18,7 +18,7 @@ export default function NotificationsPage() {
   const navigate = useNavigate();
   const { getSetting } = useSettings();
   const { isAdmin } = useAuthStore();
-  const storeName = getSetting('storeName', 'THREVOLT');
+  const storeName = getSetting('storeName', 'Krishna Store');
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
 

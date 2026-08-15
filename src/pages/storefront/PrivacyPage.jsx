@@ -9,7 +9,7 @@ import PageContentSkeleton from '../../components/ui/PageContentSkeleton';
 export default function PrivacyPage() {
   const { t } = useTranslation();
   const { getSetting } = useSettings();
-  const storeName = getSetting('storeName', 'THREVOLT');
+  const storeName = getSetting('storeName', 'Krishna Store');
   const [content, setContent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

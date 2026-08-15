@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
   Brain, Play, Search, MessageCircle, Sparkles, GitCompare, Award, Users,
-  Target, Image, X, BookOpen, Building2, Diamond, Palette,
+  Target, Image, X, BookOpen, Diamond, Palette,
   Type, MessageSquareText, FileText, Zap, Lightbulb, Plus, Copy,
   DollarSign, ChevronDown, Activity, Link2
 } from 'lucide-react';
@@ -36,7 +36,7 @@ export default function AiToolsTab({
 }) {
   const [aiPlatform, setAiPlatform] = useState('FACEBOOK');
   const [aiTone, setAiTone] = useState('professional');
-  const [aiBrandVoice, setAiBrandVoice] = useState('threvolt');
+  const [aiBrandVoice, setAiBrandVoice] = useState('trendy');
   const [aiGeneratedCopy, setAiGeneratedCopyLocal] = useState(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [waDemoLoading, setWaDemoLoading] = useState(false);
@@ -302,10 +302,10 @@ export default function AiToolsTab({
           </label>
         </div>
         <div className="grid grid-cols-3 gap-2">
-          {['threvolt', 'luxury', 'minimal'].map(v => (
+          {['trendy', 'luxury', 'minimal'].map(v => (
             <button key={v} className={`px-3 py-2.5 rounded-xl text-xs font-semibold transition-all ${aiBrandVoice === v ? 'bg-amber-600 text-white shadow-lg' : 'bg-surface text-text-muted border border-border hover:border-amber-400'}`}
               onClick={() => setAiBrandVoice(v)}>
-              {v === 'threvolt' ? <><Building2 size={12} className="inline mr-1" /> THREVOLT</> : v === 'luxury' ? <><Diamond size={12} className="inline mr-1" /> Luxury</> : <><Palette size={12} className="inline mr-1" /> Minimal</>}
+              {v === 'trendy' ? <><Sparkles size={12} className="inline mr-1" /> Trendy</> : v === 'luxury' ? <><Diamond size={12} className="inline mr-1" /> Luxury</> : <><Palette size={12} className="inline mr-1" /> Minimal</>}
             </button>
           ))}
         </div>

@@ -13,7 +13,7 @@ import toast from '../../utils/toast';
 export default function AddressesPage() {
   const { t } = useTranslation();
   const { getSetting } = useSettings();
-  const storeName = getSetting('storeName', 'THREVOLT');
+  const storeName = getSetting('storeName', 'Krishna Store');
   const [addresses, setAddresses] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(true);

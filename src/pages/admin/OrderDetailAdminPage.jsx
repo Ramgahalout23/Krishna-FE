@@ -80,7 +80,7 @@ export default function OrderDetailAdminPage() {
     shippingPickupAddress: '',
     shippingReturnAddress: '',
     shippingQueryMobile: '+1 (555) 019-2834',
-    shippingQueryEmail: 'support@threvolt.com',
+    shippingQueryEmail: 'support@krishnastore.in',
     shippingLabelNote: '',
   });
 
@@ -1091,7 +1091,7 @@ export default function OrderDetailAdminPage() {
                     <div className="footer-title"><Shield size={12} /> CUSTOMER CARE</div>
                     <div className="footer-text">
                       {labelSettings?.shippingQueryPhone || labelSettings?.shippingQueryMobile || '+1 (555) 019-2834'}<br />
-                      {labelSettings?.shippingQueryEmail || 'support@threvolt.com'}
+                      {labelSettings?.shippingQueryEmail || 'support@krishnastore.in'}
                     </div>
                   </div>
                 </div>

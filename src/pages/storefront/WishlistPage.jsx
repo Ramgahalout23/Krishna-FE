@@ -26,7 +26,7 @@ export default function WishlistPage() {
   const { flyToCart } = useFlyToCart();
   const navigate = useNavigate();
   const { getSetting } = useSettings();
-  const storeName = getSetting('storeName', 'THREVOLT');
+  const storeName = getSetting('storeName', 'Krishna Store');
   const [loading, setLoading] = useState(true);
   const [removingIds, setRemovingIds] = useState(new Set());
   const [movingIds, setMovingIds] = useState(new Set());

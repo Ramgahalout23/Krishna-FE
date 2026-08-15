@@ -45,7 +45,7 @@ export default function BrandTab({
 
   const applyBrandPreset = (preset) => {
     setForm({
-      name: `${preset.name} — ${brandSettings?.storeName || 'THREVOLT'}`,
+      name: `${preset.name} — ${brandSettings?.storeName || 'Krishna Store'}`,
       platform: preset.platform,
       objective: preset.objective,
       budget: '5000',
@@ -76,7 +76,7 @@ export default function BrandTab({
               )}
             </div>
             <div>
-              <h3 className="text-2xl font-bold font-display">{brandSettings?.storeName || 'THREVOLT'}</h3>
+              <h3 className="text-2xl font-bold font-display">{brandSettings?.storeName || 'Krishna Store'}</h3>
               <p className="text-amber-100 text-sm">{brandSettings?.siteTagline || "India's Favorite T-Shirt Brand"}</p>
             </div>
           </div>
@@ -245,7 +245,7 @@ export default function BrandTab({
             <BookOpen size={18} className="text-amber-600" /> Brand Voice Quick Create
           </h4>
           <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-amber-100 text-amber-700">
-            {brandSettings?.storeName || 'THREVOLT'} Branded
+            {brandSettings?.storeName || 'Krishna Store'} Branded
           </span>
         </div>
         <p className="text-sm text-text-muted mb-4">Use your brand identity to instantly create platform-optimized ad campaigns.</p>
@@ -258,7 +258,7 @@ export default function BrandTab({
                   setAiPlatform(p.id);
                   setAiTone('luxury');
                   setTab('ai-tools');
-                  toast.success(`Ready to create ${p.label} ad for ${brandSettings?.storeName || 'THREVOLT'}!`);
+                  toast.success(`Ready to create ${p.label} ad for ${brandSettings?.storeName || 'Krishna Store'}!`);
                 }}>
                 <Icon size={20} className={p.color.includes('bg-') ? p.color.replace('bg-', 'text-').split(' ')[0] : 'text-gray-500'} />
                 <span className="text-xs font-semibold text-text-primary">{p.label.split('/')[0].trim()}</span>

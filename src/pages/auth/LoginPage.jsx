@@ -16,7 +16,7 @@ export default function LoginPage() {
   const { getSetting } = useSettings();
   const navigate = useNavigate();
 
-  const storeName = getSetting('storeName', 'THREVOLT');
+  const storeName = getSetting('storeName', 'Krishna Store');
   const adminEnabledGoogle = getSetting('googleLoginEnabled', 'true') !== 'false';
   const adminEnabledFacebook = getSetting('facebookLoginEnabled', 'true') !== 'false';
 

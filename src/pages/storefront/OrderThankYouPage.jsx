@@ -852,7 +852,7 @@ export default function OrderThankYouPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { getSetting } = useSettings();
-  const storeName = getSetting('storeName', 'THREVOLT');
+  const storeName = getSetting('storeName', 'Krishna Store');
   const currency = getSetting('currency', 'INR');
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);

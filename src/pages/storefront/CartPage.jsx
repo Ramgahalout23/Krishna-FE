@@ -26,7 +26,7 @@ export default function CartPage() {
   const { getSetting } = useSettings();
   const navigate = useNavigate();
   const [savingForLater, setSavingForLater] = useState(new Set());
-  const storeName = getSetting('storeName', 'THREVOLT');
+  const storeName = getSetting('storeName', 'Krishna Store');
   const freeShippingThreshold = Number(getSetting('freeShippingThreshold', '499'));
   const shippingFlatRate = Number(getSetting('shippingFlatRate', '50'));
   const currency = getSetting('currency', 'INR');

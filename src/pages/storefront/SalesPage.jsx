@@ -268,7 +268,7 @@ export default function SalesPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { getSetting } = useSettings();
-  const storeName = getSetting('storeName', 'THREVOLT');
+  const storeName = getSetting('storeName', 'Krishna Store');
   const [selectedCategorySlug, setSelectedCategorySlug] = useState(searchParams.get('category') || '');
 
   // ── Fetch active promotions ──

@@ -14,7 +14,7 @@ export default function CustomPageView() {
   const { t } = useTranslation();
   const { slug } = useParams();
   const { getSetting } = useSettings();
-  const storeName = getSetting('storeName', 'THREVOLT');
+  const storeName = getSetting('storeName', 'Krishna Store');
   const [page, setPage] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

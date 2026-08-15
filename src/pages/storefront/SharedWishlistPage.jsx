@@ -22,7 +22,7 @@ export default function SharedWishlistPage() {
   const navigate = useNavigate();
   const { addItem, openCart } = useCartStore();
   const { getSetting } = useSettings();
-  const storeName = getSetting('storeName', 'THREVOLT');
+  const storeName = getSetting('storeName', 'Krishna Store');
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [sharedData, setSharedData] = useState(null);

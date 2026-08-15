@@ -201,7 +201,7 @@ export default function ProductImportAdminPage() {
       '29.99', '39.99', '12.00', '100', 'TSH-001', '8901234567890', 'T-Shirts', 'Nike',
       'https://example.com/tshirt-front.jpg,https://example.com/tshirt-back.jpg',
       'summer,cotton,basics', 'PUBLISHED', 'New', 'true',
-      'Classic T-Shirt | Threvolt', 'Shop our premium classic t-shirt', 't-shirt, cotton, premium',
+      'Classic T-Shirt | Krishna Store', 'Shop our premium classic t-shirt', 't-shirt, cotton, premium',
       'TSH-001-BLK-M', 'Black', 'M', '29.99', '25',
     ];
     const csvContent = [headers.join(','), sampleRow.join(',')].join('\n');

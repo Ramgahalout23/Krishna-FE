@@ -8,6 +8,7 @@ import Breadcrumb from '../../components/common/Breadcrumb';
 import { motion } from 'framer-motion';
 import useCartStore from '../../store/cartStore';
 import useAuthStore from '../../store/authStore';
+import { useSettings } from '../../store/useSettings';
 import { cartAPI } from '../../api/cart';
 import { checkoutAPI } from '../../api/checkout';
 import { couponsAPI } from '../../api/coupons';
@@ -23,6 +24,8 @@ import { getPaymentIcon } from '../../utils/paymentIcons';
 export default function CheckoutPage() {
   const { items, subtotal, clearCart, setItems } = useCartStore();
   const { isAuthenticated } = useAuthStore();
+  const { getSetting } = useSettings();
+  const storeName = getSetting('storeName', 'Krishna Store');
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [createAccount, setCreateAccount] = useState(false);
@@ -674,8 +677,8 @@ export default function CheckoutPage() {
     return (
       <div className="min-h-screen bg-stone-100 flex-1">
         <SEOHead
-          title="Secure Checkout | Threvolt"
-          description="Complete your purchase securely at Threvolt."
+          title={`Secure Checkout | ${storeName}`}
+          description={`Complete your purchase securely at ${storeName}.`}
           noIndex={true}
         />
         <div className="max-w-lg mx-auto px-4 pt-6 sm:pt-8">
@@ -703,8 +706,8 @@ export default function CheckoutPage() {
   return (
     <div className="min-h-screen bg-stone-100 flex-1">
       <SEOHead
-        title="Secure Checkout | Threvolt"
-        description="Complete your purchase securely at Luxe. Multiple payment options available with easy returns and free shipping on orders above ₹499."
+        title={`Secure Checkout | ${storeName}`}
+        description={`Complete your purchase securely at ${storeName}. Multiple payment options available with easy returns and free shipping on orders above ₹499.`}
         noIndex={true}
       />
       {/* Breadcrumb */}

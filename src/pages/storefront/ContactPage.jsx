@@ -11,9 +11,9 @@ export default function ContactPage() {
   const [form, setForm] = useState({ name: '', email: '', phone: '', message: '' });
   const [loading, setLoading] = useState(false);
   const { getSetting } = useSettings();
-  const storeName = getSetting('storeName', 'THREVOLT');
+  const storeName = getSetting('storeName', 'Krishna Store');
   const storeAddress = getSetting('storeAddress', 'Mumbai, Maharashtra, India');
-  const contactEmail = getSetting('contactEmail', 'support@threvolt.com');
+  const contactEmail = getSetting('contactEmail', 'support@krishnastore.in');
   const contactPhone = getSetting('contactPhone', '+91 98765 43210');
 
   const handleSubmit = async (e) => {

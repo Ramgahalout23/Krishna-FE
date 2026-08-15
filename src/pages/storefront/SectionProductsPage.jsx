@@ -256,7 +256,7 @@ export default function SectionProductsPage() {
   const { t } = useTranslation();
   const { section } = useParams();
   const { getSetting } = useSettings();
-  const storeName = getSetting('storeName', 'THREVOLT');
+  const storeName = getSetting('storeName', 'Krishna Store');
   const config = SECTION_CONFIG[section];
 
   const [products, setProducts] = useState([]);

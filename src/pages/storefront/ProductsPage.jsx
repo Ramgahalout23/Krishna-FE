@@ -495,7 +495,7 @@ function ResponsiveDrawer({ children, drawerRef }) {
 export default function ProductsPage() {
   const { t } = useTranslation();
   const { getSetting } = useSettings();
-  const storeName = getSetting('storeName', 'THREVOLT');
+  const storeName = getSetting('storeName', 'Krishna Store');
   const [allProducts, setAllProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);

@@ -117,7 +117,7 @@ export default function Navbar() {
   const suggestionsRef = useRef(null);
 
   const { getSetting } = useSettings();
-  const siteName = getSetting('storeName', 'THREVOLT');
+  const siteName = getSetting('storeName', 'Krishna Store');
   const logo = getSetting('logoDarkUrl') || getSetting('logoUrl') || null;
 
   // Use consolidated app-init data for nav — replaces 2 individual API calls

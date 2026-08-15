@@ -14,7 +14,7 @@ import toast from '../../utils/toast';
 export default function ProfilePage() {
   const { t } = useTranslation();
   const { getSetting } = useSettings();
-  const storeName = getSetting('storeName', 'THREVOLT');
+  const storeName = getSetting('storeName', 'Krishna Store');
   const { isAuthenticated, user, logout, setUser } = useAuthStore();
   const navigate = useNavigate();
 

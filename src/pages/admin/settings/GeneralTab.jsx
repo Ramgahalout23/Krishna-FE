@@ -67,7 +67,7 @@ export default function GeneralTab({ settings, setSettings, loading, handleSaveS
             <label>Announcement Message</label>
             <textarea
               rows={2}
-              value={settings.announcementText || `${settings.storeName || 'THREVOLT'}  ✦  Premium Quality Guaranteed  ✦  Free Shipping on orders above ₹499`}
+              value={settings.announcementText || `${settings.storeName || 'Krishna Store'}  ✦  Premium Quality Guaranteed  ✦  Free Shipping on orders above ₹499`}
               onChange={e => setSettings({ ...settings, announcementText: e.target.value })}
               placeholder="Separate items with  ✦  (star symbol)"
             />
@@ -107,7 +107,7 @@ export default function GeneralTab({ settings, setSettings, loading, handleSaveS
             padding: '0.35rem 0',
           }}>
             {(() => {
-              const previewItems = (settings.announcementText || `${settings.storeName || 'THREVOLT'}  ✦  Premium Quality Guaranteed  ✦  Free Shipping on orders above ₹499`).split('✦').filter(Boolean);
+              const previewItems = (settings.announcementText || `${settings.storeName || 'Krishna Store'}  ✦  Premium Quality Guaranteed  ✦  Free Shipping on orders above ₹499`).split('✦').filter(Boolean);
               const renderRow = (key) => (
                 <span key={key}>
                   {previewItems.map((item, idx) => (

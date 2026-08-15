@@ -8,6 +8,7 @@ import { homepageAPI } from '../../api/homepage';
 import { formatCurrency, getImageUrl, getProductImage } from '../../utils/formatters';
 import { getColorHex } from '../../utils/constants';
 import { computeStockStatus } from '../../utils/stockHelpers';
+import { useSettings } from '../../store/useSettings';
 import useCartStore from '../../store/cartStore';
 import useWishlistStore from '../../store/wishlistStore';
 import { cartAPI } from '../../api/cart';
@@ -862,6 +863,8 @@ function ShoppableVideoSection({ reels }) {
    ═══════════════════════════════════════════════════════════ */
 function SelektHero() {
   const navigate = useNavigate();
+  const { getSetting } = useSettings();
+  const storeName = getSetting('storeName', 'Krishna Store');
   return (
     <section className="relative w-full bg-white overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-b from-gray-50/50 to-white pointer-events-none" />
@@ -882,7 +885,7 @@ function SelektHero() {
             transition={{ duration: 0.6, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
             className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-display font-black text-text-primary tracking-[-0.03em] leading-[0.9] mb-4"
           >
-            THREVOLT
+            {storeName.toUpperCase()}
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -1176,6 +1179,8 @@ function OverviewSection() {
    MAIN PAGE
    ═══════════════════════════════════════════════════════════ */
 export default function WatchAndBuyPage() {
+  const { getSetting } = useSettings();
+  const storeName = getSetting('storeName', 'Krishna Store');
   const { data: homepageData, isLoading } = useQuery({
     queryKey: ['watch-and-buy', 'homepage'],
     queryFn: async () => {
@@ -1198,7 +1203,7 @@ export default function WatchAndBuyPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <SEOHead title="Watch & Buy — Shoppable Video Shopping | THREVOLT" description="Watch and shop the latest streetwear drops. Browse our collection of premium t-shirts, oversized tees, and streetwear essentials. Watch product videos and buy directly." />
+      <SEOHead title={`Watch & Buy — Shoppable Video Shopping | ${storeName}`} description={`Watch and shop the latest from ${storeName}. Browse our collection, watch product videos and buy directly.`} />
 
       {/* ── HERO ── */}
       <SelektHero />

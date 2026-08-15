@@ -12,7 +12,7 @@ export default function UnsubscribePage() {
   const [searchParams] = useSearchParams();
   const email = searchParams.get('email');
   const { getSetting } = useSettings();
-  const storeName = getSetting('storeName', 'THREVOLT');
+  const storeName = getSetting('storeName', 'Krishna Store');
 
   const [state, setState] = useState('confirming'); // 'confirming' | 'success' | 'error' | 'already'
   const [loading, setLoading] = useState(false);

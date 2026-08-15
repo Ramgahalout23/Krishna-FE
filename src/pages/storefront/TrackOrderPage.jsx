@@ -31,7 +31,7 @@ const TIMELINE_STEPS = [
 export default function TrackOrderPage() {
   const { t } = useTranslation();
   const { getSetting } = useSettings();
-  const storeName = getSetting('storeName', 'THREVOLT');
+  const storeName = getSetting('storeName', 'Krishna Store');
   const [orderNumber, setOrderNumber] = useState('');
   const [tracking, setTracking] = useState(null);
   const [loading, setLoading] = useState(false);

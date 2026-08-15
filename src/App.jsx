@@ -149,10 +149,10 @@ function RouteFallback() {
 
 /* ── Cache version bump — increment to clear all persisted query caches ── */
 const CACHE_VERSION = 5;
-const STORAGE_PREFIX = 'THREVOLT';
+const STORAGE_PREFIX = 'KRISHNA_STORE';
 const CACHE_VERSION_KEY = `${STORAGE_PREFIX}_CACHE_VERSION`;
 const QUERY_CACHE_KEY = `${STORAGE_PREFIX}_QUERY_CACHE`;
-const DEFAULT_LOADING_NAME = 'THREVOLT';
+const DEFAULT_LOADING_NAME = 'Krishna Store';
 
 // On boot, clear persisted query cache if the version has changed.
 // This ensures returning visitors don't see stale data after cache-invalidating updates.

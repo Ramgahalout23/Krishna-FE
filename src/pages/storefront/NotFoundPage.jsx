@@ -10,7 +10,7 @@ const ACCENT = '#f59e0b';
 export default function NotFoundPage() {
   const { t } = useTranslation();
   const { getSetting } = useSettings();
-  const storeName = getSetting('storeName', 'THREVOLT');
+  const storeName = getSetting('storeName', 'Krishna Store');
 
   return (
     <div className="flex-1 flex items-center justify-center min-h-[80vh] px-4 py-16" 

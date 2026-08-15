@@ -172,7 +172,7 @@ export default function MaintenancePage({ embedded = false }) {
   const { t } = useTranslation();
   const [settings, setSettings] = useState(null);
   const { getSetting } = useSettings();
-  const storeName = getSetting('storeName', 'THREVOLT');
+  const storeName = getSetting('storeName', 'Krishna Store');
 
   useEffect(() => {
     settingsAPI.getMaintenanceStatus()
@@ -182,7 +182,7 @@ export default function MaintenancePage({ embedded = false }) {
 
   const maintenanceData = settings || {};
   const message = maintenanceData.message || "We're currently performing scheduled maintenance to enhance your shopping experience. Our team is working diligently to bring things back online with improvements.";
-  const contactEmail = maintenanceData.contactEmail || 'support@threvolt.com';
+  const contactEmail = maintenanceData.contactEmail || 'support@krishnastore.in';
 
   const content = (
     <motion.div 

@@ -36,7 +36,7 @@ export default function ReturnsPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { getSetting } = useSettings();
-  const storeName = getSetting('storeName', 'THREVOLT');
+  const storeName = getSetting('storeName', 'Krishna Store');
 
   const [activeTab, setActiveTab] = useState('requests');
   const [returnRequests, setReturnRequests] = useState([]);

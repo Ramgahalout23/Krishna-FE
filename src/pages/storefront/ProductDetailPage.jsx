@@ -107,7 +107,7 @@ export default function ProductDetailPage() {
   const { isInWishlist, addItem: addToWL, removeItem: removeFromWL } = useWishlistStore();
   const { isAuthenticated } = useAuthStore();
   const queryClient = useQueryClient();
-  const storeName = getSetting('storeName', 'THREVOLT');
+  const storeName = getSetting('storeName', 'Krishna Store');
 
   // ── State ──
   const [qty, setQty] = useState(1);

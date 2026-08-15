@@ -11,7 +11,7 @@ import PageContentSkeleton from '../../components/ui/PageContentSkeleton';
 export default function AboutPage() {
   const { t } = useTranslation();
   const { getSetting } = useSettings();
-  const storeName = getSetting('storeName', 'THREVOLT');
+  const storeName = getSetting('storeName', 'Krishna Store');
   const [content, setContent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -57,8 +57,8 @@ export default function AboutPage() {
       {/* SEO meta tags */}
       <SEOHead
         title={`${content.title || 'About Us'} | ${storeName}`}
-        description={content.metaDescription || content.seoDescription || pageSeo?.metaDescription || `Learn about ${content.title || storeName} — our story, mission, and commitment to premium streetwear fashion.`}
-        keywords="about us, streetwear brand, premium fashion, our story"
+        description={content.metaDescription || content.seoDescription || `Learn about ${content.title || storeName} — our story, mission, and commitment to quality products.`}
+        keywords="about us, online store, premium quality, our story"
       />
 
       {/* Hero */}

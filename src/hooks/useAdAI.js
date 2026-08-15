@@ -15,7 +15,7 @@ const DEMO_PRODUCT = {
 export default function useAdAI() {
   const [aiPlatform, setAiPlatform] = useState('FACEBOOK');
   const [aiTone, setAiTone] = useState('professional');
-  const [aiBrandVoice, setAiBrandVoice] = useState('threvolt');
+  const [aiBrandVoice, setAiBrandVoice] = useState('trendy');
   const [aiGeneratedCopy, setAiGeneratedCopy] = useState(null);
   const [aiResultTab, setAiResultTab] = useState('copy');
   const [aiLoading, setAiLoading] = useState(false);

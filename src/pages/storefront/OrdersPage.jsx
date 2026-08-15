@@ -19,7 +19,7 @@ export default function OrdersPage() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const { getSetting } = useSettings();
-  const storeName = getSetting('storeName', 'THREVOLT');
+  const storeName = getSetting('storeName', 'Krishna Store');
   const [reviewModal, setReviewModal] = useState({ open: false, productId: '', productName: '', orderId: '' });
   const navigate = useNavigate();
 

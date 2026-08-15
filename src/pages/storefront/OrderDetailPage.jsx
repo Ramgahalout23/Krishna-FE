@@ -20,7 +20,7 @@ export default function OrderDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { getSetting } = useSettings();
-  const storeName = getSetting('storeName', 'THREVOLT');
+  const storeName = getSetting('storeName', 'Krishna Store');
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [reviewModal, setReviewModal] = useState({ open: false, productId: '', productName: '' });

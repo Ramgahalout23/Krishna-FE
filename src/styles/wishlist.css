@@ -223,7 +223,8 @@
 .wishlist-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1.5rem;
+  column-gap: 1.5rem;
+  row-gap: 2.5rem;
 }
 
 .wishlist-item {
@@ -835,7 +836,8 @@
 
   .wishlist-grid {
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 1rem;
+    column-gap: 1rem;
+    row-gap: 2rem;
   }
 
   .wishlist-item-name {
@@ -867,14 +869,16 @@
 @media (max-width: 480px) {
   .wishlist-grid {
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 0.75rem;
+    column-gap: 0.75rem;
+    row-gap: 1.75rem;
   }
 }
 
 @media (max-width: 360px) {
   .wishlist-grid {
     grid-template-columns: 1fr;
-    gap: 1rem;
+    column-gap: 1rem;
+    row-gap: 1.5rem;
   }
 
   .wishlist-item-name {

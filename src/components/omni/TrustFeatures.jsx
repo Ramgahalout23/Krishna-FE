@@ -18,19 +18,19 @@ const ICON_MAP = {
 
 export default function TrustFeatures({ features = DEFAULT_FEATURES }) {
   return (
-    <section className="py-12 sm:py-16 bg-white border-b border-stone-200">
+    <section className="py-10 sm:py-14 bg-cream border-b border-stone-200/60">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-0 lg:divide-x lg:divide-stone-200">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-8">
           {features.map((f, i) => {
             const IconComponent = ICON_MAP[f.icon] || ICON_MAP.Truck;
             return (
-              <div key={i} className="flex items-start lg:items-center gap-4 lg:px-8 lg:flex-col lg:text-center">
-                <div className="p-3 rounded-full bg-stone-50 border border-stone-200 text-amber-600 flex-shrink-0">
+              <div key={i} className="flex items-start gap-4 lg:justify-center lg:text-center lg:flex-col">
+                <div className="w-12 h-12 rounded-full bg-white border border-gold/20 text-gold-dark shadow-[0_2px_10px_rgba(28,25,23,0.05)] flex items-center justify-center flex-shrink-0 lg:mx-auto">
                   {IconComponent('w-5 h-5')}
                 </div>
                 <div>
-                  <h4 className="text-sm font-display font-bold text-stone-900">{f.title}</h4>
-                  <p className="text-xs text-stone-500 mt-1 leading-relaxed">{f.desc}</p>
+                  <h4 className="text-sm font-semibold text-ink">{f.title}</h4>
+                  <p className="text-xs text-stone-500 mt-1 leading-relaxed font-light">{f.desc}</p>
                 </div>
               </div>
             );

@@ -102,12 +102,12 @@ function CategoryChips({ categories, selectedCategory, onCategoryChange }) {
       {/* Section label */}
       <div className="flex items-center justify-between mb-3 md:mb-4">
         <div className="flex items-center gap-2.5">
-          <div className="w-1 h-4 md:h-5 rounded-full bg-primary" />
-          <h3 className="font-display font-bold text-sm md:text-base text-text-primary tracking-tight">
+          <span className="w-10 h-px bg-gold" />
+          <h3 className="text-[11px] sm:text-xs font-medium text-gold-dark uppercase tracking-[0.28em]">
             {t('home.shop_by_category')}
           </h3>
         </div>
-        <span className="text-[10px] md:text-xs text-text-muted font-medium">{categories.length} {t('products.categories')}</span>
+        <span className="text-[10px] md:text-xs text-stone-400 font-medium">{categories.length} {t('products.categories')}</span>
       </div>
 
       <div
@@ -124,8 +124,8 @@ function CategoryChips({ categories, selectedCategory, onCategoryChange }) {
           onClick={() => onCategoryChange('')}
           className={`flex flex-col items-center justify-center w-[100px] sm:w-[110px] md:w-[130px] rounded-xl md:rounded-2xl border-2 transition-all duration-300 flex-shrink-0 overflow-hidden ${
             !selectedCategory
-              ? 'bg-primary text-white border-primary shadow-lg shadow-primary/25'
-              : 'bg-white text-text-secondary border-border/60 hover:border-primary/40 hover:text-primary hover:shadow-lg'
+              ? 'bg-ink text-white border-ink shadow-lg shadow-stone-900/15'
+              : 'bg-white text-stone-500 border-stone-200/80 hover:border-gold/50 hover:text-gold-dark hover:shadow-lg'
           }`}
           style={{ scrollSnapAlign: 'start' }}
         >
@@ -154,8 +154,8 @@ function CategoryChips({ categories, selectedCategory, onCategoryChange }) {
               onClick={() => onCategoryChange(cat.slug)}
               className={`relative w-[100px] sm:w-[120px] md:w-[150px] rounded-xl md:rounded-2xl border-2 transition-all duration-300 flex-shrink-0 overflow-hidden group/card ${
                 isActive
-                  ? 'border-primary ring-2 ring-primary/25 shadow-xl shadow-primary/20'
-                  : 'border-border/60 hover:border-primary/30 hover:shadow-lg'
+                  ? 'border-gold ring-2 ring-gold/20 shadow-xl shadow-stone-900/10'
+                  : 'border-stone-200/80 hover:border-gold/40 hover:shadow-lg'
               }`}
               style={{ scrollSnapAlign: 'start' }}
             >
@@ -186,7 +186,7 @@ function CategoryChips({ categories, selectedCategory, onCategoryChange }) {
                       {cat.name}
                     </h3>
                     {isActive && (
-                      <div className="shrink-0 w-4 h-4 md:w-5 md:h-5 rounded-full bg-primary flex items-center justify-center shadow-sm">
+                      <div className="shrink-0 w-4 h-4 md:w-5 md:h-5 rounded-full bg-gold flex items-center justify-center shadow-sm">
                         <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="w-2.5 h-2.5 md:w-3 md:h-3">
                           <polyline points="20 6 9 17 4 12" />
                         </svg>
@@ -341,7 +341,7 @@ function FilterDrawer({ open, onClose, categories, selectedCategory, onCategoryC
                   <button
                     onClick={() => { onCategoryChange(''); onClose(); }}
                     className={`w-full text-left px-3.5 md:px-3 py-3 md:py-2.5 rounded-xl text-sm font-medium transition-all active:scale-[0.98] ${
-                      !selectedCategory ? 'bg-primary/10 text-primary font-bold' : 'text-text-secondary hover:bg-surface hover:text-text-primary'
+                      !selectedCategory ? 'bg-gold/10 text-gold-dark font-bold' : 'text-stone-500 hover:bg-stone-50 hover:text-ink'
                     }`}
                   >
                     {t('products.all_products')}
@@ -351,7 +351,7 @@ function FilterDrawer({ open, onClose, categories, selectedCategory, onCategoryC
                       key={cat.slug}
                       onClick={() => { onCategoryChange(cat.slug); onClose(); }}
                       className={`w-full text-left px-3.5 md:px-3 py-3 md:py-2.5 rounded-xl text-sm font-medium transition-all active:scale-[0.98] ${
-                        selectedCategory === cat.slug ? 'bg-primary/10 text-primary font-bold' : 'text-text-secondary hover:bg-surface hover:text-text-primary'
+                        selectedCategory === cat.slug ? 'bg-gold/10 text-gold-dark font-bold' : 'text-stone-500 hover:bg-stone-50 hover:text-ink'
                       }`}
                     >
                       {cat.name}
@@ -374,8 +374,8 @@ function FilterDrawer({ open, onClose, categories, selectedCategory, onCategoryC
                         onClick={() => onSizeChange(size)}
                         className={`w-10 h-10 md:w-10 md:h-10 rounded-lg md:rounded-xl text-xs md:text-sm font-bold border-2 transition-all active:scale-90 ${
                           isSelected
-                            ? 'bg-primary text-white border-primary shadow-sm'
-                            : 'bg-white text-text-secondary border-border hover:border-primary hover:text-primary'
+                            ? 'bg-ink text-white border-ink shadow-sm'
+                            : 'bg-white text-stone-500 border-stone-200/80 hover:border-gold hover:text-gold-dark'
                         }`}
                       >
                         {size}
@@ -400,8 +400,8 @@ function FilterDrawer({ open, onClose, categories, selectedCategory, onCategoryC
                     onChange={(e) => setLocalRange([localRange[0], parseInt(e.target.value)])}
                     className="w-full h-2.5 md:h-2 rounded-full appearance-none cursor-pointer"
                     style={{
-                      accentColor: '#2563eb',
-                      background: `linear-gradient(to right, #2563eb ${(localRange[1] / MAX_PRICE) * 100}%, #e5e7eb ${(localRange[1] / MAX_PRICE) * 100}%)`
+                      accentColor: '#B08D4F',
+                      background: `linear-gradient(to right, #B08D4F ${(localRange[1] / MAX_PRICE) * 100}%, #e7e5e4 ${(localRange[1] / MAX_PRICE) * 100}%)`
                     }}
                   />
                   <div className="flex items-center justify-between gap-3">
@@ -427,8 +427,8 @@ function FilterDrawer({ open, onClose, categories, selectedCategory, onCategoryC
                         onClick={() => { setLocalRange(range); onApplyPrice(range); }}
                         className={`px-3 py-2.5 md:py-2 text-xs font-semibold rounded-lg border transition-all active:scale-95 ${
                           localRange[0] === range[0] && localRange[1] === range[1]
-                            ? 'bg-primary text-white border-primary'
-                            : 'bg-white text-text-secondary border-border hover:border-primary hover:text-primary'
+                            ? 'bg-ink text-white border-ink'
+                            : 'bg-white text-stone-500 border-stone-200/80 hover:border-gold hover:text-gold-dark'
                         }`}
                       >
                         {label}
@@ -443,13 +443,13 @@ function FilterDrawer({ open, onClose, categories, selectedCategory, onCategoryC
             <div className="px-5 md:px-6 py-4 md:py-5 border-t border-border flex items-center gap-3 flex-shrink-0" style={{ paddingBottom: 'env(safe-area-inset-bottom, 16px)' }}>
               <button
                 onClick={() => { onClearAll(); onClose(); }}
-                className="flex-1 py-3 md:py-3 rounded-lg md:rounded-xl border-2 border-border text-xs md:text-sm font-bold text-text-secondary hover:border-text-primary transition-colors active:bg-surface"
+                className="flex-1 py-3 md:py-3 rounded-full border border-stone-200/80 text-xs md:text-sm font-semibold text-stone-500 hover:border-ink transition-colors active:bg-stone-50"
               >
                 {t('products.clear_all')}
               </button>
               <button
                 onClick={() => { onApplyPrice(localRange); onClose(); }}
-                className="flex-1 py-3 md:py-3 rounded-lg md:rounded-xl bg-primary text-white text-xs md:text-sm font-bold hover:bg-primary/90 transition-colors active:scale-[0.98]"
+                className="flex-1 py-3 md:py-3 rounded-full bg-ink text-white text-xs md:text-sm font-semibold hover:bg-gold hover:text-ink transition-colors active:scale-[0.98]"
               >
                 {t('products.apply_filters')}
               </button>
@@ -731,7 +731,7 @@ export default function ProductsPage() {
   variant="dark"
                 className="mb-3"
               />
-              <h1 className="text-white font-display text-3xl md:text-5xl font-extrabold tracking-tight">
+              <h1 className="text-white font-editorial text-4xl md:text-6xl font-medium tracking-tight">
                 {pageTitle}
               </h1>
               <p className="text-white/70 text-sm md:text-base mt-2 max-w-xl">
@@ -760,12 +760,16 @@ export default function ProductsPage() {
   variant="light"
               className="mb-4"
             />
-            <div className="mb-6">
-              <h1 className="font-display text-3xl md:text-4xl font-extrabold text-text-primary tracking-tight">
-                {isSearching && <span className="text-primary">Search: </span>}
+            <div className="mb-7">
+              <span className="inline-flex items-center gap-3 text-[11px] sm:text-xs font-medium text-gold-dark uppercase tracking-[0.28em]">
+                <span className="w-10 h-px bg-gold" />
+                {isSearching ? 'Search Results' : 'Curated Collection'}
+              </span>
+              <h1 className="mt-3 font-editorial text-3xl md:text-5xl font-medium text-ink tracking-tight leading-[1.1]">
+                {isSearching && <span className="text-gold-dark">Search: </span>}
                 {pageTitle}
               </h1>
-              <p className="text-text-muted text-sm mt-1.5">{total} {total === 1 ? 'product' : 'products'} found</p>
+              <p className="text-stone-500 text-sm mt-2.5">{total} {total === 1 ? 'product' : 'products'} found</p>
             </div>
           </>
         )}
@@ -773,13 +777,13 @@ export default function ProductsPage() {
         {/* Search — Premium style with primary focus */}
         <form onSubmit={handleSearch} className="mb-6 relative max-w-2xl group">
           <div className="relative flex items-center">
-            <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:text-primary transition-colors pointer-events-none z-10" />
+            <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-gold-dark transition-colors pointer-events-none z-10" />
             <input
               type="text"
               placeholder={t('products.search_placeholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-12 md:h-12 pl-12 pr-28 md:pr-36 bg-white border-2 border-border rounded-xl text-sm text-text-primary placeholder:text-text-muted focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all duration-200 shadow-sm hover:shadow-md focus:shadow-lg focus:shadow-primary/5"
+              className="w-full h-12 md:h-12 pl-12 pr-28 md:pr-36 bg-cream border border-stone-200/80 rounded-full text-sm text-ink placeholder:text-stone-400 focus:border-gold focus:ring-4 focus:ring-gold/10 outline-none transition-all duration-200 shadow-sm hover:shadow-md focus:shadow-lg"
               autoComplete="off"
             />
             {/* Clear button — visible when there's text */}
@@ -787,7 +791,7 @@ export default function ProductsPage() {
               <button
                 type="button"
                 onClick={() => setSearchQuery('')}
-                className="absolute right-[100px] md:right-[105px] top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-surface hover:bg-gray-200 flex items-center justify-center text-text-muted hover:text-text-secondary transition-all duration-200 active:scale-90"
+                className="absolute right-[100px] md:right-[105px] top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-stone-100 hover:bg-stone-200 flex items-center justify-center text-stone-400 hover:text-stone-600 transition-all duration-200 active:scale-90"
                 aria-label="Clear search"
               >
                 <X size={12} />
@@ -795,7 +799,7 @@ export default function ProductsPage() {
             )}
             <button
               type="submit"
-              className="absolute right-1.5 top-1/2 -translate-y-1/2 bg-primary text-white h-10 md:h-10 px-3 md:px-5 rounded-lg text-[11px] font-bold hover:bg-primary-dark transition-all duration-200 active:scale-[0.97] flex items-center gap-1.5 shadow-sm hover:shadow-md"
+              className="absolute right-1.5 top-1/2 -translate-y-1/2 bg-ink text-white h-10 md:h-10 px-3 md:px-5 rounded-full text-[11px] font-semibold uppercase tracking-[0.12em] hover:bg-gold hover:text-ink transition-all duration-300 active:scale-[0.97] flex items-center gap-1.5 shadow-sm hover:shadow-md"
             >
               <Search size={13} />
               <span className="hidden sm:inline">{t('products.search')}</span>
@@ -825,20 +829,20 @@ export default function ProductsPage() {
               <select
                 value={sortBy}
                 onChange={(e) => handleSortChange(e.target.value)}
-                className="h-10 md:h-10 pl-2.5 md:pl-3 pr-8 md:pr-9 text-[11px] md:text-xs font-semibold border-2 border-border rounded-lg md:rounded-xl appearance-none bg-white focus:outline-none focus:border-black focus:ring-4 focus:ring-black/5 cursor-pointer transition-all duration-200 hover:border-gray-400 max-w-[130px] md:max-w-none"
+                className="h-10 md:h-10 pl-2.5 md:pl-3 pr-8 md:pr-9 text-[11px] md:text-xs font-semibold border border-stone-200/80 rounded-full appearance-none bg-white focus:outline-none focus:border-gold focus:ring-4 focus:ring-gold/10 cursor-pointer transition-all duration-200 hover:border-stone-300 max-w-[130px] md:max-w-none"
               >
                 {SORT_OPTIONS(t).map(opt => (
                   <option key={opt.value} value={opt.value}>{opt.label}</option>
                 ))}
               </select>
-              <ChevronDown size={13} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
+              <ChevronDown size={13} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
             </div>
             <button
               onClick={() => setShowFilters(true)}
-              className={`h-10 md:h-10 px-3 md:px-4 flex items-center gap-1.5 md:gap-2 border-2 rounded-lg md:rounded-xl text-[11px] md:text-xs font-semibold transition-all active:scale-95 ${
+              className={`h-10 md:h-10 px-3 md:px-4 flex items-center gap-1.5 md:gap-2 border rounded-full text-[11px] md:text-xs font-semibold transition-all active:scale-95 ${
                 activeFiltersCount > 0
-                  ? 'bg-primary text-white border-primary shadow-sm'
-                  : 'bg-white text-text-secondary border-border hover:border-primary hover:text-primary'
+                  ? 'bg-ink text-white border-ink shadow-sm'
+                  : 'bg-white text-stone-500 border-stone-200/80 hover:border-gold hover:text-gold-dark'
               }`}
             >
               <SlidersHorizontal size={14} />
@@ -863,7 +867,7 @@ export default function ProductsPage() {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.2, delay: 0.05 }}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary rounded-full text-xs font-semibold border border-primary/20"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gold/10 text-gold-dark rounded-full text-xs font-semibold border border-gold/20"
               >
                 {(categories.find(c => c.slug === selectedCategory) || categories.find(c => c.id === selectedCategory))?.name || selectedCategory}
                 <button onClick={() => handleCategoryChange('')} className="hover:bg-primary/20 rounded-full p-0.5 transition-colors">
@@ -876,7 +880,7 @@ export default function ProductsPage() {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.2, delay: 0.1 }}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary rounded-full text-xs font-semibold border border-primary/20"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gold/10 text-gold-dark rounded-full text-xs font-semibold border border-gold/20"
               >
                 <Search size={12} />
                 "{searchParams.get('q')}"
@@ -890,7 +894,7 @@ export default function ProductsPage() {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.2, delay: 0.15 }}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary rounded-full text-xs font-semibold border border-primary/20"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gold/10 text-gold-dark rounded-full text-xs font-semibold border border-gold/20"
               >
                 {formatCurrency(priceRange[0])} — {formatCurrency(priceRange[1])}
                 <button onClick={() => applyPriceFilter([0, MAX_PRICE])} className="hover:bg-primary/20 rounded-full p-0.5 transition-colors">
@@ -903,7 +907,7 @@ export default function ProductsPage() {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.2, delay: 0.2 }}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary rounded-full text-xs font-semibold border border-primary/20"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gold/10 text-gold-dark rounded-full text-xs font-semibold border border-gold/20"
               >
                 Size: {selectedSizes.join(', ')}
                 <button onClick={() => { setSelectedSizes([]); updateParams({ sizes: null }); }} className="hover:bg-primary/20 rounded-full p-0.5 transition-colors">
@@ -916,7 +920,7 @@ export default function ProductsPage() {
               animate={{ opacity: 1 }}
               transition={{ duration: 0.2, delay: 0.25 }}
               onClick={clearFilters}
-              className="text-xs font-semibold text-text-muted hover:text-primary underline-offset-2 hover:underline transition-colors"
+              className="text-xs font-semibold text-stone-500 hover:text-gold-dark underline-offset-2 hover:underline transition-colors"
             >
               {t('products.clear_all')}
             </motion.button>
@@ -952,7 +956,7 @@ export default function ProductsPage() {
             <button
               onClick={handleLoadMore}
               disabled={loadingMore}
-              className="group relative w-full max-w-xs md:max-w-sm px-8 md:px-12 py-3.5 md:py-4 bg-primary text-white rounded-xl md:rounded-2xl text-xs md:text-sm font-bold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2.5 shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/40 hover:-translate-y-0.5 active:translate-y-0 overflow-hidden"
+              className="group relative w-full max-w-xs md:max-w-sm px-8 md:px-12 py-3.5 md:py-4 bg-ink text-white rounded-full text-xs md:text-sm font-semibold uppercase tracking-[0.16em] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2.5 shadow-lg shadow-stone-900/10 hover:bg-gold hover:text-ink hover:shadow-xl hover:shadow-gold/20 hover:-translate-y-0.5 active:translate-y-0 overflow-hidden"
             >
               {/* Gradient hover glow */}
               <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"

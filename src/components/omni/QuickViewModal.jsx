@@ -23,8 +23,16 @@ export default function QuickViewModal({ product, onClose }) {
   const imgUrl = product.imageUrl || images[0]?.url || images[0] || null;
   const allImages = images.length > 0 ? images.map(i => i?.url || i) : [imgUrl].filter(Boolean);
   const inWishlist = isInWishlist(product.id);
+  // Products with selectable variants (multiple colors, or any sizes) must be
+  // configured on the product page first — never quick-add them to the cart.
+  const requiresSelection = (product.colors?.length > 1) || (product.sizes?.length > 0);
 
   const handleAdd = () => {
+    if (requiresSelection) {
+      onClose();
+      navigate(`/products/${product.slug || product.id}`);
+      return;
+    }
     addItem({ ...product, productId: product.id, quantity });
     setIsAdded(true);
     addedToCart(product.name);
@@ -149,9 +157,12 @@ export default function QuickViewModal({ product, onClose }) {
                       <button onClick={() => setQuantity(q => Math.min(99, q + 1))} className="px-3.5 py-2.5 text-stone-600 hover:bg-stone-200 font-bold">+</button>
                     </div>
                     <button onClick={handleAdd}
-                      className={`flex-1 py-3 px-6 rounded-2xl text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-lg ${isAdded ? 'bg-emerald-600 text-white' : 'bg-stone-900 hover:bg-amber-600 text-white'}`}>
-                      {isAdded ? <><Check className="w-4 h-4" /> Added To Cart!</> : <><ShoppingBag className="w-4 h-4" /> Add To Cart</>}
+                      className={`flex-1 py-3 px-6 rounded-full text-xs font-semibold uppercase tracking-[0.14em] transition-all flex items-center justify-center gap-2 shadow-lg ${isAdded ? 'bg-emerald-600 text-white' : 'bg-ink hover:bg-gold hover:text-ink text-white'}`}>
+                      {isAdded ? <><Check className="w-4 h-4" /> Added To Cart!</> : requiresSelection ? <><ShoppingBag className="w-4 h-4" /> Select Options</> : <><ShoppingBag className="w-4 h-4" /> Add To Cart</>}
                     </button>
+                    {requiresSelection && (
+                      <p className="text-[11px] text-stone-500 text-center -mt-1">Choose size / color to add — opens the product page</p>
+                    )}
                   </div>
                   <div className="flex items-center justify-between text-xs text-stone-600 pt-1">
                     <button onClick={handleWishlist} className="flex items-center gap-1.5 hover:text-rose-600 font-semibold transition-colors">

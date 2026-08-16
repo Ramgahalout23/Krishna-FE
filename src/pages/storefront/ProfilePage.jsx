@@ -92,13 +92,13 @@ export default function ProfilePage() {
     <Link
       to={to}
       onClick={onClick}
-      className={`flex items-center justify-between px-4 py-3.5 sm:py-4 hover:bg-gray-50 transition-colors active:bg-surface ${danger ? 'text-red-600' : ''}`}
+      className={`flex items-center justify-between px-4 py-3.5 sm:py-4 hover:bg-gold/5 transition-colors active:bg-cream ${danger ? 'text-red-600' : ''}`}
     >
       <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-        <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center shrink-0 ${danger ? 'bg-red-50' : 'bg-surface'}`}>
-          <Icon size={18} className={danger ? 'text-red-600' : 'text-gray-700'} />
+        <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center shrink-0 ${danger ? 'bg-red-50' : 'bg-gold/10 border border-gold/20'}`}>
+          <Icon size={18} className={danger ? 'text-red-600' : 'text-gold-dark'} />
         </div>
-        <span className="text-sm font-medium text-text-primary truncate">{label}</span>
+        <span className="text-sm font-medium text-ink truncate">{label}</span>
       </div>
       <div className="flex items-center gap-2 shrink-0 ml-2">
         {badge && (
@@ -128,7 +128,7 @@ export default function ProfilePage() {
   // Not logged in view
   if (!isAuthenticated) {
     return (
-      <div className="page-content bg-white flex-1">
+      <div className="page-content bg-cream flex-1">
         <SEOHead
           title={`My Profile | ${storeName}`}
           description={`Sign in to your ${storeName} account to manage orders, addresses, and preferences.`}
@@ -137,19 +137,20 @@ export default function ProfilePage() {
         <div className="max-w-md mx-auto px-4 pt-5 sm:pt-8 pb-[calc(2rem+env(safe-area-inset-bottom,0px))]">
           {breadcrumb}
           {/* Welcome Card */}
-          <div className="bg-gradient-to-r from-amber-500 to-amber-400 rounded-2xl p-5 sm:p-6 text-white mb-5 sm:mb-6">
-            <h2 className="text-xl sm:text-2xl font-bold mb-2">{t('profile.welcome')}</h2>
-            <p className="text-white/80 text-sm mb-4">{t('profile.access_account')}</p>
-            <div className="flex gap-3">
+          <div className="relative overflow-hidden bg-ink rounded-2xl p-5 sm:p-6 text-white mb-5 sm:mb-6 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.5)]">
+            <div className="absolute -top-16 -right-16 w-44 h-44 rounded-full bg-gold/15 blur-3xl pointer-events-none" />
+            <h2 className="relative font-editorial text-2xl font-medium tracking-tight mb-2">{t('profile.welcome')}</h2>
+            <p className="relative text-white/70 text-sm mb-4">{t('profile.access_account')}</p>
+            <div className="relative flex gap-3">
               <Link
                 to="/login"
-                className="flex-1 bg-white text-amber-500 py-3 rounded-xl font-semibold text-sm text-center hover:bg-surface transition-colors active:scale-[0.98] touch-manipulation"
+                className="flex-1 bg-gold text-ink py-3 rounded-full font-semibold text-sm text-center hover:bg-gold-soft transition-colors active:scale-[0.98] touch-manipulation shadow-lg shadow-gold/20"
               >
                 {t('profile.login')}
               </Link>
               <Link
                 to="/register"
-                className="flex-1 bg-transparent border-2 border-white text-white py-3 rounded-xl font-semibold text-sm text-center hover:bg-white/10 transition-colors active:scale-[0.98] touch-manipulation"
+                className="flex-1 bg-transparent border border-gold/40 text-gold-soft py-3 rounded-full font-semibold text-sm text-center hover:bg-gold/10 transition-colors active:scale-[0.98] touch-manipulation"
               >
                 {t('profile.signup')}
               </Link>
@@ -157,7 +158,7 @@ export default function ProfilePage() {
           </div>
 
           {/* Quick Links for Guests */}
-          <div className="bg-white rounded-xl shadow-sm border border-border overflow-hidden divide-y divide-gray-100">
+          <div className="bg-white rounded-2xl border border-stone-200/70 shadow-[0_2px_12px_rgba(28,25,23,0.04)] overflow-hidden divide-y divide-stone-100">
             <MenuItem icon={ShoppingBag} label={t('profile.orders')} to="/login?redirect=/orders" />
             <MenuItem icon={Heart} label={t('profile.wishlist')} to="/login?redirect=/wishlist" />
             <MenuItem icon={Headphones} label={t('profile.contact_us')} to="/contact" />
@@ -169,7 +170,7 @@ export default function ProfilePage() {
 
   // Logged in view
   return (
-    <div className="page-content bg-white flex-1">
+    <div className="page-content bg-cream flex-1">
       <SEOHead
         title={`My Profile | ${storeName}`}
         description={`Manage your ${storeName} account, orders, wishlist, and saved addresses.`}
@@ -179,9 +180,10 @@ export default function ProfilePage() {
         {breadcrumb}
 
         {/* User Welcome Card */}
-        <div className="bg-gradient-to-r from-amber-500 to-amber-400 rounded-2xl p-5 sm:p-6 text-white mb-5 sm:mb-6">
-          <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
-            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full overflow-hidden shrink-0 bg-white/20 flex items-center justify-center">
+        <div className="relative overflow-hidden bg-ink rounded-2xl p-5 sm:p-6 text-white mb-5 sm:mb-6 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.5)]">
+          <div className="absolute -top-16 -right-16 w-44 h-44 rounded-full bg-gold/15 blur-3xl pointer-events-none" />
+          <div className="relative flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full overflow-hidden shrink-0 bg-gold/20 border border-gold/30 flex items-center justify-center">
               {user?.avatar ? (
                 <img
                   src={getImageUrl(user.avatar)}
@@ -190,26 +192,26 @@ export default function ProfilePage() {
                   loading="lazy"
                 />
               ) : (
-                <span className="text-white font-bold text-lg">{getInitials(user?.firstName, user?.lastName) || <User size={22} />}</span>
+                <span className="text-gold-soft font-bold text-lg">{getInitials(user?.firstName, user?.lastName) || <User size={22} />}</span>
               )}
             </div>
             <div className="min-w-0">
-              <h2 className="text-lg sm:text-xl font-bold truncate">{t('profile.hello_user', { name: user?.firstName || 'User' })}</h2>
-              <p className="text-white/80 text-xs sm:text-sm truncate">{user?.email}</p>
+              <h2 className="font-editorial text-xl sm:text-2xl font-medium tracking-tight truncate">{t('profile.hello_user', { name: user?.firstName || 'User' })}</h2>
+              <p className="text-white/70 text-xs sm:text-sm truncate">{user?.email}</p>
             </div>
           </div>
           <button
             onClick={handleLogout}
-            className="inline-flex items-center gap-2 text-white/90 hover:text-white text-sm transition-colors touch-manipulation"
+            className="relative inline-flex items-center gap-2 text-gold-soft/90 hover:text-gold-soft text-sm transition-colors touch-manipulation"
           >
             <LogOut size={16} /> {t('profile.sign_out')}
           </button>
         </div>
 
         {/* Account Section */}
-        <div className="bg-white rounded-xl shadow-sm border border-border overflow-hidden mb-5 sm:mb-6 divide-y divide-gray-100">
-          <div className="px-4 py-2.5 sm:py-3 bg-gray-50 border-b border-border">
-            <span className="text-[10px] sm:text-xs font-bold text-text-muted uppercase tracking-wider">{t('profile.account_section')}</span>
+        <div className="bg-white rounded-2xl border border-stone-200/70 shadow-[0_2px_12px_rgba(28,25,23,0.04)] overflow-hidden mb-5 sm:mb-6 divide-y divide-stone-100">
+          <div className="px-4 py-2.5 sm:py-3 bg-cream border-b border-stone-100">
+            <span className="text-[10px] sm:text-xs font-semibold text-stone-400 uppercase tracking-wider">{t('profile.account_section')}</span>
           </div>
           <MenuItem icon={ShoppingBag} label={t('profile.orders')} to="/orders" />
           <MenuItem icon={Heart} label={t('profile.wishlist')} to="/wishlist" />
@@ -218,38 +220,38 @@ export default function ProfilePage() {
         </div>
 
         {/* Saved Section */}
-        <div className="bg-white rounded-xl shadow-sm border border-border overflow-hidden mb-5 sm:mb-6 divide-y divide-gray-100">
-          <div className="px-4 py-2.5 sm:py-3 bg-gray-50 border-b border-border">
-            <span className="text-[10px] sm:text-xs font-bold text-text-muted uppercase tracking-wider">{t('profile.saved_section')}</span>
+        <div className="bg-white rounded-2xl border border-stone-200/70 shadow-[0_2px_12px_rgba(28,25,23,0.04)] overflow-hidden mb-5 sm:mb-6 divide-y divide-stone-100">
+          <div className="px-4 py-2.5 sm:py-3 bg-cream border-b border-stone-100">
+            <span className="text-[10px] sm:text-xs font-semibold text-stone-400 uppercase tracking-wider">{t('profile.saved_section')}</span>
           </div>
           <MenuItem icon={MapPin} label={t('profile.saved_addresses')} to="/addresses" />
         </div>
 
         {/* Account Settings */}
-        <div className="bg-white rounded-xl shadow-sm border border-border overflow-hidden divide-y divide-gray-100">
-          <div className="px-4 py-2.5 sm:py-3 bg-gray-50 border-b border-border">
-            <span className="text-[10px] sm:text-xs font-bold text-text-muted uppercase tracking-wider">{t('profile.settings_section')}</span>
+        <div className="bg-white rounded-2xl border border-stone-200/70 shadow-[0_2px_12px_rgba(28,25,23,0.04)] overflow-hidden divide-y divide-stone-100">
+          <div className="px-4 py-2.5 sm:py-3 bg-cream border-b border-stone-100">
+            <span className="text-[10px] sm:text-xs font-semibold text-stone-400 uppercase tracking-wider">{t('profile.settings_section')}</span>
           </div>
           <button
             onClick={openEditForm}
-            className="w-full flex items-center justify-between px-4 py-3.5 sm:py-4 hover:bg-gray-50 transition-colors active:bg-surface"
+            className="w-full flex items-center justify-between px-4 py-3.5 sm:py-4 hover:bg-gold/5 transition-colors active:bg-cream"
           >
             <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center shrink-0 bg-surface">
-                <User size={18} className="text-text-secondary" />
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center shrink-0 bg-gold/10 border border-gold/20">
+                <User size={18} className="text-gold-dark" />
               </div>
-              <span className="text-sm font-medium text-text-primary truncate">{t('profile.edit_profile')}</span>
+              <span className="text-sm font-medium text-ink truncate">{t('profile.edit_profile')}</span>
             </div>
             <ChevronRight size={16} />
           </button>
 
           {/* Edit Profile Form */}
           {showEditForm && (
-            <div className="px-4 py-4 bg-gray-50 border-t border-border">
+            <div className="px-4 py-4 bg-cream border-t border-stone-100">
               <form onSubmit={handleSaveProfile} className="space-y-3">
                 {/* Avatar Upload */}
                 <div className="flex items-center gap-4 mb-1">
-                  <div className="relative w-16 h-16 rounded-full overflow-hidden bg-gray-200 shrink-0">
+                  <div className="relative w-16 h-16 rounded-full overflow-hidden bg-cream border border-stone-200 shrink-0">
                     {editForm.avatar ? (
                       <img
                         src={getImageUrl(editForm.avatar)}
@@ -257,7 +259,7 @@ export default function ProfilePage() {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-text-muted">
+                      <div className="w-full h-full flex items-center justify-center text-stone-400">
                         <User size={24} />
                       </div>
                     )}
@@ -279,41 +281,41 @@ export default function ProfilePage() {
                       type="button"
                       onClick={() => avatarInputRef.current?.click()}
                       disabled={uploadingAvatar}
-                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-text-secondary bg-white border border-gray-300 rounded-lg px-3 py-1.5 hover:bg-gray-50 hover:border-gray-400 transition-colors disabled:opacity-50"
+                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-stone-600 bg-white border border-stone-200 rounded-lg px-3 py-1.5 hover:border-gold/40 hover:text-gold-dark transition-colors disabled:opacity-50"
                     >
                       <Upload size={14} />
                       {uploadingAvatar ? 'Uploading...' : 'Change Photo'}
                     </button>
-                    <p className="text-[10px] text-text-muted mt-1">JPEG, PNG or WebP (max 5MB)</p>
+                    <p className="text-[10px] text-stone-400 mt-1">JPEG, PNG or WebP (max 5MB)</p>
                   </div>
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">{t('auth.first_name')}</label>
+                  <label className="block text-[10px] font-semibold text-stone-400 uppercase tracking-wider mb-1">{t('auth.first_name')}</label>
                   <input
                     type="text"
                     value={editForm.firstName}
                     onChange={(e) => setEditForm({ ...editForm, firstName: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 focus:border-gray-900 transition-all"
+                    className="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold/20 focus:border-gold transition-all"
                     autoComplete="given-name"
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">{t('auth.last_name')}</label>
+                  <label className="block text-[10px] font-semibold text-stone-400 uppercase tracking-wider mb-1">{t('auth.last_name')}</label>
                   <input
                     type="text"
                     value={editForm.lastName}
                     onChange={(e) => setEditForm({ ...editForm, lastName: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 focus:border-gray-900 transition-all"
+                    className="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold/20 focus:border-gold transition-all"
                     autoComplete="family-name"
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">{t('auth.phone')}</label>
+                  <label className="block text-[10px] font-semibold text-stone-400 uppercase tracking-wider mb-1">{t('auth.phone')}</label>
                   <input
                     type="tel"
                     value={editForm.phone}
                     onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 focus:border-gray-900 transition-all"
+                    className="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold/20 focus:border-gold transition-all"
                     autoComplete="tel"
                   />
                 </div>
@@ -321,14 +323,14 @@ export default function ProfilePage() {
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="flex-1 bg-charcoal text-white py-2.5 rounded-lg text-xs font-bold hover:bg-charcoal-light transition-colors disabled:opacity-50"
+                    className="flex-1 bg-ink text-white py-2.5 rounded-lg text-xs font-bold hover:bg-gold hover:text-ink transition-colors disabled:opacity-50"
                   >
                     {submitting ? 'Saving...' : t('addresses.save')}
                   </button>
                   <button
                     type="button"
                     onClick={() => setShowEditForm(false)}
-                    className="flex-1 border-2 border-border text-text-secondary py-2.5 rounded-lg text-xs font-bold hover:border-gray-400 transition-colors"
+                    className="flex-1 border border-stone-200 text-stone-500 py-2.5 rounded-lg text-xs font-bold hover:border-gold/40 hover:text-gold-dark transition-colors"
                   >
                     {t('addresses.cancel')}
                   </button>

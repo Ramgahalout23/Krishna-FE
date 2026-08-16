@@ -41,21 +41,21 @@ export const setDefaultCurrency = (currency) => {
 export const getDefaultCurrency = () => _defaultCurrency;
 
 /**
- * Compact premium price — modern symbol (₹) with Indian grouping and no
- * forced decimals (₹499 instead of Rs. 499.00). Falls back to the standard
+ * Premium price — modern symbol (₹) with Indian grouping and 2 decimal
+ * places (₹1,200.00 instead of ₹1,200). Falls back to the standard
  * formatter for non-INR currencies.
  */
 export const formatPrice = (amount) => {
   const num = Number(amount);
   if (isNaN(num)) return formatCurrency(amount);
   if (getDefaultCurrency() === 'INR') {
-    return `₹${num.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
+    return `₹${num.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   }
   return formatCurrency(amount);
 };
 
 /**
- * Product-card price format — same compact ₹ style as formatPrice (e.g. ₹499).
+ * Product-card price format — same ₹ style as formatPrice (e.g. ₹1,200.00).
  * Used by the reel cards so video cards match the rest of the storefront.
  */
 export const formatProductCardPrice = (amount) => formatPrice(amount);

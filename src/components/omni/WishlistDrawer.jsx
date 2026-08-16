@@ -13,6 +13,14 @@ export default function WishlistDrawer({ isOpen, onClose }) {
   const { addItem } = useCartStore();
 
   const handleAddToCart = (item) => {
+    // Products with selectable variants (multiple colors, or any sizes) must be
+    // configured on the product page first — never quick-add them to the cart.
+    const requiresSelection = (item.colors?.length > 1) || (item.sizes?.length > 0);
+    if (requiresSelection) {
+      onClose();
+      navigate(`/products/${item.slug || item.id}`);
+      return;
+    }
     addItem({ ...item, productId: item.productId || item.id, quantity: 1 });
     addedToCart(item.name);
     onClose();

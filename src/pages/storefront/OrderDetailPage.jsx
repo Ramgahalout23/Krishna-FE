@@ -74,7 +74,7 @@ export default function OrderDetailPage() {
 
   if (loading) return <OrderDetailSkeleton />;
   if (!order) return (
-    <div className="min-h-screen bg-stone-100">
+    <div className="min-h-screen bg-cream">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 sm:pt-32">
         <div className="text-center max-w-md mx-auto">
           <div className="w-16 h-16 bg-stone-100 rounded-full flex items-center justify-center mx-auto mb-4 border border-stone-200">
@@ -88,7 +88,7 @@ export default function OrderDetailPage() {
           <p className="text-sm text-stone-500 mb-6">{t('orders.detail.not_found_desc', { defaultValue: 'We couldn\'t find this order. It may have been removed or you may not have access.' })}</p>
           <button
             onClick={() => navigate('/orders')}
-            className="px-5 py-2.5 rounded-xl bg-amber-500 text-stone-950 text-sm font-bold hover:bg-amber-400 transition-all duration-200 inline-flex items-center gap-2 shadow-md shadow-amber-500/20"
+            className="px-6 py-3 rounded-full bg-ink text-white text-xs font-bold uppercase tracking-[0.16em] hover:bg-gold hover:text-ink transition-all duration-200 inline-flex items-center gap-2 shadow-md shadow-stone-900/10"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="15 18 9 12 15 6"/>
@@ -104,7 +104,7 @@ export default function OrderDetailPage() {
   const currentStep = steps.indexOf(order.shippingStatus || 'PENDING');
 
   return (
-    <div className="min-h-screen bg-stone-100">
+    <div className="min-h-screen bg-cream">
       <SEOHead
         title={`Order #${id?.slice(0, 8) || id} | ${storeName}`}
         description={`View order details and track shipping status for order at ${storeName}.`}
@@ -126,16 +126,19 @@ export default function OrderDetailPage() {
         {/* Order Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
           <div>
-            <span className="text-xs font-bold text-amber-600 uppercase tracking-widest block mb-1">{t('orders.detail.placed', { date: formatDate(order.createdAt) })}</span>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-stone-900 tracking-tight">#{order.id?.slice(0, 8) || id}</h2>
+            <span className="inline-flex items-center gap-2.5 text-[11px] font-medium text-gold-dark uppercase tracking-[0.28em] mb-2">
+              <span className="w-10 h-px bg-gold" />
+              {t('orders.detail.placed', { date: formatDate(order.createdAt) })}
+            </span>
+            <h2 className="font-editorial text-3xl sm:text-4xl font-medium text-ink tracking-tight leading-[1.1]">#{order.id?.slice(0, 8) || id}</h2>
           </div>
           <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold w-fit ${
             ['CONFIRMED','PROCESSING','SHIPPED','DELIVERED','COMPLETED'].includes(order.status)
-              ? 'bg-amber-100 text-amber-800'
+              ? 'bg-gold/15 text-gold-dark'
               : order.status === 'CANCELLED' || order.status === 'FAILED'
               ? 'bg-red-50 text-red-700'
               : order.status === 'PENDING'
-              ? 'bg-amber-50 text-amber-700'
+              ? 'bg-gold/10 text-gold-dark'
               : order.status === 'RETURNED'
               ? 'bg-purple-50 text-purple-700'
               : 'bg-stone-100 text-stone-600'
@@ -143,9 +146,9 @@ export default function OrderDetailPage() {
         </div>
 
         {/* Timeline */}
-        <div className="bg-white rounded-2xl border border-stone-200 p-5 md:p-7 mb-6 shadow-sm hover:shadow-md hover:border-amber-200 transition-all duration-300">
+        <div className="bg-white rounded-2xl border border-stone-200/70 p-5 md:p-7 mb-6 shadow-[0_2px_12px_rgba(28,25,23,0.04)] hover:border-gold/30 hover:shadow-md transition-all duration-300">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-bold text-stone-900 text-base">
+            <h3 className="font-editorial text-xl font-medium text-ink">
               <span className="inline-flex items-center gap-2">📦 {t('orders.detail.order_timeline')}</span>
             </h3>
           </div>
@@ -157,7 +160,7 @@ export default function OrderDetailPage() {
                   {/* Step circle */}
                   <div className={`w-8 h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center shrink-0 text-xs md:text-sm font-bold transition-all ${
                     isCompleted
-                      ? 'bg-amber-500 text-stone-950 shadow-md shadow-amber-500/20'
+                      ? 'bg-gold text-ink shadow-md shadow-gold/25'
                       : 'bg-stone-100 text-stone-400 border border-stone-200'
                   }`}>
                     {isCompleted ? '✓' : i + 1}
@@ -165,7 +168,7 @@ export default function OrderDetailPage() {
                   {/* Connector line */}
                   {i < steps.length - 1 && (
                     <div className={`w-px h-8 md:h-10 shrink-0 mx-1 ${
-                      i + 1 <= currentStep ? 'bg-amber-300' : 'bg-stone-200'
+                      i + 1 <= currentStep ? 'bg-gold/40' : 'bg-stone-200'
                     }`} />
                   )}
                   {/* Step label */}
@@ -181,17 +184,17 @@ export default function OrderDetailPage() {
         </div>
 
         {/* Items */}
-        <div className="bg-white rounded-2xl border border-stone-200 p-5 md:p-7 mb-6 shadow-sm hover:shadow-md hover:border-amber-200 transition-all duration-300">
+        <div className="bg-white rounded-2xl border border-stone-200/70 p-5 md:p-7 mb-6 shadow-[0_2px_12px_rgba(28,25,23,0.04)] hover:border-gold/30 hover:shadow-md transition-all duration-300">
           <div className="flex items-center justify-between mb-5">
-            <h3 className="font-bold text-stone-900 text-base">
+            <h3 className="font-editorial text-xl font-medium text-ink">
               <span className="inline-flex items-center gap-2">🛍️ {t('orders.detail.items')} <span className="text-sm font-normal text-stone-500">({order.items?.length || 0})</span></span>
             </h3>
           </div>
           <div className="space-y-3">
             {(order.items || []).map((item, i) => (
-              <div key={i} className="flex items-center gap-4 p-4 bg-white rounded-xl border border-stone-200 hover:border-amber-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group">
+              <div key={i} className="flex items-center gap-4 p-4 bg-white rounded-xl border border-stone-200/70 hover:border-gold/30 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group">
                 {/* Product Image with Hover Zoom */}
-                <div className="w-14 h-14 md:w-16 md:h-16 rounded-xl bg-stone-50 border border-stone-200 overflow-hidden flex-shrink-0 group-hover:ring-2 group-hover:ring-amber-300/60 group-hover:shadow-lg transition-all duration-500">
+                <div className="w-14 h-14 md:w-16 md:h-16 rounded-xl bg-stone-50 border border-stone-200 overflow-hidden flex-shrink-0 group-hover:ring-2 group-hover:ring-gold/40 group-hover:shadow-lg transition-all duration-500">
                   {item.imageUrl ? (
                     <img
                       src={getImageUrl(item.imageUrl)}
@@ -212,7 +215,7 @@ export default function OrderDetailPage() {
                 </div>
                 {/* Product Info */}
                 <div className="flex-1 min-w-0">
-                  <h4 className="text-sm font-bold text-stone-900 line-clamp-1">{item.name || item.productName || `Product ${item.productId}`}</h4>
+                  <h4 className="text-sm font-medium text-ink line-clamp-1">{item.name || item.productName || `Product ${item.productId}`}</h4>
                   {item.size || item.color ? (
                     <p className="text-xs text-stone-500 mt-0.5">{ [item.size, item.color].filter(Boolean).join(' / ') }</p>
                   ) : null}
@@ -236,7 +239,7 @@ export default function OrderDetailPage() {
                       productId: item.productId,
                       productName: item.name || item.productName || 'Product',
                     })}
-                    className="shrink-0 inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-700 text-xs font-bold hover:bg-amber-100 hover:border-amber-300 transition-all duration-200 active:scale-95"
+                    className="shrink-0 inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-gold/10 border border-gold/20 text-gold-dark text-xs font-bold hover:bg-gold/15 hover:border-gold/30 transition-all duration-200 active:scale-95"
                   >
                     <Star size={12} />
                     {t('orders.write_review')}
@@ -250,7 +253,7 @@ export default function OrderDetailPage() {
         {order.notes && (
           <div className="bg-white rounded-2xl border border-stone-200 p-5 md:p-7 mb-6 shadow-sm">
             <h3 className="font-bold text-sm text-stone-900 mb-2 flex items-center gap-2">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-amber-600">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gold-dark">
                 <path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
               </svg>
               Additional Comments
@@ -263,8 +266,11 @@ export default function OrderDetailPage() {
         <div className="bg-white rounded-2xl border border-stone-200 p-5 md:p-7 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <span className="text-xs font-bold text-amber-600 uppercase tracking-widest block mb-1">{t('orders.detail.payment_summary')}</span>
-              <span className="text-2xl font-extrabold text-stone-900">{formatCurrency(order.total || order.totalAmount)}</span>
+              <span className="inline-flex items-center gap-2.5 text-[11px] font-medium text-gold-dark uppercase tracking-[0.28em] mb-1.5">
+                <span className="w-10 h-px bg-gold" />
+                {t('orders.detail.payment_summary')}
+              </span>
+              <span className="font-editorial text-3xl font-medium text-ink tracking-tight">{formatCurrency(order.total || order.totalAmount)}</span>
             </div>
             {order.status === 'PENDING' && (
               <button
@@ -278,13 +284,13 @@ export default function OrderDetailPage() {
         </div>
 
         {/* ── Order Updates Subscription ── */}
-        <div className="bg-white rounded-2xl border border-stone-200 p-5 md:p-7 mt-6 shadow-sm hover:shadow-md hover:border-amber-200 transition-all duration-300">
+        <div className="bg-white rounded-2xl border border-stone-200/70 p-5 md:p-7 mt-6 shadow-[0_2px_12px_rgba(28,25,23,0.04)] hover:border-gold/30 hover:shadow-md transition-all duration-300">
           <button
             onClick={() => setSubscriptionOpen(!subscriptionOpen)}
             className="flex items-center justify-between w-full text-left"
           >
             <div className="flex items-center gap-3">
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${subscribed ? 'bg-amber-100 text-amber-600' : 'bg-stone-100 text-stone-400'}`}>
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${subscribed ? 'bg-gold/15 text-gold-dark' : 'bg-stone-100 text-stone-400'}`}>
                 {subscribed ? <CheckCircle size={20} /> : <Bell size={20} />}
               </div>
               <div>
@@ -299,7 +305,7 @@ export default function OrderDetailPage() {
               </div>
             </div>
             <svg
-              className={`w-5 h-5 text-text-muted transition-transform duration-200 ${subscriptionOpen ? 'rotate-180' : ''}`}
+              className={`w-5 h-5 text-stone-400 transition-transform duration-200 ${subscriptionOpen ? 'rotate-180' : ''}`}
               viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"
             >
               <polyline points="6 9 12 15 18 9" />
@@ -329,7 +335,7 @@ export default function OrderDetailPage() {
                         value={subEmail}
                         onChange={(e) => setSubEmail(e.target.value)}
                         placeholder="you@example.com"
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all"
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-gold/20 focus:border-gold transition-all"
                       />
                     </div>
                     {/* Phone */}
@@ -343,7 +349,7 @@ export default function OrderDetailPage() {
                         value={subPhone}
                         onChange={(e) => setSubPhone(e.target.value)}
                         placeholder="+91 98765 43210"
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all"
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-gold/20 focus:border-gold transition-all"
                       />
                     </div>
                   </div>
@@ -355,7 +361,7 @@ export default function OrderDetailPage() {
                         type="checkbox"
                         checked={subEmailUpdates}
                         onChange={() => setSubEmailUpdates(!subEmailUpdates)}
-                        className="w-4 h-4 rounded border-stone-300 text-amber-600 focus:ring-amber-500/30"
+                        className="w-4 h-4 rounded border-stone-300 text-gold-dark focus:ring-gold/30"
                       />
                       <span className="text-sm font-bold text-stone-700 group-hover:text-stone-900 transition-colors">
                         {t('orders.detail.email_updates')}
@@ -366,7 +372,7 @@ export default function OrderDetailPage() {
                         type="checkbox"
                         checked={subSmsUpdates}
                         onChange={() => setSubSmsUpdates(!subSmsUpdates)}
-                        className="w-4 h-4 rounded border-stone-300 text-amber-600 focus:ring-amber-500/30"
+                        className="w-4 h-4 rounded border-stone-300 text-gold-dark focus:ring-gold/30"
                       />
                       <span className="text-sm font-bold text-stone-700 group-hover:text-stone-900 transition-colors">
                         {t('orders.detail.sms_updates')}
@@ -395,10 +401,10 @@ export default function OrderDetailPage() {
                       }
                     }}
                     disabled={subscribing}
-                    className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-amber-500 text-stone-950 text-sm font-bold hover:bg-amber-400 transition-all duration-200 active:scale-[0.97] disabled:opacity-50 inline-flex items-center justify-center gap-2 shadow-md shadow-amber-500/20"
+                    className="w-full sm:w-auto px-6 py-2.5 rounded-full bg-gold text-ink text-xs font-bold uppercase tracking-[0.16em] hover:bg-gold-soft transition-all duration-200 active:scale-[0.97] disabled:opacity-50 inline-flex items-center justify-center gap-2 shadow-md shadow-gold/25"
                   >
                     {subscribing ? (
-                      <><div className="spinner w-4 h-4 border-2 border-amber-800/30 border-t-amber-900 rounded-full" /> Subscribing...</>
+                      <><div className="spinner w-4 h-4 border-2 border-gold-dark/30 border-t-gold-dark rounded-full" /> Subscribing...</>
                     ) : (
                       <><Bell size={14} /> {t('orders.detail.subscribe_btn')}</>
                     )}
@@ -410,7 +416,7 @@ export default function OrderDetailPage() {
 
           {subscribed && (
             <div className="flex items-center gap-2.5 pt-4 border-t border-stone-200 mt-4">
-              <span className="text-sm font-medium text-amber-800">
+              <span className="text-sm font-medium text-gold-dark">
                 {subEmail && `${t('checkout.email')}: ${subEmail}`}
                 {subEmail && subPhone && ' — '}
                 {subPhone && `${t('checkout.phone')}: ${subPhone}`}
@@ -420,7 +426,7 @@ export default function OrderDetailPage() {
                   setSubscribed(false);
                   setSubscriptionOpen(true);
                 }}
-                className="text-xs font-bold text-amber-600 underline-offset-2 hover:underline ml-auto"
+                className="text-xs font-bold text-gold-dark underline-offset-2 hover:underline ml-auto"
               >
                 {t('common.edit')}
               </button>

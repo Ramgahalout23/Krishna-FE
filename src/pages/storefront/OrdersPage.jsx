@@ -47,7 +47,7 @@ export default function OrdersPage() {
   if (loading) return <OrderListSkeleton />;
 
   return (
-    <div className="min-h-screen bg-stone-100 flex-1">
+    <div className="min-h-screen bg-cream flex-1">
       <SEOHead
         title={`My Orders | ${storeName}`}
         description={`Track and manage your orders at ${storeName}. View order history, check shipping status, and manage returns.`}
@@ -65,20 +65,23 @@ export default function OrdersPage() {
         />
         <div className="flex items-center justify-between mb-6">
           <div>
-            <span className="block text-xs font-bold text-amber-600 uppercase tracking-widest mb-1">{t('orders.your')}</span>
-            <h1 className="text-2xl md:text-3xl font-extrabold text-stone-900 tracking-tight">{t('orders.title')}</h1>
+            <span className="inline-flex items-center gap-2.5 text-[11px] font-medium text-gold-dark uppercase tracking-[0.28em]">
+              <span className="w-10 h-px bg-gold" />
+              {t('orders.your')}
+            </span>
+            <h1 className="mt-3 font-editorial text-3xl sm:text-4xl font-medium text-ink tracking-tight leading-[1.1]">{t('orders.title')}</h1>
           </div>
         </div>
 
         {orders.length === 0 ? (
           <div className="text-center py-16 px-4">
-            <div className="w-16 h-16 bg-stone-100 rounded-full flex items-center justify-center mx-auto mb-4 border border-stone-200">
-              <Package size={32} className="text-stone-400" />
+            <div className="w-16 h-16 bg-white border border-gold/20 rounded-full flex items-center justify-center mx-auto mb-4 shadow-[0_2px_12px_rgba(28,25,23,0.05)]">
+              <Package size={30} strokeWidth={1.5} className="text-gold-dark" />
             </div>
-            <h3 className="text-lg font-bold text-stone-900 mb-2">{t('orders.no_orders')}</h3>
+            <h3 className="font-editorial text-2xl font-medium text-ink mb-2">{t('orders.no_orders')}</h3>
             <p className="text-sm text-stone-500 mb-6">{t('orders.no_orders_desc')}</p>
             <button
-              className="inline-flex items-center gap-2 bg-amber-500 text-white px-6 py-3 rounded-xl font-bold text-sm hover:bg-amber-400 transition-colors shadow-md shadow-amber-500/20"
+              className="inline-flex items-center gap-2 bg-ink text-white px-7 py-3 rounded-full font-semibold text-xs uppercase tracking-[0.18em] hover:bg-gold hover:text-ink transition-colors shadow-lg shadow-stone-900/10"
               onClick={() => navigate('/products')}
             >
               {t('orders.shop_now')} <ChevronRight size={16} />
@@ -92,7 +95,7 @@ export default function OrdersPage() {
                 <button
                   key={o.id}
                   onClick={() => navigate(`/orders/${o.id}`)}
-                  className="w-full text-left bg-white border border-stone-200 rounded-xl p-4 hover:border-amber-200 hover:shadow-md transition-all active:scale-[0.99] group"
+                  className="w-full text-left bg-white border border-stone-200/70 rounded-2xl p-4 hover:border-gold/30 hover:shadow-md transition-all active:scale-[0.99] group"
                 >
                   <div className="flex items-start justify-between mb-2">
                     <div>
@@ -118,7 +121,7 @@ export default function OrdersPage() {
                             />
                           </div>
                         ) : item.customDesign?.design_file_url ? (
-                          <div key={idx} className="w-10 h-10 rounded-lg overflow-hidden border border-amber-200 shrink-0 group/thumb" title={`${item.name || item.productName} (Custom Design)`}>
+                          <div key={idx} className="w-10 h-10 rounded-lg overflow-hidden border border-gold/30 shrink-0 group/thumb" title={`${item.name || item.productName} (Custom Design)`}>
                             <img loading="lazy" src={item.customDesign.design_file_url}
                               alt="Custom design"
                               className="w-full h-full object-contain p-0.5"
@@ -155,7 +158,7 @@ export default function OrdersPage() {
             <div className="hidden md:block bg-white border border-stone-200 rounded-2xl overflow-hidden shadow-sm">
               <table className="w-full">
                 <thead>
-                  <tr className="bg-stone-50 border-b border-stone-200">
+                  <tr className="bg-cream-deep/40 border-b border-stone-200">
                     <th className="text-left px-6 py-4 text-xs font-bold text-stone-500 uppercase tracking-wider">{t('orders.order_id')}</th>
                     <th className="text-left px-6 py-4 text-xs font-bold text-stone-500 uppercase tracking-wider">{t('orders.date')}</th>
                     <th className="text-left px-6 py-4 text-xs font-bold text-stone-500 uppercase tracking-wider">{t('orders.items')}</th>
@@ -171,7 +174,7 @@ export default function OrdersPage() {
                     return (
                       <tr
                         key={o.id}
-                        className="border-b border-stone-100 hover:bg-stone-50 transition-colors cursor-pointer last:border-b-0"
+                        className="border-b border-stone-100 hover:bg-gold/5 transition-colors cursor-pointer last:border-b-0"
                       >
                         <td className="px-6 py-4" onClick={() => navigate(`/orders/${o.id}`)}>
                           <strong className="text-sm font-mono text-stone-900">#{o.id?.slice(0, 8) || o.orderId}</strong>
@@ -240,7 +243,7 @@ export default function OrdersPage() {
                                   orderId: o.id,
                                 });
                               }}
-                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-50 border border-amber-200 text-amber-700 text-[10px] font-semibold hover:bg-amber-100 hover:border-amber-300 transition-all duration-200 active:scale-95"
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-gold/10 border border-gold/20 text-gold-dark text-[10px] font-semibold hover:bg-gold/15 hover:border-gold/30 transition-all duration-200 active:scale-95"
                             >
                               <Star size={10} />
                               Review
@@ -250,7 +253,7 @@ export default function OrdersPage() {
                           )}
                         </td>
                         <td className="px-6 py-4 text-right" onClick={() => navigate(`/orders/${o.id}`)}>
-                          <span className="inline-flex items-center gap-1 text-xs font-semibold text-stone-500 hover:text-stone-900 transition-colors">
+                          <span className="inline-flex items-center gap-1 text-xs font-semibold text-stone-500 hover:text-gold-dark transition-colors">
                             {t('orders.view')} <ChevronRight size={14} />
                           </span>
                         </td>

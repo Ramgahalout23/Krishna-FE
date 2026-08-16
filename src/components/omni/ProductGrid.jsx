@@ -14,29 +14,32 @@ export default function ProductGrid({
   if (!products || products.length === 0) return null;
 
   return (
-    <section className="py-10 sm:py-16 bg-white" id="catalog-section">
+    <section className="py-12 sm:py-20 bg-white" id="catalog-section">
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
         {showHeader && (
-          <div className="mb-8 sm:mb-10 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+          <div className="mb-8 sm:mb-12 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div>
-              <span className="inline-flex items-center gap-2.5 text-[11px] sm:text-xs font-display font-semibold text-amber-600 uppercase tracking-[0.22em]">
-                <span className="w-8 sm:w-10 h-px bg-amber-500" />
+              <span className="inline-flex items-center gap-3 text-[11px] sm:text-xs font-medium text-gold-dark uppercase tracking-[0.28em]">
+                <span className="w-10 h-px bg-gold" />
                 {subtitle}
               </span>
-              <h2 className="mt-2.5 text-2xl sm:text-4xl font-display font-bold text-stone-900 tracking-tight leading-tight">
+              <h2 className="mt-3 font-editorial text-3xl sm:text-4xl lg:text-5xl font-medium text-ink tracking-tight leading-[1.1]">
                 {title}
               </h2>
             </div>
             <button
               onClick={() => navigate(viewAllLink)}
-              className="inline-flex items-center gap-1.5 text-xs font-display font-semibold text-stone-700 hover:text-amber-600 uppercase tracking-wider transition-colors self-start sm:self-auto"
+              className="group inline-flex items-center gap-2 text-xs font-medium text-stone-600 hover:text-gold-dark uppercase tracking-[0.18em] transition-colors self-start sm:self-auto"
             >
-              View All <ArrowRight className="w-3.5 h-3.5" />
+              View All
+              <span className="w-8 h-8 rounded-full border border-stone-300 group-hover:border-gold group-hover:bg-gold group-hover:text-white flex items-center justify-center transition-all duration-300">
+                <ArrowRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-0.5" />
+              </span>
             </button>
           </div>
         )}
 
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-1.5 sm:gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-3 sm:gap-x-6 gap-y-7 sm:gap-y-10">
           {products.slice(0, 12).map((product) => (
             <ProductCard key={product.id} product={product} onQuickView={onQuickView} />
           ))}

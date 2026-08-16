@@ -24,7 +24,7 @@ function Confetti() {
   const [visible, setVisible] = useState(true);
 
   useEffect(() => {
-    const colors = ['#f59e0b', '#fbbf24', '#d97706', '#22c55e', '#3b82f6', '#ef4444', '#8b5cf6', '#ec4899'];
+    const colors = ['#B08D4F', '#C9A86A', '#8A6A35', '#E3DDCD', '#8B3A34', '#D9B88C', '#A98B6E', '#6B5B46'];
     const generated = Array.from({ length: 60 }, (_, i) => ({
       id: i,
       x: Math.random() * 100,
@@ -89,14 +89,14 @@ function AnimatedCheckmark() {
     >
       {/* Outer ring pulse */}
       <motion.div
-        className="absolute inset-0 rounded-full bg-amber-100"
+        className="absolute inset-0 rounded-full bg-gold/15"
         initial={{ scale: 1, opacity: 1 }}
         animate={{ scale: 2.2, opacity: 0 }}
         transition={{ duration: 1.5, delay: 0.5, repeat: Infinity, ease: 'ease-out' }}
       />
       {/* Circle */}
       <motion.div
-        className="relative w-20 h-20 md:w-24 md:h-24 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-200"
+        className="relative w-20 h-20 md:w-24 md:h-24 rounded-full bg-gradient-to-br from-gold to-gold-dark flex items-center justify-center shadow-lg shadow-gold/20"
         whileHover={{ scale: 1.05, rotate: [0, -5, 5, 0] }}
         transition={{ duration: 0.3 }}
       >
@@ -134,14 +134,14 @@ function AnimatedPending() {
     >
       {/* Outer ring pulse */}
       <motion.div
-        className="absolute inset-0 rounded-full bg-amber-100"
+        className="absolute inset-0 rounded-full bg-gold/15"
         initial={{ scale: 1, opacity: 1 }}
         animate={{ scale: 2.2, opacity: 0 }}
         transition={{ duration: 1.5, delay: 0.5, repeat: Infinity, ease: 'ease-out' }}
       />
       {/* Circle */}
       <motion.div
-        className="relative w-20 h-20 md:w-24 md:h-24 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-200"
+        className="relative w-20 h-20 md:w-24 md:h-24 rounded-full bg-gradient-to-br from-gold to-gold-dark flex items-center justify-center shadow-lg shadow-gold/20"
       >
         <svg width="40" height="40" viewBox="0 0 40 40" fill="none" className="md:w-12 md:h-12">
           <motion.circle
@@ -309,9 +309,9 @@ function OrderTimeline({ order }) {
   return (
     <div className="relative">
       {/* Timeline line */}
-      <div className="absolute left-5 top-0 bottom-0 w-0.5 bg-surface" />
+      <div className="absolute left-5 top-0 bottom-0 w-0.5 bg-stone-200" />
       <div
-        className="absolute left-5 top-0 w-0.5 bg-amber-500 transition-all duration-1000 ease-out"
+        className="absolute left-5 top-0 w-0.5 bg-gold transition-all duration-1000 ease-out"
         style={{ height: `${((currentStepIdx + 1) / steps.length) * 100}%` }}
       />
 
@@ -342,9 +342,9 @@ function OrderTimeline({ order }) {
                 <motion.div
                   className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-500 ${
                     isCompleted
-                      ? 'bg-amber-500 text-white shadow-md shadow-amber-200'
+                      ? 'bg-gold text-white shadow-md shadow-gold/20'
                       : 'bg-stone-100 text-stone-400'
-                  } ${isCurrent && isCompleted ? 'ring-4 ring-amber-100' : ''}`}
+                  } ${isCurrent && isCompleted ? 'ring-4 ring-gold/15' : ''}`}
                   whileHover={{ scale: 1.1 }}
                   transition={{ type: 'spring', stiffness: 300 }}
                 >
@@ -368,7 +368,7 @@ function OrderTimeline({ order }) {
                     <motion.span
                       initial={{ opacity: 0, scale: 0.8 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      className="text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full uppercase tracking-wider"
+                      className="text-[10px] font-bold text-gold-dark bg-gold/15 px-2 py-0.5 rounded-full uppercase tracking-wider"
                     >
                       {t('orders.detail.current')}
                     </motion.span>
@@ -384,7 +384,7 @@ function OrderTimeline({ order }) {
                     initial={{ opacity: 0, y: 5 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 1.5 }}
-                    className="mt-2 flex items-center gap-1.5 text-xs font-medium text-amber-700 bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-100 w-fit"
+                    className="mt-2 flex items-center gap-1.5 text-xs font-medium text-gold-dark bg-gold/10 px-3 py-1.5 rounded-lg border border-gold/20 w-fit"
                   >
                     <Calendar size={12} />
                     {t('orders.detail.est_delivery_by', { date: formatDate(order.estimatedDelivery) })}
@@ -429,7 +429,7 @@ function OrderItemCard({ item, index, customDesign }) {
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: 0.6 + index * 0.08 }}
-      className="flex gap-4 p-4 bg-white rounded-xl border border-stone-200 hover:border-amber-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group"
+      className="flex gap-4 p-4 bg-white rounded-xl border border-stone-200/70 hover:border-gold/30 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group"
     >
       {/* Product Image(s) */}
       <div className="flex gap-2 shrink-0">
@@ -470,10 +470,10 @@ function OrderItemCard({ item, index, customDesign }) {
 
       {/* Details */}
       <div className="flex-1 min-w-0">
-        <h4 className="font-semibold text-text-primary text-sm line-clamp-1 flex items-center gap-1.5">
+        <h4 className="font-medium text-ink text-sm line-clamp-1 flex items-center gap-1.5">
           {isCustom ? (
             <>
-              <Paintbrush size={13} className="text-text-muted shrink-0" />
+              <Paintbrush size={13} className="text-stone-400 shrink-0" />
               Custom Design {backDesignUrl ? '(Front & Back)' : ''}
             </>
           ) : (
@@ -483,19 +483,19 @@ function OrderItemCard({ item, index, customDesign }) {
         {isCustom ? (
           <>
             {(customDesign?.color || customDesign?.size || item.size) && (
-              <p className="text-xs text-text-muted mt-0.5">
+              <p className="text-xs text-stone-500 mt-0.5">
                 {[customDesign?.color || item.color, customDesign?.size || item.size].filter(Boolean).join(' / ')}
               </p>
             )}
             {customDesign?.placement && (
-              <p className="text-[10px] text-text-muted mt-0.5 flex items-center gap-1">
+              <p className="text-[10px] text-stone-400 mt-0.5 flex items-center gap-1">
                 <span className="inline-block w-1 h-1 rounded-full bg-stone-300" />
                 Print: {customDesign.placement === 'both' ? 'Front & Back' : customDesign.placement.charAt(0).toUpperCase() + customDesign.placement.slice(1)}
               </p>
             )}
             {displayNotes && (
-              <div className="mt-1.5 bg-amber-50 border border-amber-100 rounded-lg px-2.5 py-1.5">
-                <p className="text-[10px] text-amber-800 font-medium leading-relaxed line-clamp-2">
+              <div className="mt-1.5 bg-gold/10 border border-gold/20 rounded-lg px-2.5 py-1.5">
+                <p className="text-[10px] text-gold-dark font-medium leading-relaxed line-clamp-2">
                   "{displayNotes}"
                 </p>
               </div>
@@ -503,20 +503,20 @@ function OrderItemCard({ item, index, customDesign }) {
           </>
         ) : (
           (item.size || item.color) && (
-            <p className="text-xs text-text-muted mt-0.5">
+            <p className="text-xs text-stone-500 mt-0.5">
               {[item.size, item.color].filter(Boolean).join(' / ')}
             </p>
           )
         )}
         <div className="flex items-center justify-between mt-2">
           <div>
-            <span className="text-xs text-text-muted">{t('orders.detail.qty_label', { qty: item.quantity })}</span>
+            <span className="text-xs text-stone-500">{t('orders.detail.qty_label', { qty: item.quantity })}</span>
             <span className="mx-2 text-stone-200">|</span>
-            <span className="font-semibold text-text-primary text-sm">
+            <span className="font-semibold text-ink text-sm">
               {formatCurrency(item.price)}
             </span>
           </div>
-          <span className="font-bold text-text-primary text-sm">
+          <span className="font-bold text-ink text-sm">
             {formatCurrency(item.price * item.quantity)}
           </span>
         </div>
@@ -543,7 +543,7 @@ function ShareSection({ orderId }) {
 
   return (
     <div className="flex items-center gap-2">
-      <span className="text-xs text-text-muted font-medium uppercase tracking-wider mr-1">{t('orders.detail.share')}</span>
+      <span className="text-xs text-stone-500 font-medium uppercase tracking-wider mr-1">{t('orders.detail.share')}</span>
       <motion.button
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
@@ -560,24 +560,23 @@ function ShareSection({ orderId }) {
 /* ═══════════════ PRICING BREAKDOWN ═══════════════ */
 function PricingBreakdown({ subtotal, discount, shippingCost, total }) {
   const { t } = useTranslation();
-  return (
-    <div className="space-y-2.5">
+  return (      <div className="space-y-2.5">
       <div className="flex justify-between text-sm">
-        <span className="text-text-muted">{t('checkout.subtotal')}</span>
-        <span className="font-medium text-text-primary">{formatCurrency(subtotal)}</span>
+        <span className="text-stone-500">{t('checkout.subtotal')}</span>
+        <span className="font-medium text-ink">{formatCurrency(subtotal)}</span>
       </div>
       {(discount || 0) > 0 && (
         <div className="flex justify-between text-sm">
-          <span className="flex items-center gap-1.5 text-amber-600">
+          <span className="flex items-center gap-1.5 text-gold-dark">
             <Tag size={14} />
             {t('checkout.discount')}
           </span>
-          <span className="font-medium text-amber-600">-{formatCurrency(discount)}</span>
+          <span className="font-medium text-gold-dark">-{formatCurrency(discount)}</span>
         </div>
       )}
       <div className="flex justify-between text-sm">
-        <span className="text-text-muted">{t('checkout.shipping')}</span>
-        <span className={`font-medium ${shippingCost === 0 ? 'text-amber-600' : 'text-text-primary'}`}>
+        <span className="text-stone-500">{t('checkout.shipping')}</span>
+        <span className={`font-medium ${shippingCost === 0 ? 'text-gold-dark' : 'text-ink'}`}>
           {shippingCost === 0 ? (
             <span className="flex items-center gap-1">
               <Truck size={14} />
@@ -586,12 +585,12 @@ function PricingBreakdown({ subtotal, discount, shippingCost, total }) {
           ) : formatCurrency(shippingCost)}
         </span>
       </div>
-      <div className="border-t border-border pt-3 mt-3">
+      <div className="border-t border-stone-200 pt-3 mt-3">
         <div className="flex justify-between">
-          <span className="font-bold text-text-primary">{t('checkout.total')}</span>
-          <span className="font-bold text-text-primary text-lg">{formatCurrency(total)}</span>
+          <span className="font-semibold text-ink">{t('checkout.total')}</span>
+          <span className="font-bold text-ink text-lg">{formatCurrency(total)}</span>
         </div>
-        <p className="text-[10px] text-text-muted mt-1 text-right">{t('orders.detail.inclusive_tax')}</p>
+        <p className="text-[10px] text-stone-400 mt-1 text-right">{t('orders.detail.inclusive_tax')}</p>
       </div>
     </div>
   );
@@ -642,25 +641,25 @@ function OrderUpdateSubscription({ orderId, order }) {
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="bg-amber-50 rounded-2xl border border-amber-200 p-5 md:p-7 shadow-sm text-center"
+        className="bg-gold/10 rounded-2xl border border-gold/20 p-5 md:p-7 shadow-sm text-center"
       >
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-          className="w-12 h-12 bg-amber-500 rounded-full flex items-center justify-center mx-auto mb-3"
+          className="w-12 h-12 bg-gold rounded-full flex items-center justify-center mx-auto mb-3"
         >
-          <Bell size={22} />
+          <Bell size={22} className="text-ink" />
         </motion.div>
-        <h4 className="font-bold text-text-primary text-sm mb-1">{t('orders.detail.subscribed_title')}</h4>
-        <p className="text-xs text-text-secondary">
+        <h4 className="font-bold text-ink text-sm mb-1">{t('orders.detail.subscribed_title')}</h4>
+        <p className="text-xs text-stone-500">
           {emailEnabled && smsEnabled
             ? t('orders.detail.subscribed_email_sms')
             : emailEnabled
             ? t('orders.detail.subscribed_email_only')
             : t('orders.detail.subscribed_sms_only')}
         </p>
-        <p className="text-[10px] text-text-muted mt-2">
+        <p className="text-[10px] text-stone-400 mt-2">
           {t('orders.detail.subscribed_desc')}
         </p>
       </motion.div>
@@ -672,13 +671,13 @@ function OrderUpdateSubscription({ orderId, order }) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 1.45 }}
-      className="bg-white rounded-2xl border border-stone-200 p-5 md:p-7 shadow-sm hover:shadow-md hover:border-amber-200 transition-all duration-300"
+      className="bg-white rounded-2xl border border-stone-200 p-5 md:p-7 shadow-sm hover:shadow-md hover:border-gold/30 transition-all duration-300"
     >
       <button
         onClick={() => setExpanded(!expanded)}
         className="w-full flex items-center justify-between"
       >
-        <h3 className="font-display text-base font-bold text-text-primary flex items-center gap-2">
+        <h3 className="font-editorial text-xl font-medium text-ink flex items-center gap-2">
           <Bell size={18} />
           {t('orders.detail.subscription_title')}
         </h3>
@@ -699,29 +698,29 @@ function OrderUpdateSubscription({ orderId, order }) {
             transition={{ duration: 0.3, ease: 'easeInOut' }}
             className="overflow-hidden"
           >
-            <p className="text-xs text-text-muted mt-3 mb-4">
+            <p className="text-xs text-stone-400 mt-3 mb-4">
               {t('orders.detail.subscription_desc')}
             </p>
 
             <form onSubmit={handleSubscribe} className="space-y-3">
               {/* Email Toggle */}
-              <div className="flex items-center justify-between p-3 bg-stone-50 rounded-xl border border-stone-200 hover:border-amber-200 transition-colors">
+              <div className="flex items-center justify-between p-3 bg-stone-50 rounded-xl border border-stone-200 hover:border-gold/30 transition-colors">
                 <div className="flex items-center gap-3">
-                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${emailEnabled ? 'bg-amber-100 text-amber-600' : 'bg-stone-100 text-stone-400'}`}>
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${emailEnabled ? 'bg-gold/15 text-gold-dark' : 'bg-stone-100 text-stone-400'}`}>
                     <Mail size={16} />
                   </div>
                   <div>
                     <label className="text-sm font-bold text-stone-700 cursor-pointer" onClick={() => setEmailEnabled(!emailEnabled)}>
                       {t('orders.detail.email_updates')}
                     </label>
-                    <p className="text-[10px] text-text-muted">{t('orders.detail.order_alerts')}</p>
+                    <p className="text-[10px] text-stone-400">{t('orders.detail.order_alerts')}</p>
                   </div>
                 </div>
                 <button
                   type="button"
                   onClick={() => setEmailEnabled(!emailEnabled)}
                   className={`relative w-10 h-5 rounded-full transition-colors duration-300 ${
-                    emailEnabled ? 'bg-amber-500' : 'bg-stone-300'
+                    emailEnabled ? 'bg-gold' : 'bg-stone-300'
                   }`}
                 >
                   <motion.div
@@ -748,7 +747,7 @@ function OrderUpdateSubscription({ orderId, order }) {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="your@email.com"
-                        className="w-full pl-9 pr-3 py-2.5 text-sm bg-white border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all placeholder-stone-300"
+                        className="w-full pl-9 pr-3 py-2.5 text-sm bg-white border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gold/20 focus:border-gold transition-all placeholder-stone-300"
                       />
                     </div>
                   </motion.div>
@@ -756,23 +755,23 @@ function OrderUpdateSubscription({ orderId, order }) {
               </AnimatePresence>
 
               {/* SMS Toggle */}
-              <div className="flex items-center justify-between p-3 bg-stone-50 rounded-xl border border-stone-200 hover:border-amber-200 transition-colors">
+              <div className="flex items-center justify-between p-3 bg-stone-50 rounded-xl border border-stone-200 hover:border-gold/30 transition-colors">
                 <div className="flex items-center gap-3">
-                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${smsEnabled ? 'bg-amber-100 text-amber-600' : 'bg-stone-100 text-stone-400'}`}>
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${smsEnabled ? 'bg-gold/15 text-gold-dark' : 'bg-stone-100 text-stone-400'}`}>
                     <Smartphone size={16} />
                   </div>
                   <div>
                     <label className="text-sm font-bold text-stone-700 cursor-pointer" onClick={() => setSmsEnabled(!smsEnabled)}>
                       {t('orders.detail.sms_updates')}
                     </label>
-                    <p className="text-[10px] text-text-muted">{t('orders.detail.sms_alerts')}</p>
+                    <p className="text-[10px] text-stone-400">{t('orders.detail.sms_alerts')}</p>
                   </div>
                 </div>
                 <button
                   type="button"
                   onClick={() => setSmsEnabled(!smsEnabled)}
                   className={`relative w-10 h-5 rounded-full transition-colors duration-300 ${
-                    smsEnabled ? 'bg-amber-500' : 'bg-stone-300'
+                    smsEnabled ? 'bg-gold' : 'bg-stone-300'
                   }`}
                 >
                   <motion.div
@@ -799,7 +798,7 @@ function OrderUpdateSubscription({ orderId, order }) {
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
                         placeholder="+1 (555) 123-4567"
-                        className="w-full pl-9 pr-3 py-2.5 text-sm bg-white border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all placeholder-stone-300"
+                        className="w-full pl-9 pr-3 py-2.5 text-sm bg-white border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gold/20 focus:border-gold transition-all placeholder-stone-300"
                       />
                     </div>
                   </motion.div>
@@ -815,7 +814,7 @@ function OrderUpdateSubscription({ orderId, order }) {
                 className={`w-full py-2.5 rounded-xl text-sm font-semibold text-white transition-all ${
                   submitting || (!emailEnabled && !smsEnabled)
                     ? 'bg-stone-300 cursor-not-allowed'
-                    : 'bg-amber-500 hover:bg-amber-400 text-stone-950 shadow-md shadow-amber-500/20'
+                    : 'bg-gold hover:bg-gold-soft text-ink shadow-md shadow-gold/25'
                 }`}
               >
                 {submitting ? (
@@ -837,7 +836,7 @@ function OrderUpdateSubscription({ orderId, order }) {
 
       {/* Collapsed hint */}
       {!expanded && (
-        <p className="text-[10px] text-text-muted mt-2 text-left">
+        <p className="text-[10px] text-stone-400 mt-2 text-left">
           {t('orders.detail.collapsed_hint')}
         </p>
       )}
@@ -919,7 +918,7 @@ export default function OrderThankYouPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-stone-100 flex items-start justify-center pt-24 md:pt-32 px-4">
+      <div className="min-h-screen bg-cream flex items-start justify-center pt-24 md:pt-32 px-4">
         <div className="w-full max-w-3xl">
           {/* Hero skeleton */}
           <div className="text-center mb-12">
@@ -975,7 +974,7 @@ export default function OrderThankYouPage() {
 
   if (!order) {
     return (
-      <div className="min-h-screen bg-stone-100 flex items-center justify-center px-4">
+      <div className="min-h-screen bg-cream flex items-center justify-center px-4">
         <div className="text-center max-w-md">
           <motion.div
             initial={{ scale: 0 }}
@@ -985,11 +984,11 @@ export default function OrderThankYouPage() {
           >
             <Package size={36} />
           </motion.div>
-          <h2 className="font-display text-2xl font-bold text-text-primary mb-2">{t('orders.detail.order_not_found')}</h2>
-          <p className="text-text-muted mb-8">{t('orders.detail.order_not_found_desc')}</p>
+          <h2 className="font-editorial text-3xl font-medium text-ink tracking-tight mb-2">{t('orders.detail.order_not_found')}</h2>
+          <p className="text-stone-500 mb-8">{t('orders.detail.order_not_found_desc')}</p>
           <Link
             to="/orders"
-            className="inline-flex items-center gap-2 bg-amber-500 text-stone-950 px-6 py-3 rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-amber-400 transition-all shadow-md shadow-amber-500/20"
+            className="inline-flex items-center gap-2 bg-ink text-white px-7 py-3 rounded-full font-bold text-xs uppercase tracking-[0.16em] hover:bg-gold hover:text-ink transition-all shadow-md shadow-stone-900/10"
           >
             <ArrowLeft size={18} />
             {t('orders.detail.back_to_my_orders')}
@@ -1065,7 +1064,7 @@ export default function OrderThankYouPage() {
           email: order.user?.email || '',
           contact: '',
         },
-        theme: { color: '#f59e0b' },
+        theme: { color: '#B08D4F' },
         handler: async (response) => {
           try {
             await paymentsAPI.verifyRazorpayPayment({
@@ -1118,7 +1117,7 @@ export default function OrderThankYouPage() {
     <>
       {isConfirmed && <Confetti />}
 
-      <div ref={pageRef} className="min-h-screen bg-stone-100">
+      <div ref={pageRef} className="min-h-screen bg-cream">
         <SEOHead
           title={order ? `${statusInfo.label} #${orderIdShort} | ${storeName}` : `Order | ${storeName}`}
           description={order ? (isReturned || isReturnRequested
@@ -1145,10 +1144,11 @@ export default function OrderThankYouPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
             >
-              <span className="text-xs font-bold text-amber-600 uppercase tracking-widest block mb-2">
+              <span className="inline-flex items-center gap-2.5 text-[11px] font-medium text-gold-dark uppercase tracking-[0.28em] mb-2">
+                <span className="w-10 h-px bg-gold" />
                 {t('orders.detail.order_confirmed_desc')}
               </span>
-              <h1 className="text-3xl sm:text-4xl font-extrabold text-stone-900 tracking-tight leading-[1.1]">
+              <h1 className="font-editorial text-4xl sm:text-5xl font-medium text-ink tracking-tight leading-[1.1]">
                 {t('orders.detail.order_confirmed')}
               </h1>
             </motion.div>
@@ -1159,7 +1159,7 @@ export default function OrderThankYouPage() {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.4, delay: 0.7 }}
             >
-              <div className="mt-4 inline-flex items-center gap-2 bg-amber-100 text-amber-800 px-4 py-2 rounded-full text-xs font-bold shadow-sm border border-amber-200">
+              <div className="mt-4 inline-flex items-center gap-2 bg-ink text-gold-soft px-4 py-2 rounded-full text-xs font-bold shadow-md border border-gold/30">
                 <Package size={16} />
                 Order #{orderIdShort}
                 <button
@@ -1167,7 +1167,7 @@ export default function OrderThankYouPage() {
                     navigator.clipboard.writeText(orderIdShort);
                     toast.success(t('orders.detail.order_id_copied'));
                   }}
-                  className="ml-1 hover:text-stone-300 transition-colors"
+                  className="ml-1 hover:text-white transition-colors"
                   title={t('orders.detail.copy_order_id')}
                 >
                   <Copy size={14} />
@@ -1189,11 +1189,11 @@ export default function OrderThankYouPage() {
               <span className="text-stone-200">|</span>
               <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold ${
                 isConfirmed
-                  ? 'bg-amber-100 text-amber-800'
+                  ? 'bg-gold/15 text-gold-dark'
                   : isCancelled || isFailed
                   ? 'bg-red-50 text-red-700'
                   : isPending
-                  ? 'bg-amber-50 text-amber-700'
+                  ? 'bg-gold/10 text-gold-dark'
                   : isReturned
                   ? 'bg-purple-50 text-purple-700'
                   : isReturnRequested
@@ -1209,7 +1209,7 @@ export default function OrderThankYouPage() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 1.3 }}
-              className="mt-4 flex items-center justify-center gap-2 text-xs text-stone-500 bg-stone-100 border border-stone-200 py-2 px-4 rounded-xl mx-auto max-w-md"
+              className="mt-4 flex items-center justify-center gap-2 text-xs text-stone-500 bg-white border border-gold/20 py-2 px-4 rounded-full mx-auto max-w-md"
             >
               <Mail size={14} />
               <span>{t('orders.detail.email_confirmation_notice')}</span>
@@ -1242,10 +1242,10 @@ export default function OrderThankYouPage() {
               transition={{ duration: 0.6, delay: 0.3 }}
               className="mt-6 md:mt-8"
             >
-              <h1 className="font-display text-3xl md:text-5xl font-extrabold text-text-primary tracking-tight leading-[1.1]">
+              <h1 className="font-editorial text-4xl md:text-6xl font-medium text-ink tracking-tight leading-[1.1]">
                 {t('orders.detail.return_requested_title')}
               </h1>
-              <p className="text-text-muted mt-3 md:mt-4 text-base md:text-lg max-w-lg mx-auto">
+              <p className="text-stone-500 mt-3 md:mt-4 text-base md:text-lg max-w-lg mx-auto">
                 {t('orders.detail.return_requested_hero_desc')}
               </p>
             </motion.div>
@@ -1256,7 +1256,7 @@ export default function OrderThankYouPage() {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.4, delay: 0.7 }}
             >
-              <div className="mt-4 inline-flex items-center gap-2 bg-amber-100 text-amber-800 px-4 py-2 rounded-full text-xs font-bold shadow-sm border border-amber-200">
+              <div className="mt-4 inline-flex items-center gap-2 bg-ink text-gold-soft px-4 py-2 rounded-full text-xs font-bold shadow-md border border-gold/30">
                 <Package size={16} />
                 Order #{orderIdShort}
                 <button
@@ -1264,7 +1264,7 @@ export default function OrderThankYouPage() {
                     navigator.clipboard.writeText(orderIdShort);
                     toast.success(t('orders.detail.order_id_copied'));
                   }}
-                  className="ml-1 hover:text-stone-300 transition-colors"
+                  className="ml-1 hover:text-white transition-colors"
                   title={t('orders.detail.copy_order_id')}
                 >
                   <Copy size={14} />
@@ -1298,7 +1298,7 @@ export default function OrderThankYouPage() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 1.3 }}
-              className="mt-4 flex items-center justify-center gap-2 text-xs text-stone-500 bg-stone-100 border border-stone-200 py-2 px-4 rounded-xl mx-auto max-w-md"
+              className="mt-4 flex items-center justify-center gap-2 text-xs text-stone-500 bg-white border border-gold/20 py-2 px-4 rounded-full mx-auto max-w-md"
             >
               <RefreshCw size={14} />
               <span>{t('orders.detail.return_notice')}</span>
@@ -1331,10 +1331,10 @@ export default function OrderThankYouPage() {
               transition={{ duration: 0.6, delay: 0.3 }}
               className="mt-6 md:mt-8"
             >
-              <h1 className="font-display text-3xl md:text-5xl font-extrabold text-text-primary tracking-tight leading-[1.1]">
+              <h1 className="font-editorial text-4xl md:text-6xl font-medium text-ink tracking-tight leading-[1.1]">
                 {t('orders.detail.return_completed_title')}
               </h1>
-              <p className="text-text-muted mt-3 md:mt-4 text-base md:text-lg max-w-lg mx-auto">
+              <p className="text-stone-500 mt-3 md:mt-4 text-base md:text-lg max-w-lg mx-auto">
                 {t('orders.detail.return_completed_hero_desc')}
               </p>
             </motion.div>
@@ -1345,7 +1345,7 @@ export default function OrderThankYouPage() {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.4, delay: 0.7 }}
             >
-              <div className="mt-4 inline-flex items-center gap-2 bg-amber-100 text-amber-800 px-4 py-2 rounded-full text-xs font-bold shadow-sm border border-amber-200">
+              <div className="mt-4 inline-flex items-center gap-2 bg-ink text-gold-soft px-4 py-2 rounded-full text-xs font-bold shadow-md border border-gold/30">
                 <Package size={16} />
                 Order #{orderIdShort}
                 <button
@@ -1353,7 +1353,7 @@ export default function OrderThankYouPage() {
                     navigator.clipboard.writeText(orderIdShort);
                     toast.success(t('orders.detail.order_id_copied'));
                   }}
-                  className="ml-1 hover:text-stone-300 transition-colors"
+                  className="ml-1 hover:text-white transition-colors"
                   title={t('orders.detail.copy_order_id')}
                 >
                   <Copy size={14} />
@@ -1387,7 +1387,7 @@ export default function OrderThankYouPage() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 1.3 }}
-              className="mt-4 flex items-center justify-center gap-2 text-xs text-stone-500 bg-stone-100 border border-stone-200 py-2 px-4 rounded-xl mx-auto max-w-md"
+              className="mt-4 flex items-center justify-center gap-2 text-xs text-stone-500 bg-white border border-gold/20 py-2 px-4 rounded-full mx-auto max-w-md"
             >
               <Check size={14} Circle />
               <span>{t('orders.detail.refund_notice')}</span>
@@ -1400,8 +1400,8 @@ export default function OrderThankYouPage() {
         <section className="relative pt-12 pb-8 md:pt-20 md:pb-12 overflow-hidden">
           {/* Background decoration */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <div className="absolute -top-40 -right-40 w-80 h-80 bg-amber-50 rounded-full opacity-60" />
-            <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-amber-50/30 rounded-full" />
+            <div className="absolute -top-40 -right-40 w-80 h-80 bg-gold/10 rounded-full opacity-60" />
+            <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gold/5 rounded-full" />
           </div>
 
           <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center relative z-10">
@@ -1419,10 +1419,10 @@ export default function OrderThankYouPage() {
               transition={{ duration: 0.6, delay: 0.3 }}
               className="mt-6 md:mt-8"
             >
-              <h1 className="font-display text-3xl md:text-5xl font-extrabold text-text-primary tracking-tight leading-[1.1]">
+              <h1 className="font-editorial text-4xl md:text-6xl font-medium text-ink tracking-tight leading-[1.1]">
                 {t('orders.detail.payment_pending_title')}
               </h1>
-              <p className="text-text-muted mt-3 md:mt-4 text-base md:text-lg max-w-lg mx-auto">
+              <p className="text-stone-500 mt-3 md:mt-4 text-base md:text-lg max-w-lg mx-auto">
                 {t('orders.detail.payment_pending_desc')}
               </p>
             </motion.div>
@@ -1433,7 +1433,7 @@ export default function OrderThankYouPage() {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.4, delay: 0.7 }}
             >
-              <div className="mt-4 inline-flex items-center gap-2 bg-amber-100 text-amber-800 px-4 py-2 rounded-full text-xs font-bold shadow-sm border border-amber-200">
+              <div className="mt-4 inline-flex items-center gap-2 bg-ink text-gold-soft px-4 py-2 rounded-full text-xs font-bold shadow-md border border-gold/30">
                 <Package size={16} />
                 Order #{orderIdShort}
                 <button
@@ -1441,7 +1441,7 @@ export default function OrderThankYouPage() {
                     navigator.clipboard.writeText(orderIdShort);
                     toast.success(t('orders.detail.order_id_copied'));
                   }}
-                  className="ml-1 hover:text-stone-300 transition-colors"
+                  className="ml-1 hover:text-white transition-colors"
                   title={t('orders.detail.copy_order_id')}
                 >
                   <Copy size={14} />
@@ -1463,11 +1463,11 @@ export default function OrderThankYouPage() {
               <span className="text-stone-200">|</span>
               <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold ${
                 isConfirmed
-                  ? 'bg-amber-100 text-amber-800'
+                  ? 'bg-gold/15 text-gold-dark'
                   : isCancelled || isFailed
                   ? 'bg-red-50 text-red-700'
                   : isPending
-                  ? 'bg-amber-50 text-amber-700'
+                  ? 'bg-gold/10 text-gold-dark'
                   : 'bg-stone-100 text-stone-600'
               }`}>
                 {statusInfo.label}
@@ -1485,7 +1485,7 @@ export default function OrderThankYouPage() {
                 <button
                   onClick={handleRetryPayment}
                   disabled={retrying}
-                  className="inline-flex items-center gap-2 bg-amber-500 text-stone-950 px-6 py-3 rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-amber-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-amber-500/20"
+                  className="inline-flex items-center gap-2 bg-gold text-ink px-7 py-3 rounded-full font-bold text-xs uppercase tracking-[0.16em] hover:bg-gold-soft transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-gold/25"
                 >
                   {retrying ? (
                     <><RefreshCw size={18} /> {t('orders.detail.processing')}</>
@@ -1504,7 +1504,7 @@ export default function OrderThankYouPage() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 1.5 }}
-              className="mt-4 flex items-center justify-center gap-2 text-xs text-stone-500 bg-stone-100 border border-stone-200 py-2 px-4 rounded-xl mx-auto max-w-md"
+              className="mt-4 flex items-center justify-center gap-2 text-xs text-stone-500 bg-white border border-gold/20 py-2 px-4 rounded-full mx-auto max-w-md"
             >
               <Mail size={14} />
               <span>{t('orders.detail.no_payment_taken')}</span>
@@ -1536,10 +1536,10 @@ export default function OrderThankYouPage() {
               transition={{ duration: 0.6, delay: 0.3 }}
               className="mt-6 md:mt-8"
             >
-              <h1 className="font-display text-3xl md:text-5xl font-extrabold text-text-primary tracking-tight leading-[1.1]">
+              <h1 className="font-editorial text-4xl md:text-6xl font-medium text-ink tracking-tight leading-[1.1]">
                 {t('orders.detail.order_cancelled_title')}
               </h1>
-              <p className="text-text-muted mt-3 md:mt-4 text-base md:text-lg max-w-lg mx-auto">
+              <p className="text-stone-500 mt-3 md:mt-4 text-base md:text-lg max-w-lg mx-auto">
                 {t('orders.detail.order_cancelled_hero_desc')}
               </p>
             </motion.div>
@@ -1550,7 +1550,7 @@ export default function OrderThankYouPage() {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.4, delay: 0.7 }}
             >
-              <div className="mt-4 inline-flex items-center gap-2 bg-amber-100 text-amber-800 px-4 py-2 rounded-full text-xs font-bold shadow-sm border border-amber-200">
+              <div className="mt-4 inline-flex items-center gap-2 bg-ink text-gold-soft px-4 py-2 rounded-full text-xs font-bold shadow-md border border-gold/30">
                 <Package size={16} />
                 Order #{orderIdShort}
                 <button
@@ -1558,7 +1558,7 @@ export default function OrderThankYouPage() {
                     navigator.clipboard.writeText(orderIdShort);
                     toast.success(t('orders.detail.order_id_copied'));
                   }}
-                  className="ml-1 hover:text-stone-300 transition-colors"
+                  className="ml-1 hover:text-white transition-colors"
                   title={t('orders.detail.copy_order_id')}
                 >
                   <Copy size={14} />
@@ -1580,11 +1580,11 @@ export default function OrderThankYouPage() {
               <span className="text-stone-200">|</span>
               <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold ${
                 isConfirmed
-                  ? 'bg-amber-100 text-amber-800'
+                  ? 'bg-gold/15 text-gold-dark'
                   : isCancelled || isFailed
                   ? 'bg-red-50 text-red-700'
                   : isPending
-                  ? 'bg-amber-50 text-amber-700'
+                  ? 'bg-gold/10 text-gold-dark'
                   : 'bg-stone-100 text-stone-600'
               }`}>
                 {statusInfo.label}
@@ -1617,10 +1617,10 @@ export default function OrderThankYouPage() {
               transition={{ duration: 0.6, delay: 0.3 }}
               className="mt-6 md:mt-8"
             >
-              <h1 className="font-display text-3xl md:text-5xl font-extrabold text-text-primary tracking-tight leading-[1.1]">
+              <h1 className="font-editorial text-4xl md:text-6xl font-medium text-ink tracking-tight leading-[1.1]">
                 {t('orders.detail.payment_failed_title')}
               </h1>
-              <p className="text-text-muted mt-3 md:mt-4 text-base md:text-lg max-w-lg mx-auto">
+              <p className="text-stone-500 mt-3 md:mt-4 text-base md:text-lg max-w-lg mx-auto">
                 {t('orders.detail.payment_failed_desc')}
               </p>
             </motion.div>
@@ -1631,7 +1631,7 @@ export default function OrderThankYouPage() {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.4, delay: 0.7 }}
             >
-              <div className="mt-4 inline-flex items-center gap-2 bg-amber-100 text-amber-800 px-4 py-2 rounded-full text-xs font-bold shadow-sm border border-amber-200">
+              <div className="mt-4 inline-flex items-center gap-2 bg-ink text-gold-soft px-4 py-2 rounded-full text-xs font-bold shadow-md border border-gold/30">
                 <Package size={16} />
                 Order #{orderIdShort}
                 <button
@@ -1639,7 +1639,7 @@ export default function OrderThankYouPage() {
                     navigator.clipboard.writeText(orderIdShort);
                     toast.success(t('orders.detail.order_id_copied'));
                   }}
-                  className="ml-1 hover:text-stone-300 transition-colors"
+                  className="ml-1 hover:text-white transition-colors"
                   title={t('orders.detail.copy_order_id')}
                 >
                   <Copy size={14} />
@@ -1679,7 +1679,7 @@ export default function OrderThankYouPage() {
                 <button
                   onClick={handleRetryPayment}
                   disabled={retrying}
-                  className="inline-flex items-center gap-2 bg-amber-500 text-stone-950 px-6 py-3 rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-amber-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-amber-500/20"
+                  className="inline-flex items-center gap-2 bg-gold text-ink px-7 py-3 rounded-full font-bold text-xs uppercase tracking-[0.16em] hover:bg-gold-soft transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-gold/25"
                 >
                   {retrying ? (
                     <><RefreshCw size={18} /> {t('orders.detail.processing')}</>
@@ -1707,10 +1707,10 @@ export default function OrderThankYouPage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.8 }}
-                  className="bg-white rounded-2xl border border-stone-200 p-5 md:p-7 shadow-sm hover:shadow-md hover:border-amber-200 transition-all duration-300"
+                  className="bg-white rounded-2xl border border-stone-200 p-5 md:p-7 shadow-sm hover:shadow-md hover:border-gold/30 transition-all duration-300"
                 >
                   <div className="flex items-center justify-between mb-5">
-                    <h2 className="font-display text-lg font-bold text-text-primary flex items-center gap-2">
+                    <h2 className="font-editorial text-xl font-medium text-ink flex items-center gap-2">
                       <Truck size={20} />
                       {t('orders.detail.order_timeline')}
                     </h2>
@@ -1726,13 +1726,13 @@ export default function OrderThankYouPage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 1.2 }}
-                  className="bg-white rounded-2xl border border-stone-200 p-5 md:p-7 shadow-sm hover:shadow-md hover:border-amber-200 transition-all duration-300"
+                  className="bg-white rounded-2xl border border-stone-200 p-5 md:p-7 shadow-sm hover:shadow-md hover:border-gold/30 transition-all duration-300"
                 >
                   <div className="flex items-center justify-between mb-4">
-                    <h2 className="font-display text-lg font-bold text-text-primary flex items-center gap-2">
+                    <h2 className="font-editorial text-xl font-medium text-ink flex items-center gap-2">
                       <ShoppingBag size={20} />
                       {t('orders.detail.items_ordered')}
-                      <span className="text-sm font-medium text-text-muted ml-1">({order.items?.length || 0})</span>
+                      <span className="text-sm font-medium text-stone-400 ml-1">({order.items?.length || 0})</span>
                     </h2>
                   </div>
                   <div className="space-y-3">
@@ -1752,28 +1752,28 @@ export default function OrderThankYouPage() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 1 }}
-                    className="bg-white rounded-2xl border border-stone-200 p-5 md:p-7 shadow-sm hover:shadow-md hover:border-amber-200 transition-all duration-300"
+                    className="bg-white rounded-2xl border border-stone-200 p-5 md:p-7 shadow-sm hover:shadow-md hover:border-gold/30 transition-all duration-300"
                   >
-                    <h3 className="font-display text-base font-bold text-text-primary flex items-center gap-2 mb-3">
+                    <h3 className="font-editorial text-xl font-medium text-ink flex items-center gap-2 mb-3">
                       <MapPin size={18} />
                       {t('checkout.shipping_address')}
                     </h3>
-                    <div className="text-sm text-text-secondary space-y-1">
+                    <div className="text-sm text-stone-500 space-y-1">
                       {(() => {
                         const addr = order.shippingAddress || order.address || {};
                         const addrObj = typeof addr === 'string' ? JSON.parse(addr) : addr;
                         return (
                           <>
-                            <p className="font-medium text-text-primary">{addrObj.firstName || ''} {addrObj.lastName || ''}</p>
+                            <p className="font-medium text-ink">{addrObj.firstName || ''} {addrObj.lastName || ''}</p>
                             <p>{addrObj.addressLine1 || ''}</p>
                             {addrObj.addressLine2 && <p>{addrObj.addressLine2}</p>}
                             <p>
                               {[addrObj.city, addrObj.state].filter(Boolean).join(', ')}
                               {addrObj.zipCode ? ` - ${addrObj.zipCode}` : ''}
                             </p>
-                            <p className="text-text-muted">{addrObj.phone || ''}</p>
+                            <p className="text-stone-400">{addrObj.phone || ''}</p>
                             {addrObj.email && (
-                              <a href={`mailto:${addrObj.email}`} className="text-text-muted hover:text-text-primary transition-colors flex items-center gap-1 mt-1">
+                              <a href={`mailto:${addrObj.email}`} className="text-stone-500 hover:text-gold-dark transition-colors flex items-center gap-1 mt-1">
                                 <Mail size={12} />
                                 {addrObj.email}
                               </a>
@@ -1790,9 +1790,8 @@ export default function OrderThankYouPage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 1.1 }}
-                  className="bg-white rounded-2xl border border-stone-200 p-5 md:p-7 shadow-sm hover:shadow-md hover:border-amber-200 transition-all duration-300"
-                >
-                  <h3 className="font-display text-base font-bold text-text-primary flex items-center gap-2 mb-4">
+                  className="bg-white rounded-2xl border border-stone-200 p-5 md:p-7 shadow-sm hover:shadow-md hover:border-gold/30 transition-all duration-300"
+                >                    <h3 className="font-editorial text-xl font-medium text-ink flex items-center gap-2 mb-4">
                     <Info size={18} />
                     {t('orders.detail.payment_summary')}
                   </h3>
@@ -1805,10 +1804,10 @@ export default function OrderThankYouPage() {
 
                   {/* Payment Method & Status */}
                   {paymentMethod && (
-                    <div className="mt-4 pt-4 border-t border-border space-y-3">
+                    <div className="mt-4 pt-4 border-t border-stone-200 space-y-3">
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-text-muted">{t('orders.detail.payment_method')}</span>
-                        <span className="font-medium text-text-primary flex items-center gap-2">
+                        <span className="text-stone-500">{t('orders.detail.payment_method')}</span>
+                        <span className="font-medium text-ink flex items-center gap-2">
                           {(() => {
                             const { icon: PmtIcon, bg: iconBg, color: iconColor } = getPaymentIcon(paymentMethod);
                             return (
@@ -1821,10 +1820,10 @@ export default function OrderThankYouPage() {
                         </span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-text-muted">{t('orders.detail.payment_status')}</span>
+                        <span className="text-stone-500">{t('orders.detail.payment_status')}</span>
                         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
                           paymentStatus === 'COMPLETED'
-                            ? 'bg-amber-50 text-amber-700'
+                            ? 'bg-gold/10 text-gold-dark'
                             : paymentStatus === 'FAILED'
                             ? 'bg-red-50 text-red-700'
                             : paymentStatus === 'REFUNDED'
@@ -1851,13 +1850,13 @@ export default function OrderThankYouPage() {
                               <CheckCircle size={18} />
                             </div>
                             <div>
-                              <p className="text-sm font-bold text-text-primary">{t('orders.detail.refund_completed')}</p>
-                              <p className="text-xs text-text-muted">
+                              <p className="text-sm font-semibold text-ink">{t('orders.detail.refund_completed')}</p>
+                              <p className="text-xs text-stone-500">
                                 {t('orders.detail.refund_completed_desc', { amount: formatCurrency(total) })}
                               </p>
                             </div>
                           </div>
-                          <div className="flex items-center gap-2 text-[10px] text-text-muted pt-1 border-t border-purple-200/50">
+                          <div className="flex items-center gap-2 text-[10px] text-stone-500 pt-1 border-t border-purple-200/50">
                             <RefreshCw size={10} />
                             <span>{t('orders.detail.refund_timing_note')}</span>
                           </div>
@@ -1875,9 +1874,9 @@ export default function OrderThankYouPage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 1.4 }}
-                  className="bg-white rounded-2xl border border-stone-200 p-5 md:p-7 shadow-sm hover:shadow-md hover:border-amber-200 transition-all duration-300"
+                  className="bg-white rounded-2xl border border-stone-200 p-5 md:p-7 shadow-sm hover:shadow-md hover:border-gold/30 transition-all duration-300"
                 >
-                  <h3 className="font-display text-base font-bold text-text-primary mb-4">{t('orders.detail.quick_actions')}</h3>
+                  <h3 className="font-editorial text-xl font-medium text-ink mb-4">{t('orders.detail.quick_actions')}</h3>
                   <div className="space-y-3">
                     {(isReturned || isReturnRequested) && (
                       <Link
@@ -1895,7 +1894,7 @@ export default function OrderThankYouPage() {
                       <button
                         onClick={handleRetryPayment}
                         disabled={retrying}
-                        className="flex items-center justify-between w-full px-4 py-3 bg-amber-50 hover:bg-amber-100 rounded-xl text-sm font-semibold text-amber-700 hover:text-amber-800 transition-all group disabled:opacity-50"
+                        className="flex items-center justify-between w-full px-4 py-3 bg-gold/10 hover:bg-gold/15 rounded-xl text-sm font-semibold text-gold-dark transition-all group disabled:opacity-50"
                       >
                         <span className="flex items-center gap-2.5">
                           <ShieldCheck size={16} />
@@ -1906,7 +1905,7 @@ export default function OrderThankYouPage() {
                     )}
                     <Link
                       to={`/orders/${id}`}
-                      className="flex items-center justify-between w-full px-4 py-3 bg-stone-50 hover:bg-amber-50 rounded-xl text-sm font-bold text-stone-700 hover:text-amber-800 transition-all group"
+                      className="flex items-center justify-between w-full px-4 py-3 bg-stone-50 hover:bg-gold/10 rounded-xl text-sm font-bold text-stone-700 hover:text-gold-dark transition-all group"
                     >
                       <span className="flex items-center gap-2.5">
                         <ExternalLink size={16} />
@@ -1916,7 +1915,7 @@ export default function OrderThankYouPage() {
                     </Link>
                     <Link
                       to="/orders"
-                      className="flex items-center justify-between w-full px-4 py-3 bg-stone-50 hover:bg-amber-50 rounded-xl text-sm font-bold text-stone-700 hover:text-amber-800 transition-all group"
+                      className="flex items-center justify-between w-full px-4 py-3 bg-stone-50 hover:bg-gold/10 rounded-xl text-sm font-bold text-stone-700 hover:text-gold-dark transition-all group"
                     >
                       <span className="flex items-center gap-2.5">
                         <Package size={16} />
@@ -1926,7 +1925,7 @@ export default function OrderThankYouPage() {
                     </Link>
                     <Link
                       to="/products"
-                      className="flex items-center justify-between w-full px-4 py-3 bg-amber-500 hover:bg-amber-400 rounded-xl text-sm font-bold text-stone-950 transition-all group shadow-md shadow-amber-500/20"
+                      className="flex items-center justify-between w-full px-4 py-3 bg-gold hover:bg-gold-soft rounded-xl text-sm font-bold text-ink transition-all group shadow-md shadow-gold/25"
                     >
                       <span className="flex items-center gap-2.5">
                         <ShoppingBag size={16} />
@@ -1951,7 +1950,7 @@ export default function OrderThankYouPage() {
                   ].map((item, i) => (
                     <div key={i} className="flex flex-col items-center gap-2 p-3 bg-stone-50 rounded-xl border border-stone-100">
                       <div className="w-9 h-9 bg-white rounded-xl flex items-center justify-center shadow-sm border border-stone-200">
-                        <item.icon size={16} className="text-amber-600" />
+                        <item.icon size={16} className="text-gold-dark" />
                       </div>
                       <p className="text-[10px] text-stone-600 font-bold text-center leading-tight">{item.label}</p>
                     </div>

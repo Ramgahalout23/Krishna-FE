@@ -9,6 +9,7 @@ import '../../styles/omni.css';
 import { X } from 'lucide-react';
 import { getImageUrl } from '../../utils/formatters';
 import HeroBanner from '../../components/omni/HeroBanner';
+import TrustFeatures from '../../components/omni/TrustFeatures';
 import FlashDeals from '../../components/omni/FlashDeals';
 import CategoryGrid from '../../components/omni/CategoryGrid';
 import ProductGrid from '../../components/omni/ProductGrid';
@@ -23,16 +24,28 @@ const ReelsSection = lazy(() => import('../../components/storefront/ReelsSection
 /* ── Skeleton Loading ── */
 function HomepageSkeleton() {
   return (
-    <div className="animate-pulse">
-      <div className="h-[300px] sm:h-[400px] bg-stone-200" />
-      <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
-        <div className="h-8 w-48 bg-stone-200 rounded-lg" />
+    <div className="animate-pulse bg-cream">
+      <div className="h-[300px] sm:h-[420px] bg-[#14110E]" />
+      <div className="max-w-7xl mx-auto px-4 py-10 space-y-8">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          {[1,2,3,4].map(i => (
+            <div key={i} className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-stone-200" />
+              <div className="flex-1 space-y-2">
+                <div className="h-3 w-3/4 bg-stone-200 rounded-full" />
+                <div className="h-3 w-1/2 bg-stone-200 rounded-full" />
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="h-3 w-28 bg-gold/30 rounded-full" />
+        <div className="h-9 w-56 bg-stone-200 rounded-full" />
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[1,2,3,4].map(i => (
             <div key={i} className="space-y-3">
               <div className="aspect-square bg-stone-200 rounded-2xl" />
-              <div className="h-4 w-3/4 bg-stone-200 rounded" />
-              <div className="h-4 w-1/2 bg-stone-200 rounded" />
+              <div className="h-3 w-3/4 bg-stone-200 rounded-full" />
+              <div className="h-3 w-1/2 bg-stone-200 rounded-full" />
             </div>
           ))}
         </div>
@@ -45,10 +58,10 @@ function HomepageSkeleton() {
 function ScrollReveal({ children, delay = 0 }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-80px' }}
-      transition={{ duration: 0.5, delay, ease: [0.16, 1, 0.3, 1] }}
+      transition={{ duration: 0.6, delay, ease: [0.16, 1, 0.3, 1] }}
     >
       {children}
     </motion.div>
@@ -66,30 +79,30 @@ function BannerCard({ banner, onNavigate }) {
       onClick={() => {
         if (banner.linkUrl && onNavigate) onNavigate(banner.linkUrl);
       }}
-      className={`relative rounded-2xl overflow-hidden group cursor-pointer ${banner.linkUrl ? '' : 'cursor-default'}`}
+      className={`relative rounded-2xl overflow-hidden group cursor-pointer bg-ink shadow-[0_2px_10px_rgba(28,25,23,0.08)] transition-all duration-400 hover:shadow-[0_18px_44px_-14px_rgba(28,25,23,0.3)] ${banner.linkUrl ? '' : 'cursor-default'}`}
     >
       <img
         src={imgUrl}
         alt={banner.title || 'Promotional banner'}
-        className="w-full h-32 sm:h-40 lg:h-48 object-cover transition-transform duration-500 group-hover:scale-105"
+        className="w-full h-36 sm:h-44 lg:h-52 object-cover transition-transform duration-700 ease-out group-hover:scale-[1.05]"
         loading="lazy"
       />
-      {/* Dark overlay for text readability */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+      {/* Warm editorial overlay */}
+      <div className="absolute inset-0 bg-gradient-to-t from-[#14110E]/85 via-[#14110E]/25 to-transparent" />
       {/* Text content */}
-      <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4">
+      <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-5">
         {banner.title && (
-          <h3 className="text-white font-bold text-sm sm:text-base leading-tight drop-shadow-md">
+          <h3 className="text-white font-medium text-sm sm:text-base leading-tight drop-shadow-md">
             {banner.title}
           </h3>
         )}
         {banner.description && (
-          <p className="text-white/80 text-xs sm:text-sm mt-0.5 line-clamp-1 drop-shadow-md">
+          <p className="text-white/75 text-xs sm:text-sm mt-1 line-clamp-1 drop-shadow-md">
             {banner.description}
           </p>
         )}
         {banner.buttonText && (
-          <span className="inline-block mt-1.5 text-[10px] sm:text-xs font-semibold text-amber-400 uppercase tracking-wider drop-shadow-md">
+          <span className="inline-flex items-center gap-1.5 mt-2 text-[10px] sm:text-[11px] font-medium text-gold-soft uppercase tracking-[0.2em] drop-shadow-md transition-colors duration-300 group-hover:text-white">
             {banner.buttonText} →
           </span>
         )}
@@ -99,7 +112,10 @@ function BannerCard({ banner, onNavigate }) {
 }
 
 /* ════════════════════════════════════════════════
-   HOMEPAGE — OmniStore Design
+   HOMEPAGE — THREVOLT Premium Editorial Structure
+   Hero → Perks → Sale Offers → Featured → Categories
+   → Flash Deals → Curated Collections → Best Sellers
+   → Brand Story → Testimonials → Reels → Trust Strip
    ════════════════════════════════════════════════ */
 export default function HomePage() {
   const navigate = useNavigate();
@@ -134,7 +150,6 @@ export default function HomePage() {
   // requests are needed here — that removes 3 extra network round-trips.
 
   // ── Banners grouped by type ──
-  // (The flat hero 'banners' key was removed from the API — use bannersByType.hero.)
   const banners = useMemo(() => {
     const b = homepageRes?.bannersByType?.hero || [];
     return Array.isArray(b) ? b.filter(bn => {
@@ -152,10 +167,7 @@ export default function HomePage() {
 
   // Specific banner groups
   const saleBanners = bannersByType['sale'] || [];
-  const categoryBanners = bannersByType['category'] || [];
   const popupBanners = bannersByType['popup'] || [];
-  const featuredBanners = bannersByType['featured'] || [];
-  const newArrivalBanners = bannersByType['new_arrival'] || [];
   const [dismissedPopup, setDismissedPopup] = useState(false);
   const popupBanner = popupBanners.length > 0 && !dismissedPopup ? popupBanners[0] : null;
 
@@ -223,6 +235,23 @@ export default function HomePage() {
     return allProducts.filter((p) => p.isFlashDeal || p.discountPercentage || p.oldPrice);
   }, [allProducts]);
 
+  // Curated Collections — all remaining campaign banners merged into one
+  // premium showcase (replaces the old scattered banner strips)
+  const collectionBanners = useMemo(() => {
+    const all = [
+      ...(bannersByType['featured'] || []),
+      ...(bannersByType['category'] || []),
+      ...(bannersByType['new_arrival'] || []),
+    ];
+    const seen = new Set();
+    return all.filter(b => {
+      const key = b.id || b.imageUrl || b.title;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    }).slice(0, 6);
+  }, [bannersByType]);
+
   const handleBannerNav = (linkUrl) => {
     if (linkUrl) navigate(linkUrl);
   };
@@ -230,11 +259,11 @@ export default function HomePage() {
   if (isLoading) return <HomepageSkeleton />;
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-8">
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-8 bg-cream">
         <span className="text-4xl mb-4">😕</span>
-        <h2 className="text-xl font-bold text-stone-900 mb-2">Something went wrong</h2>
+        <h2 className="text-xl font-medium text-ink mb-2">Something went wrong</h2>
         <p className="text-sm text-stone-500 mb-6 max-w-md">{error?.message || 'Could not load the store.'}</p>
-        <button onClick={() => refetch()} className="px-6 py-3 bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold rounded-full transition-colors">
+        <button onClick={() => refetch()} className="px-7 py-3 bg-ink hover:bg-gold hover:text-ink text-white font-medium text-xs uppercase tracking-[0.18em] rounded-full transition-all duration-300">
           Try Again
         </button>
       </div>
@@ -242,54 +271,44 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-stone-100 text-stone-900">
-      {/* Hero Banner with Trust Strip */}
+    <div className="min-h-screen bg-cream text-ink">
+      {/* 1. Hero Banner */}
       <ScrollReveal>
         <HeroBanner banners={banners} hasActiveSales={hasActiveSales} />
       </ScrollReveal>
 
-      {/* ── SALE Banners Strip ── */}
+      {/* 2. Perks — trust strip as its own premium row */}
+      <ScrollReveal delay={0.04}>
+        <TrustFeatures />
+      </ScrollReveal>
+
+      {/* 3. Sale Offers — hot promotions near the top */}
       {saleBanners.length > 0 && (
-        <ScrollReveal delay={0.03}>
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-              {saleBanners.map((banner, idx) => (
-                <BannerCard key={banner.id || idx} banner={banner} onNavigate={handleBannerNav} />
-              ))}
-            </div>
-          </div>
-        </ScrollReveal>
-      )}
-
-      {/* Flash Deals — only show when there are active sales from backend */}
-      {hasActiveSales && flashDealProducts.length > 0 && (
         <ScrollReveal delay={0.05}>
-          <FlashDeals
-            products={flashDealProducts}
-            onQuickView={(p) => setQuickViewProduct(p)}
-            title={sectionTitles.flashDealsTitle}
-            badge={sectionTitles.flashDealsBadge}
-            discountLabel={sectionTitles.flashDealsDiscount}
-          />
-        </ScrollReveal>
-      )}
-
-      {/* ── FEATURED Banners Strip ── */}
-      {featuredBanners.length > 0 && (
-        <ScrollReveal delay={0.06}>
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-              {featuredBanners.map((banner, idx) => (
-                <BannerCard key={banner.id || idx} banner={banner} onNavigate={handleBannerNav} />
-              ))}
+          <section className="py-10 sm:py-16 bg-white">
+            <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+              <div className="mb-7 sm:mb-10">
+                <span className="inline-flex items-center gap-3 text-[11px] sm:text-xs font-medium text-gold-dark uppercase tracking-[0.28em]">
+                  <span className="w-10 h-px bg-gold" />
+                  Today's Offers
+                </span>
+                <h2 className="mt-3 font-editorial text-3xl sm:text-4xl font-medium text-ink tracking-tight leading-[1.1]">
+                  Deals Worth Grabbing
+                </h2>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                {saleBanners.map((banner, idx) => (
+                  <BannerCard key={banner.id || idx} banner={banner} onNavigate={handleBannerNav} />
+                ))}
+              </div>
             </div>
-          </div>
+          </section>
         </ScrollReveal>
       )}
 
-      {/* Product Grid - Featured Products */}
+      {/* 4. Featured Products */}
       {allProducts.length > 0 && (
-        <ScrollReveal delay={0.08}>
+        <ScrollReveal delay={0.06}>
           <ProductGrid
             products={allProducts}
             title={sectionTitles.featured}
@@ -300,22 +319,9 @@ export default function HomePage() {
         </ScrollReveal>
       )}
 
-      {/* ── CATEGORY Banners Strip ── */}
-      {categoryBanners.length > 0 && (
-        <ScrollReveal delay={0.095}>
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-              {categoryBanners.map((banner, idx) => (
-                <BannerCard key={banner.id || idx} banner={banner} onNavigate={handleBannerNav} />
-              ))}
-            </div>
-          </div>
-        </ScrollReveal>
-      )}
-
-      {/* Shop By Category */}
+      {/* 5. Shop By Category */}
       {categories.length > 0 && (
-        <ScrollReveal delay={0.1}>
+        <ScrollReveal delay={0.08}>
           <CategoryGrid
             categories={categories}
             onSelectCategory={(cat) => {
@@ -328,23 +334,48 @@ export default function HomePage() {
         </ScrollReveal>
       )}
 
-      {/* ── NEW ARRIVAL Banners Strip ── */}
-      {newArrivalBanners.length > 0 && (
-        <ScrollReveal delay={0.11}>
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-              {newArrivalBanners.map((banner, idx) => (
-                <BannerCard key={banner.id || idx} banner={banner} onNavigate={handleBannerNav} />
-              ))}
-            </div>
-          </div>
+      {/* 6. Flash Deals — dark highlight moment */}
+      {hasActiveSales && flashDealProducts.length > 0 && (
+        <ScrollReveal delay={0.1}>
+          <FlashDeals
+            products={flashDealProducts}
+            onQuickView={(p) => setQuickViewProduct(p)}
+            title={sectionTitles.flashDealsTitle}
+            badge={sectionTitles.flashDealsBadge}
+            discountLabel={sectionTitles.flashDealsDiscount}
+          />
         </ScrollReveal>
       )}
 
-      {/* Best Sellers — most-viewed products, deduped against Featured when the
-          catalog is big enough (small catalogs fall back to the full list) */}
-      {bestSellers.length > 0 && (
+      {/* 7. Curated Collections — one editorial showcase for all campaign banners */}
+      {collectionBanners.length > 0 && (
         <ScrollReveal delay={0.12}>
+          <section className="py-12 sm:py-20 bg-cream">
+            <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+              <div className="mb-8 sm:mb-12 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                <div>
+                  <span className="inline-flex items-center gap-3 text-[11px] sm:text-xs font-medium text-gold-dark uppercase tracking-[0.28em]">
+                    <span className="w-10 h-px bg-gold" />
+                    Curated Collections
+                  </span>
+                  <h2 className="mt-3 font-editorial text-3xl sm:text-4xl lg:text-5xl font-medium text-ink tracking-tight leading-[1.1]">
+                    Explore the Collection
+                  </h2>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                {collectionBanners.map((banner, idx) => (
+                  <BannerCard key={banner.id || idx} banner={banner} onNavigate={handleBannerNav} />
+                ))}
+              </div>
+            </div>
+          </section>
+        </ScrollReveal>
+      )}
+
+      {/* 8. Best Sellers */}
+      {bestSellers.length > 0 && (
+        <ScrollReveal delay={0.14}>
           <ProductGrid
             products={bestSellers}
             title={sectionTitles.bestSellerTitle}
@@ -356,15 +387,15 @@ export default function HomePage() {
         </ScrollReveal>
       )}
 
-      {/* Brand Story — absorbs the old trust strip (lazy) */}
-      <ScrollReveal delay={0.14}>
+      {/* 9. Brand Story */}
+      <ScrollReveal delay={0.16}>
         <Suspense fallback={null}>
           <BrandStory />
         </Suspense>
       </ScrollReveal>
 
-      {/* Customer Reviews (lazy) */}
-      <ScrollReveal delay={0.16}>
+      {/* 10. Customer Reviews */}
+      <ScrollReveal delay={0.18}>
         <Suspense fallback={null}>
           <Testimonials
             reviews={reviews}
@@ -374,14 +405,19 @@ export default function HomePage() {
         </Suspense>
       </ScrollReveal>
 
-      {/* Watch & Buy — shoppable video reels (lazy-loaded) */}
+      {/* 11. Watch & Buy — shoppable video reels (lazy-loaded) */}
       {reelsEnabled && reels.length > 0 && (
-        <ScrollReveal delay={0.18}>
+        <ScrollReveal delay={0.2}>
           <Suspense fallback={null}>
             <ReelsSection reels={reels} />
           </Suspense>
         </ScrollReveal>
       )}
+
+      {/* 12. Closing trust strip — reassurance before the footer */}
+      <ScrollReveal delay={0.22}>
+        <TrustFeatures />
+      </ScrollReveal>
 
       {/* Quick View Modal */}
       <QuickViewModal
@@ -392,13 +428,13 @@ export default function HomePage() {
       {/* ── POPUP Banner Modal ── */}
       {popupBanner && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink/70 backdrop-blur-sm animate-in fade-in duration-300"
           onClick={(e) => { if (e.target === e.currentTarget) setDismissedPopup(true); }}
         >
           <div className="relative max-w-lg w-full bg-white rounded-2xl overflow-hidden shadow-2xl">
             <button
               onClick={() => setDismissedPopup(true)}
-              className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center transition-colors"
+              className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-ink/40 hover:bg-ink/60 text-white flex items-center justify-center transition-colors"
               aria-label="Close popup"
             >
               <X size={16} />
@@ -420,7 +456,7 @@ export default function HomePage() {
               {(popupBanner.title || popupBanner.description) && (
                 <div className="p-4 sm:p-6">
                   {popupBanner.title && (
-                    <h3 className="text-lg font-bold text-stone-900">{popupBanner.title}</h3>
+                    <h3 className="text-lg font-semibold text-ink">{popupBanner.title}</h3>
                   )}
                   {popupBanner.description && (
                     <p className="text-sm text-stone-600 mt-1">{popupBanner.description}</p>
@@ -433,7 +469,7 @@ export default function HomePage() {
                           setDismissedPopup(true);
                         }
                       }}
-                      className="mt-3 px-5 py-2 bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-xs uppercase tracking-wider rounded-full transition-colors"
+                      className="mt-3 px-6 py-2.5 bg-ink hover:bg-gold hover:text-ink text-white font-medium text-xs uppercase tracking-[0.18em] rounded-full transition-all duration-300"
                     >
                       {popupBanner.buttonText}
                     </button>

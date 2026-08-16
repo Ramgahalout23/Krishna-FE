@@ -167,7 +167,7 @@ function PromotionSection({ promo, isActive }) {
 
         {/* Product Grid */}
         <div className="p-3 md:p-5">
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-3 sm:gap-x-6 gap-y-7 sm:gap-y-10">
             {products.slice(0, 10).map((product, idx) => (
               <motion.div
                 key={product.id}
@@ -250,7 +250,7 @@ function SalesPageSkeleton() {
             <div className="h-5 w-48 bg-surface rounded-md" />
           </div>
           <div className="p-4">
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-3 sm:gap-x-6 gap-y-7 sm:gap-y-10">
               {[1, 2, 3, 4, 5].map((j) => (
                 <div key={j} className="bg-gray-50 rounded-xl aspect-[3/4]" />
               ))}

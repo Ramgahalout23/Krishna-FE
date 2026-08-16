@@ -225,9 +225,9 @@ export default function CartPage() {
     const onFlashSale = isFlashSaleItem(item);
 
     return (
-      <div key={itemKey} className={`flex gap-3 sm:gap-4 p-3 sm:p-4 bg-surface rounded-xl sm:rounded-2xl border border-border/50 ${isOOS ? 'border-red-200 bg-red-50/30' : 'hover:border-border hover:shadow-sm'}`}>
+      <div key={itemKey} className={`flex gap-3 sm:gap-4 p-3 sm:p-5 bg-white rounded-2xl border transition-all duration-300 ${isOOS ? 'border-red-200 bg-red-50/40' : 'border-stone-200/70 shadow-[0_2px_12px_rgba(28,25,23,0.04)] hover:border-gold/30 hover:shadow-md'}`}>
         {/* Product Image */}
-        <Link to={`/products/${item.slug || slugify(item.name)}`} className="w-20 sm:w-24 h-20 sm:h-24 sm:w-28 sm:h-28 bg-white rounded-lg sm:rounded-xl overflow-hidden flex-shrink-0">
+        <Link to={`/products/${item.slug || slugify(item.name)}`} className="w-20 sm:w-24 h-20 sm:h-24 sm:w-28 sm:h-28 bg-white rounded-xl sm:rounded-2xl border border-stone-100 overflow-hidden flex-shrink-0">
           {item.imageUrl ? (
             <img loading="lazy" src={getImageUrl(item.imageUrl)} alt={item.name} className={`w-full h-full object-cover hover:scale-110 transition-transform duration-500 ${isOOS ? 'grayscale opacity-60' : ''}`} />
           ) : (
@@ -239,27 +239,27 @@ export default function CartPage() {
         <div className="flex-1 flex flex-col min-w-0">
           <div className="flex justify-between gap-4">
             <div className="min-w-0">
-              <Link to={`/products/${item.slug || slugify(item.name)}`} className="font-semibold text-text-primary hover:text-text-secondary transition-colors line-clamp-2">
+              <Link to={`/products/${item.slug || slugify(item.name)}`} className="font-medium text-ink hover:text-gold-dark transition-colors line-clamp-2">
                 {item.name}
               </Link>
               {onFlashSale && !isOOS && (
-                <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-700 bg-gradient-to-r from-amber-50 to-amber-100 px-2.5 py-0.5 rounded-full mt-1 border border-amber-200">
+                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-gold-dark bg-gold/10 px-2.5 py-0.5 rounded-full mt-1.5 border border-gold/20">
                   <Zap size={12} />
                   {t('cart.flash_sale')}
                 </span>
               )}
               {(item.size || item.color) && (
-                <p className="text-sm text-text-muted mt-1">
+                <p className="text-sm text-stone-500 mt-1">
                   {[item.size && `Size: ${item.size}`, item.color && `Color: ${item.color}`].filter(Boolean).join(' · ')}
                 </p>
               )}
               {isOOS ? (
-                <span className="inline-flex items-center gap-1 text-[11px] font-bold text-red-600 bg-red-50 px-2.5 py-0.5 rounded-full mt-1.5 border border-red-200">
+                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-red-600 bg-red-50/70 px-2.5 py-0.5 rounded-full mt-1.5 border border-red-200/70">
                   <AlertTriangle size={12} />
                   {t('cart.out_of_stock')}
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 mt-1">
+                <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-700 mt-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                   {t('cart.in_stock')}
                 </span>
@@ -267,7 +267,7 @@ export default function CartPage() {
             </div>
             <button
               onClick={() => handleRemove(item)}
-              className="p-2 text-text-muted hover:text-red-500 transition-colors shrink-0"
+              className="p-2 text-stone-400 hover:text-red-500 transition-colors shrink-0"
               aria-label={`Remove ${item.name}`}
             >
               <Trash2 size={18} />
@@ -276,21 +276,21 @@ export default function CartPage() {
 
           <div className="flex items-center justify-between mt-auto pt-2">
             {/* Quantity Controls - disabled for OOS */}
-            <div className={`flex items-center gap-1 bg-white rounded-lg border ${isOOS ? 'border-red-200 bg-red-50/50' : 'border-border'}`}>
+            <div className={`flex items-center overflow-hidden bg-white rounded-full border transition-colors ${isOOS ? 'border-red-200 bg-red-50/50' : 'border-stone-200'}`}>
               <button
                 onClick={() => handleQuantityChange(item, item.quantity - 1)}
-                className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-surface rounded-l-lg transition-colors disabled:opacity-30"
+                className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-cream hover:text-gold-dark transition-colors disabled:opacity-30"
                 disabled={item.quantity <= 1}
               >
-                <Minus size={16} />
+                <Minus size={15} strokeWidth={1.75} />
               </button>
-              <span className={`px-3 font-medium ${isOOS ? 'text-red-400' : ''}`}>{item.quantity}</span>
+              <span className={`px-3 font-semibold text-sm ${isOOS ? 'text-red-400' : 'text-ink'}`}>{item.quantity}</span>
               <button
                 onClick={() => handleQuantityChange(item, item.quantity + 1)}
-                className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-surface rounded-r-lg transition-colors"
+                className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-cream hover:text-gold-dark transition-colors"
                 disabled={item.quantity >= 10 || isOOS}
               >
-                <Plus size={16} />
+                <Plus size={15} strokeWidth={1.75} />
               </button>
             </div>
 
@@ -300,7 +300,7 @@ export default function CartPage() {
                 <button
                   onClick={() => handleSaveForLater(item)}
                   disabled={isSaving}
-                  className="flex items-center gap-1.5 text-xs font-semibold text-text-muted hover:text-red-500 transition-colors disabled:opacity-50"
+                  className="flex items-center gap-1.5 text-xs font-semibold text-stone-500 hover:text-gold-dark transition-colors disabled:opacity-50"
                 >
                   {isSaving ? (
                     <RefreshCw size={14} />
@@ -312,9 +312,9 @@ export default function CartPage() {
               )}
               <div className="text-right">
                 {item.oldPrice && item.oldPrice > item.price && (
-                  <p className="text-sm text-text-muted line-through">{formatCurrency(item.oldPrice * item.quantity)}</p>
+                  <p className="text-sm text-stone-400 line-through">{formatCurrency(item.oldPrice * item.quantity)}</p>
                 )}
-                <p className={`text-lg font-bold ${isOOS ? 'text-stone-400' : onFlashSale                    ? 'text-amber-700' : 'text-stone-900'}`}>
+                <p className={`text-lg font-semibold ${isOOS ? 'text-stone-400' : onFlashSale ? 'text-gold-dark' : 'text-ink'}`}>
                   {formatCurrency(item.price * item.quantity)}
                 </p>
               </div>
@@ -328,7 +328,7 @@ export default function CartPage() {
   // ── Empty state ──
   if (!items.length) {
     return (
-      <div className="page-content bg-white flex-1">
+      <div className="page-content bg-cream flex-1">
         <SEOHead
           title={`Shopping Cart | ${storeName}`}
           description={t('cart.seo_desc', { store: storeName, amount: formatCurrency(freeShippingThreshold, currency) })}
@@ -342,14 +342,14 @@ export default function CartPage() {
           />
         </div>
         <div className="max-w-lg mx-auto px-4 pb-20 text-center">
-          <div className="w-24 h-24 bg-surface rounded-full flex items-center justify-center mx-auto mb-6">
-            <ShoppingBag size={48} />
+          <div className="w-24 h-24 bg-white border border-gold/20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-[0_2px_12px_rgba(28,25,23,0.05)]">
+            <ShoppingBag size={44} strokeWidth={1.5} className="text-gold-dark" />
           </div>
-          <h2 className="font-display text-2xl font-bold text-text-primary mb-3">{t('cart.empty')}</h2>
-          <p className="text-text-muted mb-8">{t('cart.empty_desc')}</p>
+          <h2 className="font-editorial text-3xl font-medium text-ink mb-3 tracking-tight">{t('cart.empty')}</h2>
+          <p className="text-stone-500 mb-8">{t('cart.empty_desc')}</p>
           <Link
             to="/products"
-            className="inline-flex items-center gap-2 bg-primary text-white px-8 py-4 rounded-xl font-semibold hover:bg-primary-dark transition-colors shadow-lg shadow-primary/25"
+            className="inline-flex items-center gap-2 bg-ink text-white px-8 py-3.5 rounded-full font-semibold hover:bg-gold hover:text-ink transition-colors shadow-lg shadow-stone-900/10 text-xs uppercase tracking-[0.18em]"
           >
             {t('cart.start_shopping')} <ArrowRight size={20} />
           </Link>
@@ -359,7 +359,7 @@ export default function CartPage() {
   }
 
   return (
-    <div className="page-content bg-white flex-1">
+    <div className="page-content bg-cream flex-1">
       <SEOHead
         title={`Shopping Cart | ${storeName}`}
         description={t('cart.seo_desc', { store: storeName, amount: formatCurrency(freeShippingThreshold, currency) })}
@@ -371,9 +371,15 @@ export default function CartPage() {
           variant="light"
           className="mb-4 sm:mb-6"
         />
-        <h1 className="font-display text-2xl sm:text-3xl font-bold text-text-primary mb-6 sm:mb-8">
-          {t('cart.title')} ({items.length} {items.length === 1 ? t('cart.item') : t('cart.items')})
-        </h1>
+        <div className="mb-6 sm:mb-8">
+          <span className="inline-flex items-center gap-2.5 text-[11px] sm:text-xs font-medium text-gold-dark uppercase tracking-[0.28em]">
+            <span className="w-10 h-px bg-gold" />
+            Your Bag
+          </span>
+          <h1 className="mt-3 font-editorial text-3xl sm:text-4xl font-medium text-ink tracking-tight leading-[1.1]">
+            {t('cart.title')} ({items.length} {items.length === 1 ? t('cart.item') : t('cart.items')})
+          </h1>
+        </div>
 
         <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
           {/* ── Left Column: Cart Items ── */}
@@ -382,7 +388,7 @@ export default function CartPage() {
             {availableItems.length > 0 && (
               <div>
                 {hasOutOfStockItems && (
-                  <h3 className="text-sm font-bold text-text-muted uppercase tracking-wider mb-3 flex items-center gap-2">
+                  <h3 className="text-[11px] font-semibold text-stone-500 uppercase tracking-[0.2em] mb-3 flex items-center gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                     {t('cart.available')} ({availableItems.length})
                   </h3>
@@ -395,7 +401,7 @@ export default function CartPage() {
 
             {/* Unavailable Items */}
             {hasOutOfStockItems && (
-              <div>                  <h3 className="text-sm font-bold text-text-muted uppercase tracking-wider mb-3 flex items-center gap-2">
+              <div>                  <h3 className="text-[11px] font-semibold text-stone-500 uppercase tracking-[0.2em] mb-3 flex items-center gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
                     {t('cart.unavailable')} ({outOfStockItems.length})
                   </h3>
@@ -406,16 +412,21 @@ export default function CartPage() {
             )}
 
             {/* Continue Shopping */}
-            <Link to="/products"              className="inline-flex items-center gap-2 text-text-muted hover:text-primary transition-colors text-sm font-medium">
-              <ArrowLeft size={18} />
+            <Link to="/products" className="group inline-flex items-center gap-2 text-stone-500 hover:text-gold-dark transition-colors text-sm font-medium">
+              <ArrowLeft size={18} className="transition-transform duration-300 group-hover:-translate-x-0.5" />
               {t('cart.continue_shopping')}
             </Link>
           </div>
 
           {/* ── Right Column: Order Summary ── */}
           <div className="lg:sticky lg:top-8 h-fit">
-            <div className="bg-surface rounded-2xl p-6 border border-border/50">
-              <h2 className="font-display text-xl font-bold text-text-primary mb-6">{t('cart.order_summary')}</h2>
+            <div className="relative overflow-hidden bg-ink rounded-2xl p-6 border border-stone-800 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.5)]">
+              <div className="absolute -top-20 -right-20 w-56 h-56 rounded-full bg-gold/15 blur-3xl pointer-events-none" />
+              <span className="relative inline-flex items-center gap-2.5 text-[11px] font-medium text-gold-soft uppercase tracking-[0.28em]">
+                <span className="w-10 h-px bg-gold" />
+                Summary
+              </span>
+              <h2 className="relative mt-1.5 font-editorial text-2xl font-medium text-white tracking-tight mb-6">{t('cart.order_summary')}</h2>
 
               {/* Auto-applied store offer cards */}
               {autoDiscountOffers.length > 0 && (
@@ -423,17 +434,17 @@ export default function CartPage() {
                   {autoDiscountOffers.map((offer) => (
                     <div
                       key={offer.id}
-                      className="flex items-center justify-between px-3 py-2.5 bg-charcoal border border-gray-700/50 rounded-lg shadow-sm"
+                      className="flex items-center justify-between px-3 py-2.5 bg-white/[0.04] border border-gold/20 rounded-lg"
                     >
                       <div className="flex items-center gap-2 min-w-0">
-                        <span className="text-[10px] font-bold text-white bg-white/15 px-1.5 py-0.5 rounded shrink-0">
+                        <span className="text-[10px] font-bold text-ink bg-gold px-1.5 py-0.5 rounded shrink-0">
                           {offer.badge}
                         </span>
                         <span className="text-xs font-semibold text-white/90 truncate">
                           {offer.highlight}
                         </span>
                       </div>
-                      <span className="text-[10px] text-white/70 font-medium shrink-0 ml-2">
+                      <span className="text-[10px] text-gold-soft font-medium shrink-0 ml-2">
                         {offer.discountLabel}
                       </span>
                     </div>
@@ -441,29 +452,29 @@ export default function CartPage() {
                 </div>
               )}
 
-              <div className="space-y-3 border-t pt-4">
+              <div className="space-y-3 border-t border-stone-800 pt-4">
                 <div className="flex justify-between">
-                  <span className="text-text-secondary">{t('cart.subtotal', { count: availableCount })}</span>
-                  <span className="text-text-primary font-medium">{formatCurrency(availableSubtotal)}</span>
+                  <span className="text-stone-400">{t('cart.subtotal', { count: availableCount })}</span>
+                  <span className="text-white font-medium">{formatCurrency(availableSubtotal)}</span>
                 </div>
                 {autoDiscount > 0 && (
                   <div className="flex justify-between">
-                    <span className="text-text-muted text-sm font-medium">Store Offers</span>
-                    <span className="text-text-secondary text-sm font-medium">-{formatCurrency(autoDiscount)}</span>
+                    <span className="text-stone-500 text-sm font-medium">Store Offers</span>
+                    <span className="text-gold-soft text-sm font-medium">-{formatCurrency(autoDiscount)}</span>
                   </div>
                 )}
                 <div className="flex justify-between">
-                  <span className="text-text-secondary">{t('cart.shipping')}</span>
-                  <span className="text-text-primary">
+                  <span className="text-stone-400">{t('cart.shipping')}</span>
+                  <span className="text-white">
                     {shipping === 0 ? (
-                      <span className="text-green-600 font-semibold">{t('cart.free')}</span>
+                      <span className="text-gold-soft font-semibold">{t('cart.free')}</span>
                     ) : (
                       formatCurrency(shipping)
                     )}
                   </span>
                 </div>
                 {freeShippingThreshold > 0 && availableSubtotal > 0 && availableSubtotal < freeShippingThreshold && (
-                  <p className="text-xs text-emerald-600 font-medium">
+                  <p className="text-xs text-gold-soft font-medium">
                     {t('cart.add_free_shipping', { amount: formatCurrency(freeShippingThreshold - availableSubtotal, currency) })}
                   </p>
                 )}
@@ -471,8 +482,8 @@ export default function CartPage() {
                 {/* OOS notice */}
                 {hasOutOfStockItems && (
                   <div className="flex items-start gap-2 pt-2 pb-1">
-                    <AlertTriangle size={14} />
-                    <p className="text-xs text-amber-700 leading-relaxed">
+                    <AlertTriangle size={14} className="text-gold-soft shrink-0 mt-0.5" />
+                    <p className="text-xs text-gold-soft/90 leading-relaxed">
                       {outOfStockItems.length === 1
                         ? t('cart.oos_single')
                         : t('cart.oos_multiple', { count: outOfStockItems.length })}
@@ -481,9 +492,9 @@ export default function CartPage() {
                   </div>
                 )}
 
-                <div className="flex justify-between pt-3 border-t">
-                  <span className="font-bold text-text-primary text-lg">{t('cart.total')}</span>
-                  <span className="font-bold text-text-primary text-lg">{formatCurrency(total)}</span>
+                <div className="flex justify-between pt-3 border-t border-stone-800">
+                  <span className="font-semibold text-white text-lg">{t('cart.total')}</span>
+                  <span className="font-bold text-gold-soft text-xl">{formatCurrency(total)}</span>
                 </div>
               </div>
 
@@ -496,10 +507,10 @@ export default function CartPage() {
                   }
                   navigate('/checkout');
                 }}
-                className={`w-full py-4 rounded-xl font-semibold transition-all duration-200 mt-6 flex items-center justify-center gap-2 shadow-lg ${
+                className={`w-full py-3.5 rounded-full text-xs font-semibold uppercase tracking-[0.18em] transition-all duration-300 mt-6 flex items-center justify-center gap-2 shadow-lg ${
                   availableItems.length === 0
-                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                    : 'bg-primary text-white hover:bg-primary-dark shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 active:scale-[0.98]'
+                    ? 'bg-white/10 text-white/40 cursor-not-allowed'
+                    : 'bg-gold text-ink hover:bg-gold-soft shadow-gold/25 hover:shadow-xl hover:shadow-gold/30 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]'
                 }`}
               >                  {availableItems.length === 0 ? (
                   <><AlertTriangle size={18} /> {t('cart.all_unavailable')}</>
@@ -509,7 +520,7 @@ export default function CartPage() {
               </button>
 
               {/* Trust Info */}
-              <div className="mt-6 text-center text-xs text-text-muted">
+              <div className="mt-6 text-center text-xs text-stone-400">
                 <p>{t('cart.secure_checkout_text')} • {t('cart.free_delivery_text')} • {t('cart.easy_returns_text')}</p>
               </div>
             </div>

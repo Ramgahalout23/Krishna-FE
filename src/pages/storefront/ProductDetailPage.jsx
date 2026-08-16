@@ -548,7 +548,7 @@ export default function ProductDetailPage() {
           </p>
           <button
             onClick={() => navigate('/products')}
-            className="bg-stone-900 hover:bg-amber-600 text-white text-xs font-bold uppercase tracking-widest px-8 py-3.5 rounded-xl transition-all shadow-sm hover:shadow-md"
+            className="bg-ink hover:bg-gold hover:text-ink text-white text-xs font-semibold uppercase tracking-[0.16em] px-8 py-3.5 rounded-full transition-all shadow-sm hover:shadow-md"
           >
             Browse Products
           </button>
@@ -814,11 +814,11 @@ export default function ProductDetailPage() {
       {/* Breadcrumb */}
       <div className="max-w-7xl mx-auto px-4 pt-4 pb-0">
         <nav className="flex items-center gap-1.5 text-xs text-stone-400 tracking-wide overflow-x-auto whitespace-nowrap scrollbar-none">
-          <a href="/" className="hover:text-amber-600 transition-colors">Home</a>
+          <a href="/" className="hover:text-gold-dark transition-colors">Home</a>
           <span className="text-stone-300">/</span>
           <a
             href={typeof product.category === 'object' && product.category.slug ? `/products?category=${product.category.slug}` : '/products'}
-            className="hover:text-amber-600 transition-colors"
+            className="hover:text-gold-dark transition-colors"
           >
             {typeof product.category === 'object' ? product.category.name : product.category || 'Products'}
           </a>
@@ -835,7 +835,7 @@ export default function ProductDetailPage() {
           <div className="relative">
             {/* Main Image */}
             <div
-              className="relative bg-stone-100 rounded-3xl overflow-hidden cursor-zoom-in border border-stone-200 shadow-sm"
+              className="relative bg-cream rounded-3xl overflow-hidden cursor-zoom-in shadow-[0_2px_12px_rgba(28,25,23,0.06)]"
               onClick={() => { setGalleryLightboxIdx(selectedImageIdx); setGalleryLightboxOpen(true); }}
             >
               <img
@@ -847,7 +847,7 @@ export default function ProductDetailPage() {
               {/* Discount Badge */}
               {discount && (
                 <div className="absolute top-3 left-3 z-10 flex flex-col gap-1.5">
-                  <span className="bg-emerald-600 text-white text-xs font-bold px-2.5 py-1 rounded-lg shadow-md">
+                  <span className="bg-ink/80 backdrop-blur-sm text-white text-[10px] font-medium tracking-[0.14em] px-2.5 py-1 rounded-full shadow-md">
                     {discount}% OFF
                   </span>
                 </div>
@@ -867,7 +867,7 @@ export default function ProductDetailPage() {
                   <Heart size={16} strokeWidth={1.5} className={inWishlist ? 'fill-current' : ''} />
                 </button>
                 <button
-                  className="w-9 h-9 rounded-full bg-white/90 hover:bg-white text-stone-600 hover:text-amber-600 backdrop-blur-md transition-all shadow-md hover:scale-110 flex items-center justify-center"
+                  className="w-9 h-9 rounded-full bg-white/90 hover:bg-white text-stone-600 hover:text-gold-dark backdrop-blur-md transition-all shadow-md hover:scale-110 flex items-center justify-center"
                   onClick={(e) => { e.stopPropagation(); handleShare(); }}
                   title="Share"
                 >
@@ -889,7 +889,7 @@ export default function ProductDetailPage() {
                     key={i}
                     className={`flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden border-2 transition-all ${
                       i === selectedImageIdx
-                        ? 'border-amber-600 opacity-100 shadow-md'
+                        ? 'border-gold opacity-100 shadow-md'
                         : 'border-stone-200 opacity-60 hover:opacity-85'
                     }`}
                     onClick={() => {
@@ -910,12 +910,13 @@ export default function ProductDetailPage() {
           <div className="space-y-0">
 
             {/* Brand & Category */}
-            <div className="text-xs font-bold tracking-widest uppercase text-amber-700 mb-1">
+            <div className="inline-flex items-center gap-2.5 text-[11px] sm:text-xs font-medium uppercase tracking-[0.28em] text-gold-dark mb-1">
+              <span className="w-10 h-px bg-gold" />
               {typeof product.category === 'object' ? product.category.name : product.category || 'Premium Collection'}
             </div>
 
             {/* Product Title */}
-            <h1 className="text-xl md:text-3xl font-display font-bold text-stone-950 leading-tight tracking-tight mb-2">
+            <h1 className="font-editorial text-3xl md:text-4xl lg:text-5xl font-medium text-ink tracking-tight leading-[1.1] mb-3">
               {product.name}
             </h1>
 
@@ -926,8 +927,8 @@ export default function ProductDetailPage() {
                   <Star
                     key={i}
                     size={14}
-                    fill={i < Math.floor(product.rating ?? 5) ? '#f59e0b' : 'none'}
-                    color={i < Math.floor(product.rating ?? 5) ? '#f59e0b' : '#d6d3d1'}
+                    fill={i < Math.floor(product.rating ?? 5) ? '#B08D4F' : 'none'}
+                    color={i < Math.floor(product.rating ?? 5) ? '#B08D4F' : '#d6d3d1'}
                     strokeWidth={1}
                   />
                 ))}
@@ -935,7 +936,7 @@ export default function ProductDetailPage() {
               <span className="text-sm text-stone-500 font-medium">{formatRating(product.rating)}</span>
               {reviews.length > 0 && (
                 <span
-                  className="text-xs text-stone-400 underline cursor-pointer hover:text-amber-600 transition-colors"
+                  className="text-xs text-stone-400 underline cursor-pointer hover:text-gold-dark transition-colors"
                   onClick={() => {
                     document.getElementById('pd-reviews')?.scrollIntoView({ behavior: 'smooth' });
                   }}
@@ -949,7 +950,7 @@ export default function ProductDetailPage() {
             {/* Price — clean premium light block (matches product-card pricing) */}
             <div className="mb-5">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-xl md:text-2xl font-black text-stone-950 tracking-tight leading-none">
+                <span className="text-2xl md:text-3xl font-semibold text-ink tracking-tight leading-none">
                   {formatPrice(effectivePrice)}
                 </span>
                 {effectiveOldPrice && (
@@ -958,14 +959,14 @@ export default function ProductDetailPage() {
                   </span>
                 )}
                 {effectiveOldPrice && discount > 0 && (
-                  <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-emerald-600 text-white text-[11px] font-bold tracking-wide">
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-ink text-white text-[10px] font-medium tracking-[0.12em]">
                     {discount}% off
                   </span>
                 )}
               </div>
               <div className="flex items-center gap-2 mt-1.5 text-[11px]">
                 {effectiveOldPrice && discount > 0 && (
-                  <span className="font-bold text-emerald-700">Save {formatPrice(effectiveOldPrice - effectivePrice)}</span>
+                  <span className="font-semibold text-gold-dark">Save {formatPrice(effectiveOldPrice - effectivePrice)}</span>
                 )}
                 <span className="text-stone-400">inclusive of all taxes</span>
               </div>
@@ -1039,7 +1040,7 @@ export default function ProductDetailPage() {
                   </span>
                   {isClothingProduct(product, settings) && (
                     <button
-                      className="text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 px-3 py-1 rounded-lg hover:bg-amber-100 transition-colors"
+                      className="text-xs font-medium text-gold-dark bg-gold/10 border border-gold/20 px-3 py-1 rounded-full hover:bg-gold/15 transition-colors"
                       onClick={() => setShowSizeGuide(true)}
                     >
                       Size Guide
@@ -1060,7 +1061,7 @@ export default function ProductDetailPage() {
                             : isOOS
                               ? 'border border-stone-200 text-stone-300 line-through cursor-not-allowed bg-stone-50'
                               : isLow
-                                ? 'border-2 border-amber-400 bg-white text-stone-800 hover:border-stone-900'
+                                ? 'border border-gold bg-white text-stone-800 hover:border-stone-900'
                                 : 'border border-stone-200 bg-white text-stone-800 hover:border-stone-900'
                         }`}
                         onClick={() => { if (isOOS) return; setSelectedSize(s); scrollToOffers(); }}
@@ -1130,7 +1131,7 @@ export default function ProductDetailPage() {
               )}
               <div className="flex gap-2.5">
                 <button
-                  className="flex-1 h-12 rounded-xl text-sm font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-400 text-stone-950 shadow-md hover:shadow-lg active:scale-[0.99] disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed disabled:shadow-none"
+                  className="flex-1 h-12 rounded-xl text-sm font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 bg-gold hover:bg-gold-soft text-ink shadow-md shadow-gold/20 hover:shadow-lg active:scale-[0.99] disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed disabled:shadow-none"
                   onClick={handleAddToCart}
                   disabled={!canAddToCart || isAddingToCart}
                 >
@@ -1144,7 +1145,7 @@ export default function ProductDetailPage() {
                   <Heart size={18} strokeWidth={1.5} fill={inWishlist ? '#e11d48' : 'none'} color={inWishlist ? '#e11d48' : undefined} />
                 </button>
                 <button
-                  className="w-12 h-12 border border-stone-200 rounded-xl flex items-center justify-center bg-white text-stone-500 hover:border-amber-300 hover:text-amber-600 hover:bg-amber-50 transition-all"
+                  className="w-12 h-12 border border-stone-200 rounded-full flex items-center justify-center bg-white text-stone-500 hover:border-gold/40 hover:text-gold-dark hover:bg-gold/5 transition-all"
                   onClick={handleShare}
                   title="Share"
                 >
@@ -1152,7 +1153,7 @@ export default function ProductDetailPage() {
                 </button>
               </div>
               <button
-                className="w-full h-12 rounded-xl text-xs font-bold uppercase tracking-wider transition-all bg-stone-950 text-white hover:bg-stone-800 active:scale-[0.99] disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed disabled:shadow-none shadow-md"
+                className="w-full h-12 rounded-full text-xs font-semibold uppercase tracking-[0.16em] transition-all bg-ink text-white hover:bg-gold hover:text-ink active:scale-[0.99] disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed disabled:shadow-none shadow-md"
                 onClick={handleBuyNow}
                 disabled={!canAddToCart || isAddingToCart}
               >
@@ -1169,9 +1170,9 @@ export default function ProductDetailPage() {
               ].map((item) => {
                 const IconComp = item.icon;
                 return (
-                  <div key={item.label} className="flex items-start gap-3 p-3 rounded-2xl bg-stone-50 border border-stone-100 transition-all hover:border-amber-200 hover:shadow-sm hover:-translate-y-0.5">
+                  <div key={item.label} className="flex items-start gap-3 p-3 rounded-2xl bg-cream border border-stone-100 transition-all hover:border-gold/30 hover:shadow-sm hover:-translate-y-0.5">
                     <div className="p-2.5 bg-white rounded-xl shadow-sm border border-stone-200 flex-shrink-0">
-                      <IconComp size={16} className="text-amber-600" strokeWidth={1.5} />
+                      <IconComp size={16} className="text-gold-dark" strokeWidth={1.5} />
                     </div>
                     <div className="min-w-0">
                       <div className="text-xs font-bold text-stone-900 mb-0.5">{item.label}</div>
@@ -1187,7 +1188,7 @@ export default function ProductDetailPage() {
               {/* Product Details */}
               <div className="border-b border-stone-200">
                 <button
-                  className="w-full flex items-center justify-between py-4 bg-transparent border-none cursor-pointer text-sm font-semibold text-stone-800 hover:text-amber-700 transition-colors"
+                  className="w-full flex items-center justify-between py-4 bg-transparent border-none cursor-pointer text-sm font-semibold text-stone-800 hover:text-gold-dark transition-colors"
                   onClick={() => toggleAccordion('details')}
                 >
                   Product Details
@@ -1216,7 +1217,7 @@ export default function ProductDetailPage() {
               {/* Shipping Info */}
               <div className="border-b border-stone-200">
                 <button
-                  className="w-full flex items-center justify-between py-4 bg-transparent border-none cursor-pointer text-sm font-semibold text-stone-800 hover:text-amber-700 transition-colors"
+                  className="w-full flex items-center justify-between py-4 bg-transparent border-none cursor-pointer text-sm font-semibold text-stone-800 hover:text-gold-dark transition-colors"
                   onClick={() => toggleAccordion('shipping')}
                 >
                   Shipping & Returns
@@ -1235,7 +1236,7 @@ export default function ProductDetailPage() {
               {/* Care Instructions */}
               <div className="border-b border-stone-200">
                 <button
-                  className="w-full flex items-center justify-between py-4 bg-transparent border-none cursor-pointer text-sm font-semibold text-stone-800 hover:text-amber-700 transition-colors"
+                  className="w-full flex items-center justify-between py-4 bg-transparent border-none cursor-pointer text-sm font-semibold text-stone-800 hover:text-gold-dark transition-colors"
                   onClick={() => toggleAccordion('care')}
                 >
                   Care Instructions
@@ -1261,16 +1262,16 @@ export default function ProductDetailPage() {
           <div id="pd-reviews" className="mb-8">
           <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
             <div>
-              <span className="inline-flex items-center gap-2.5 text-[11px] sm:text-xs font-display font-semibold text-amber-600 uppercase tracking-[0.22em]">
-                <span className="w-8 sm:w-10 h-px bg-amber-500" />
+              <span className="inline-flex items-center gap-2.5 text-[11px] sm:text-xs font-medium text-gold-dark uppercase tracking-[0.28em]">
+                <span className="w-10 h-px bg-gold" />
                 Customer Feedback
               </span>
-              <h2 className="mt-2 text-xl sm:text-2xl font-display font-bold text-stone-900 tracking-tight leading-tight">Customer Reviews ({reviews.length})</h2>
+              <h2 className="mt-3 font-editorial text-2xl sm:text-3xl font-medium text-ink tracking-tight leading-[1.1]">Customer Reviews ({reviews.length})</h2>
             </div>
             <div className="flex gap-2">
               {isAuthenticated && (
                 <button
-                  className="text-xs font-semibold px-4 py-2 rounded-xl bg-stone-900 hover:bg-amber-600 text-white transition-all shadow-sm"
+                  className="text-xs font-semibold px-4 py-2 rounded-full bg-ink hover:bg-gold hover:text-ink text-white transition-all shadow-sm"
                   onClick={() => setShowReviewModal(true)}
                 >
                   Write a Review
@@ -1282,12 +1283,12 @@ export default function ProductDetailPage() {
           {reviews.length > 0 ? (
             <>
               {/* Rating Summary */}
-              <div className="flex gap-6 p-5 bg-stone-50 border border-stone-200 rounded-2xl mb-5 items-center">
+              <div className="flex gap-6 p-5 bg-cream border border-stone-200/70 rounded-2xl mb-5 items-center">
                 <div className="text-center min-w-[100px]">
-                  <div className="text-5xl font-black text-stone-900 leading-none">{avgRating.toFixed(1)}</div>
+                  <div className="text-5xl font-editorial font-semibold text-ink leading-none">{avgRating.toFixed(1)}</div>
                   <div className="flex gap-0.5 justify-center my-1">
                     {[1,2,3,4,5].map(i => (
-                      <Star key={i} size={14} fill={i <= Math.round(avgRating) ? '#f59e0b' : 'none'} color={i <= Math.round(avgRating) ? '#f59e0b' : '#d6d3d1'} strokeWidth={1} />
+                      <Star key={i} size={14} fill={i <= Math.round(avgRating) ? '#B08D4F' : 'none'} color={i <= Math.round(avgRating) ? '#B08D4F' : '#d6d3d1'} strokeWidth={1} />
                     ))}
                   </div>
                   <div className="text-xs text-stone-400">{reviews.length} reviews</div>
@@ -1300,7 +1301,7 @@ export default function ProductDetailPage() {
                       <div key={star} className="flex items-center gap-2 text-xs text-stone-400">
                         <span className="w-4">{star}★</span>
                         <div className="flex-1 h-1.5 rounded-full bg-stone-100 overflow-hidden">
-                          <div className="h-full rounded-full bg-amber-400 transition-all duration-500" style={{ width: `${pct}%` }} />
+                          <div className="h-full rounded-full bg-gold transition-all duration-500" style={{ width: `${pct}%` }} />
                         </div>
                         <span className="w-6 text-right font-medium">{count}</span>
                       </div>
@@ -1333,7 +1334,7 @@ export default function ProductDetailPage() {
                     </div>
                     <div className="flex gap-0.5 mb-2">
                       {[1,2,3,4,5].map(i => (
-                        <Star key={i} size={12} fill={i <= review.rating ? '#f59e0b' : 'none'} color={i <= review.rating ? '#f59e0b' : '#d6d3d1'} strokeWidth={1} />
+                        <Star key={i} size={12} fill={i <= review.rating ? '#B08D4F' : 'none'} color={i <= review.rating ? '#B08D4F' : '#d6d3d1'} strokeWidth={1} />
                       ))}
                     </div>
                     {review.title && <div className="text-sm font-semibold text-stone-800 mb-1">{review.title}</div>}
@@ -1355,7 +1356,7 @@ export default function ProductDetailPage() {
               {/* View All / Show Less */}
               {reviews.length > 5 && (
                 <button
-                  className="w-full text-center text-xs font-semibold text-stone-700 bg-stone-50 border border-stone-200 hover:bg-amber-50 hover:border-amber-300 hover:text-amber-800 rounded-xl py-3 mt-2 transition-all"
+                  className="w-full text-center text-xs font-semibold text-stone-700 bg-cream border border-stone-200/80 hover:bg-gold/10 hover:border-gold/30 hover:text-gold-dark rounded-full py-3 mt-2 transition-all"
                   onClick={() => setShowAllReviews(!showAllReviews)}
                 >
                   {showAllReviews ? 'Show Less' : `View All ${reviews.length} Reviews`}
@@ -1368,7 +1369,7 @@ export default function ProductDetailPage() {
               <p className="text-sm mb-3">No reviews yet. Be the first to review this product!</p>
               {isAuthenticated && (
                 <button
-                  className="text-xs font-semibold px-4 py-2 rounded-xl bg-stone-900 hover:bg-amber-600 text-white transition-all shadow-sm"
+                  className="text-xs font-semibold px-4 py-2 rounded-full bg-ink hover:bg-gold hover:text-ink text-white transition-all shadow-sm"
                   onClick={() => setShowReviewModal(true)}
                 >
                   Write a Review
@@ -1385,20 +1386,20 @@ export default function ProductDetailPage() {
           <div className="mb-10">
             <div className="flex items-center justify-between mb-5">
               <div>
-                <span className="inline-flex items-center gap-2.5 text-[11px] sm:text-xs font-display font-semibold text-amber-600 uppercase tracking-[0.22em]">
-                  <span className="w-8 sm:w-10 h-px bg-amber-500" />
+                <span className="inline-flex items-center gap-2.5 text-[11px] sm:text-xs font-medium text-gold-dark uppercase tracking-[0.28em]">
+                  <span className="w-10 h-px bg-gold" />
                   Customers Also Bought
                 </span>
-                <h2 className="mt-2 text-xl sm:text-2xl font-display font-bold text-stone-900 tracking-tight leading-tight">You May Also Like</h2>
+                <h2 className="mt-3 font-editorial text-2xl sm:text-3xl font-medium text-ink tracking-tight leading-[1.1]">You May Also Like</h2>
               </div>
               <button
-                className="text-xs font-semibold text-amber-700 hover:text-amber-800 flex items-center gap-1 transition-all hover:gap-2"
+                className="text-xs font-medium text-gold-dark hover:text-gold flex items-center gap-1 transition-all hover:gap-2"
                 onClick={() => navigate('/products')}
               >
                 View All <ArrowRight size={14} />
               </button>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-x-3 sm:gap-x-6 gap-y-7 sm:gap-y-10">
               {relatedProducts.slice(0, 4).map((prod) => (
                 <ProductCard key={prod.id} product={prod} navigate={navigate} />
               ))}
@@ -1429,7 +1430,7 @@ export default function ProductDetailPage() {
           {product.sizes?.length > 0 && (
             <div className="relative">
               <select
-                className="h-9 text-xs font-medium rounded-xl border border-stone-200 bg-white text-stone-700 pl-2.5 pr-7 cursor-pointer appearance-none outline-none hover:border-stone-400 focus:border-amber-500 transition-colors"
+                className="h-9 text-xs font-medium rounded-xl border border-stone-200 bg-white text-stone-700 pl-2.5 pr-7 cursor-pointer appearance-none outline-none hover:border-stone-400 focus:border-gold transition-colors"
                 value={selectedSize}
                 onChange={(e) => setSelectedSize(e.target.value)}
               >
@@ -1453,7 +1454,7 @@ export default function ProductDetailPage() {
           {product.colors?.length > 0 && (
             <div className="relative">
               <select
-                className="h-9 text-xs font-medium rounded-xl border border-stone-200 bg-white text-stone-700 pl-2.5 pr-7 cursor-pointer appearance-none outline-none hover:border-stone-400 focus:border-amber-500 transition-colors"
+                className="h-9 text-xs font-medium rounded-xl border border-stone-200 bg-white text-stone-700 pl-2.5 pr-7 cursor-pointer appearance-none outline-none hover:border-stone-400 focus:border-gold transition-colors"
                 value={selectedColor}
                 onChange={(e) => setSelectedColor(e.target.value)}
               >
@@ -1474,7 +1475,7 @@ export default function ProductDetailPage() {
           )}
 
           <button
-            className="h-10 px-6 rounded-xl text-xs font-bold uppercase tracking-wide transition-all bg-amber-500 hover:bg-amber-400 text-stone-950 shadow-md whitespace-nowrap disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed disabled:shadow-none"
+            className="h-10 px-6 rounded-full text-xs font-semibold uppercase tracking-[0.14em] transition-all bg-gold hover:bg-gold-soft text-ink shadow-md shadow-gold/20 whitespace-nowrap disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed disabled:shadow-none"
             onClick={handleAddToCart}
             disabled={!canAddToCart || isAddingToCart}
           >

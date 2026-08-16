@@ -74,6 +74,15 @@
   --color-omnigold-500: #f59e0b;
   --color-omnigold-600: #d97706;
 
+  /* ── THREVOLT Premium — warm editorial luxury tokens ── */
+  --color-cream: #FAF8F4;
+  --color-cream-deep: #F1ECE2;
+  --color-gold: #B08D4F;
+  --color-gold-soft: #C9A86A;
+  --color-gold-dark: #8A6A35;
+  --color-ink: #1C1917;
+  --font-editorial: 'Cormorant', 'Space Grotesk', serif;
+
   --font-sans: 'Inter', 'system-ui', 'sans-serif';
 
   --animate-spin-slow: spin 8s linear infinite;
@@ -90,10 +99,6 @@
   --color-toy-accent-2: #fb7185;
   --color-charcoal: #292524;
   --color-charcoal-light: #44403c;
-  --color-gold: #f59e0b;
-  --color-gold-light: #fbbf24;
-  --color-gold-hover: #fbbf24;
-  --color-gold-dark: #d97706;
   --color-offWhite: #fafaf9;
   --color-accent-gray: #78716c;
   --color-accent-gray-light: #a8a29e;

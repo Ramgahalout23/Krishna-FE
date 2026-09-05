@@ -1,29 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, ChevronLeft, ChevronRight, Clock } from 'lucide-react';
+import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { getImageUrl } from '../../utils/formatters';
 
 export default function HeroBanner({
   banners = [],
-  hasActiveSales = false,
 }) {
   const navigate = useNavigate();
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [timeLeft, setTimeLeft] = useState({ hours: 4, minutes: 28, seconds: 45 });
   const [isTransitioning, setIsTransitioning] = useState(false);
-
-  // ── Countdown Timer ──
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev.seconds > 0) return { ...prev, seconds: prev.seconds - 1 };
-        if (prev.minutes > 0) return { ...prev, minutes: prev.minutes - 1, seconds: 59 };
-        if (prev.hours > 0) return { hours: prev.hours - 1, minutes: 59, seconds: 59 };
-        return { hours: 12, minutes: 0, seconds: 0 };
-      });
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
 
   // ── Default Slides ──
   const defaultSlides = [
@@ -167,72 +152,44 @@ export default function HeroBanner({
                 {current.ctaText}
                 <ArrowRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-1" />
               </button>
-              {hasActiveSales && (
-                <button
-                  onClick={() => navigate('/sales')}
-                  className="px-7 py-3.5 text-white text-[12px] font-medium uppercase tracking-[0.18em] rounded-full border border-white/25 hover:border-white/50 hover:bg-white/10 backdrop-blur-sm transition-all duration-300"
-                >
-                  Featured Deals
-                </button>
-              )}
             </div>
           </div>
         )}
 
-        {/* ═══════ Bottom Bar: Timer & Slide Nav ═══════ */}
-        <div className="pt-4 mt-2 flex items-center justify-between gap-3 border-t border-white/10">
-          {hasActiveSales && (
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-1.5 text-gold-soft">
-                <Clock className="w-4 h-4" />
-                <span className="hidden sm:inline text-[10px] font-medium uppercase tracking-[0.22em] text-stone-300">
-                  Flash Sale ends in
-                </span>
-              </div>
-              <div className="flex items-center gap-1.5 font-mono text-sm font-semibold text-white">
-                <span className="bg-white/[0.06] border border-white/15 px-2 py-1 rounded-md min-w-[42px] text-center text-gold-soft">{String(timeLeft.hours).padStart(2, '0')}</span>
-                <span className="text-stone-500">:</span>
-                <span className="bg-white/[0.06] border border-white/15 px-2 py-1 rounded-md min-w-[42px] text-center text-gold-soft">{String(timeLeft.minutes).padStart(2, '0')}</span>
-                <span className="text-stone-500">:</span>
-                <span className="bg-white/[0.06] border border-white/15 px-2 py-1 rounded-md min-w-[42px] text-center text-gold-soft">{String(timeLeft.seconds).padStart(2, '0')}</span>
-              </div>
-            </div>
-          )}
-
-          <div className="flex items-center gap-4 ml-auto">
-            {/* Elegant thin-line indicators */}
-            <div className="hidden sm:flex items-center gap-1.5">
-              {slides.map((_, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => goToSlide(idx)}
-                  className={`h-px rounded-full transition-all duration-500 ${
-                    currentSlide === idx ? 'w-8 bg-gold' : 'w-4 bg-white/25 hover:bg-white/50'
-                  }`}
-                  aria-label={`Go to slide ${idx + 1}`}
-                />
-              ))}
-            </div>
-            <div className="flex items-center gap-1.5">
+        {/* ═══════ Bottom Bar: Slide Nav ═══════ */}
+        <div className="pt-4 mt-2 flex items-center justify-end gap-4">
+          {/* Elegant thin-line indicators */}
+          <div className="hidden sm:flex items-center gap-1.5">
+            {slides.map((_, idx) => (
               <button
-                onClick={prevSlide}
-                className="w-8 h-8 rounded-full border border-white/20 hover:border-white/50 hover:bg-white/10 text-white transition-all duration-300 flex items-center justify-center active:scale-95"
-                aria-label="Previous slide"
-              >
-                <ChevronLeft className="w-3.5 h-3.5" />
-              </button>
-              <button
-                onClick={nextSlide}
-                className="w-8 h-8 rounded-full border border-white/20 hover:border-white/50 hover:bg-white/10 text-white transition-all duration-300 flex items-center justify-center active:scale-95"
-                aria-label="Next slide"
-              >
-                <ChevronRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
+                key={idx}
+                onClick={() => goToSlide(idx)}
+                className={`h-px rounded-full transition-all duration-500 ${
+                  currentSlide === idx ? 'w-8 bg-gold' : 'w-4 bg-white/25 hover:bg-white/50'
+                }`}
+                aria-label={`Go to slide ${idx + 1}`}
+              />
+            ))}
+          </div>
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={prevSlide}
+              className="w-8 h-8 rounded-full border border-white/20 hover:border-white/50 hover:bg-white/10 text-white transition-all duration-300 flex items-center justify-center active:scale-95"
+              aria-label="Previous slide"
+            >
+              <ChevronLeft className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={nextSlide}
+              className="w-8 h-8 rounded-full border border-white/20 hover:border-white/50 hover:bg-white/10 text-white transition-all duration-300 flex items-center justify-center active:scale-95"
+              aria-label="Next slide"
+            >
+              <ChevronRight className="w-3.5 h-3.5" />
+            </button>
           </div>
         </div>
       </div>
-
     </section>
   );
 }
+

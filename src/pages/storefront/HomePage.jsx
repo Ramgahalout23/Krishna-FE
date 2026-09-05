@@ -9,7 +9,6 @@ import '../../styles/omni.css';
 import { X } from 'lucide-react';
 import { getImageUrl } from '../../utils/formatters';
 import HeroBanner from '../../components/omni/HeroBanner';
-import TrustFeatures from '../../components/omni/TrustFeatures';
 import FlashDeals from '../../components/omni/FlashDeals';
 import CategoryGrid from '../../components/omni/CategoryGrid';
 import ProductGrid from '../../components/omni/ProductGrid';
@@ -126,9 +125,6 @@ export default function HomePage() {
   const sectionTitles = {
     featured: getSetting('homepageFeaturedTitle', 'Featured Products'),
     featuredSubtitle: getSetting('homepageFeaturedSubtitle', 'Trending Now'),
-    flashDealsTitle: getSetting('homepageFlashDealsTitle', 'Flash Deals of the Day'),
-    flashDealsBadge: getSetting('homepageFlashDealsBadge', 'Limited Time Offers'),
-    flashDealsDiscount: getSetting('homepageFlashDealsDiscount', 'Up to 40% OFF'),
     categoryTitle: getSetting('homepageCategoryTitle', 'Shop By Category'),
     categorySubtitle: getSetting('homepageCategorySubtitle', 'Curated Departments'),
     bestSellerTitle: getSetting('homepageBestSellerTitle', 'Best Sellers'),
@@ -277,26 +273,21 @@ export default function HomePage() {
         <HeroBanner banners={banners} hasActiveSales={hasActiveSales} />
       </ScrollReveal>
 
-      {/* 2. Perks — trust strip as its own premium row */}
-      <ScrollReveal delay={0.04}>
-        <TrustFeatures />
-      </ScrollReveal>
-
-      {/* 3. Sale Offers — hot promotions near the top */}
+      {/* 2. Sale Offers — admin-controlled promotions */}
       {saleBanners.length > 0 && (
         <ScrollReveal delay={0.05}>
-          <section className="py-10 sm:py-16 bg-white">
+          <section className="py-8 sm:py-12 bg-white">
             <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
-              <div className="mb-7 sm:mb-10">
+              <div className="mb-6 sm:mb-8">
                 <span className="inline-flex items-center gap-3 text-[11px] sm:text-xs font-medium text-gold-dark uppercase tracking-[0.28em]">
-                  <span className="w-10 h-px bg-gold" />
+                  <span className="w-8 h-px bg-gold" />
                   Today's Offers
                 </span>
-                <h2 className="mt-3 font-editorial text-3xl sm:text-4xl font-medium text-ink tracking-tight leading-[1.1]">
+                <h2 className="mt-2 font-editorial text-2xl sm:text-3xl font-medium text-ink tracking-tight leading-[1.1]">
                   Deals Worth Grabbing
                 </h2>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
                 {saleBanners.map((banner, idx) => (
                   <BannerCard key={banner.id || idx} banner={banner} onNavigate={handleBannerNav} />
                 ))}
@@ -306,7 +297,7 @@ export default function HomePage() {
         </ScrollReveal>
       )}
 
-      {/* 4. Featured Products */}
+      {/* 3. Featured Products */}
       {allProducts.length > 0 && (
         <ScrollReveal delay={0.06}>
           <ProductGrid
@@ -319,7 +310,7 @@ export default function HomePage() {
         </ScrollReveal>
       )}
 
-      {/* 5. Shop By Category */}
+      {/* 4. Shop By Category */}
       {categories.length > 0 && (
         <ScrollReveal delay={0.08}>
           <CategoryGrid
@@ -394,7 +385,7 @@ export default function HomePage() {
         </Suspense>
       </ScrollReveal>
 
-      {/* 10. Customer Reviews */}
+      {/* 6. Customer Reviews */}
       <ScrollReveal delay={0.18}>
         <Suspense fallback={null}>
           <Testimonials
@@ -405,7 +396,7 @@ export default function HomePage() {
         </Suspense>
       </ScrollReveal>
 
-      {/* 11. Watch & Buy — shoppable video reels (lazy-loaded) */}
+      {/* 7. Reels — shoppable video (lazy-loaded) */}
       {reelsEnabled && reels.length > 0 && (
         <ScrollReveal delay={0.2}>
           <Suspense fallback={null}>
@@ -413,11 +404,6 @@ export default function HomePage() {
           </Suspense>
         </ScrollReveal>
       )}
-
-      {/* 12. Closing trust strip — reassurance before the footer */}
-      <ScrollReveal delay={0.22}>
-        <TrustFeatures />
-      </ScrollReveal>
 
       {/* Quick View Modal */}
       <QuickViewModal

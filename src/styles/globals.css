@@ -81,7 +81,9 @@
   --color-gold-soft: #C9A86A;
   --color-gold-dark: #8A6A35;
   --color-ink: #1C1917;
-  --font-editorial: 'Cormorant', 'Space Grotesk', serif;
+  /* Editorial display font follows the brand display font (Jost) so the
+     storefront headings match the rest of the app instead of a lone serif. */
+  --font-editorial: 'Jost', 'Inter', 'sans-serif';
 
   --font-sans: 'Inter', 'system-ui', 'sans-serif';
 
@@ -106,7 +108,7 @@
   --color-muted: #78716c;
   --color-muted-light: #a8a29e;
 
-  --font-display: 'Space Grotesk', 'Inter', 'sans-serif';
+  --font-display: 'Jost', 'Inter', 'sans-serif';
   /* font-headline, font-body, font-label, font-baloo, font-roboto removed — unused */
 
   /* Radius overrides removed — using default Tailwind v4 radius tokens */
@@ -128,9 +130,10 @@
 }
 
 /* Unlayered override — beats tokens.css `--font-display: 'Jost'` because plain
-   :root rules win over Tailwind's @theme layer in the cascade. */
+   :root rules win over Tailwind's @theme layer in the cascade.
+   Kept in sync with tokens.css: Jost is the single brand display font. */
 :root {
-  --font-display: 'Space Grotesk', 'Inter', 'sans-serif';
+  --font-display: 'Jost', 'Inter', 'sans-serif';
 }
 
 @keyframes slideUp {
@@ -398,7 +401,7 @@ img[loading="lazy"][class*="object-cover"] {
   margin-bottom: 0.25rem;
 }
 .section-title {
-  font-family: 'Poppins', sans-serif;
+  font-family: var(--font-display);
   font-size: 2rem;
   font-weight: 700;
   letter-spacing: -0.02em;
@@ -648,5 +651,25 @@ img[loading="lazy"][class*="object-cover"] {
 
 .animate-scale-in {
   animation: scaleIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ── Gold Marquee Ribbon (homepage) ─────────────── */
+@keyframes marqueeScroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  animation: marqueeScroll 30s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee {
+    animation: none;
+  }
 }
 

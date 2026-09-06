@@ -758,7 +758,7 @@ export default function CheckoutPage() {
       <div className="max-w-6xl mx-auto px-4 py-6 sm:py-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
           {/* Back to Cart Link */}
-          <button onClick={() => navigate('/cart')} className="flex items-center gap-2 text-stone-500 hover:text-gold-dark mb-0 transition-colors md:hidden -ml-1">
+          <button onClick={() => navigate('/cart')} className="flex items-center gap-2 text-stone-500 hover:text-gold-dark py-2 -my-1 mb-0 transition-colors md:hidden -ml-1">
             <ChevronLeft size={18} /> Back to cart
           </button>
 
@@ -1021,7 +1021,7 @@ export default function CheckoutPage() {
                       {item.imageUrl ? (
                         <img loading="lazy" src={getImageUrl(item.imageUrl)} alt={item.name} className={`w-full h-full object-cover ${isOOS ? 'grayscale' : ''}`} />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-3xl">{item.image || '👕'}</div>
+                        <div className="w-full h-full flex items-center justify-center text-3xl">{item.image || '📦'}</div>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">

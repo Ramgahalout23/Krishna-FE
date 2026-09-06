@@ -12,7 +12,10 @@ import { wishlistAPI } from '../../api/wishlist';
 import { cartAPI } from '../../api/cart';
 import { addedToCart, addedToWishlist, removedFromWishlist } from '../../utils/toast';
 
-export default function ProductCard({ product, onQuickView }) {
+export default function ProductCard({ product, onQuickView, variant = 'light' }) {
+  // 'dark' variant → self-contained card for dark sections (Flash Deals);
+  // 'light' (default) → borderless tile for cream page backgrounds.
+  const isDark = variant === 'dark';
   const navigate = useNavigate();
   const { addItem } = useCartStore();
   const { isAuthenticated } = useAuthStore();
@@ -349,13 +352,17 @@ export default function ProductCard({ product, onQuickView }) {
 
   return (
     <div
-      className="group relative bg-white cursor-pointer flex flex-col h-full"
+      className={`group relative cursor-pointer flex flex-col h-full ${
+        isDark
+          ? 'rounded-2xl border border-white/[0.08] bg-white/[0.04] overflow-hidden p-2 sm:p-3 transition-all duration-400 hover:border-gold/35 hover:bg-white/[0.07] hover:shadow-[0_18px_44px_-16px_rgba(0,0,0,0.65)]'
+          : 'bg-white'
+      }`}
       onMouseEnter={() => hoverImgUrl && setCurrentImgIndex(1)}
       onMouseLeave={() => setCurrentImgIndex(0)}
       onClick={() => navigate(productPath)}
     >
       {/* ════ Image — full-bleed, borderless ════ */}
-      <div className="relative aspect-[4/5] bg-cream overflow-hidden rounded-xl">
+      <div className={`relative aspect-[4/5] overflow-hidden ${isDark ? 'bg-white/5 rounded-lg' : 'bg-cream rounded-xl'}`}>
         <Link to={productPath} aria-label={product.name} onClick={(e) => e.stopPropagation()}>
           <img
             src={getImageUrl(currentImgIndex === 1 && hoverImgUrl ? hoverImgUrl : imgUrl)}
@@ -368,7 +375,7 @@ export default function ProductCard({ product, onQuickView }) {
 
         {/* Minimal single badge */}
         {!isOutOfStock && discount > 0 ? (
-          <span className="absolute top-3 left-3 z-10 inline-flex items-center bg-ink/75 backdrop-blur-sm text-white text-[9px] font-medium tracking-[0.14em] px-2.5 py-1 rounded-full">
+          <span className={`absolute top-3 left-3 z-10 inline-flex items-center text-[9px] font-medium tracking-[0.14em] px-2.5 py-1 rounded-full ${isDark ? 'bg-gold text-ink font-bold' : 'bg-ink/75 backdrop-blur-sm text-white'}`}>
             −{discount}%
           </span>
         ) : isOutOfStock ? (
@@ -407,9 +414,11 @@ export default function ProductCard({ product, onQuickView }) {
           className={`sm:hidden absolute bottom-3 right-3 z-10 w-9 h-9 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 active:scale-90 ${
             isOutOfStock
               ? 'bg-white/70 text-stone-400 cursor-not-allowed'
-              : isAddedAnim
+              :            isAddedAnim
                 ? 'bg-emerald-600 text-white'
-                : 'bg-ink text-white hover:bg-gold hover:text-ink'
+                : isDark
+                  ? 'bg-gold text-ink hover:bg-gold-soft'
+                  : 'bg-ink text-white hover:bg-gold hover:text-ink'
           }`}
         >
           {isAddedAnim ? <Check className="w-4 h-4" /> : hasVariants && hasSelectableOptions ? <ShoppingBag className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
@@ -488,17 +497,17 @@ export default function ProductCard({ product, onQuickView }) {
       {/* ════ Product Info — clean & airy ════ */}
       <div className="pt-3 px-0.5 flex flex-col flex-1">
         <Link to={productPath} onClick={(e) => e.stopPropagation()} className="focus:outline-none">
-          <h3 className="text-[13px] font-medium text-stone-800 leading-snug line-clamp-2 transition-colors duration-200 group-hover:text-gold-dark">
+          <h3 className={`text-[13px] font-medium leading-snug line-clamp-2 transition-colors duration-200 ${isDark ? 'text-stone-100 group-hover:text-gold-soft' : 'text-stone-800 group-hover:text-gold-dark'}`}>
             {product.name}
           </h3>
         </Link>
 
         {isLowStock && (
-          <span className="mt-1 text-[10px] font-medium text-rose-600">Only {stockQty} left</span>
+          <span className={`mt-1 text-[10px] font-medium ${isDark ? 'text-rose-400' : 'text-rose-600'}`}>Only {stockQty} left</span>
         )}
 
         <div className="mt-1.5 flex items-baseline gap-2 flex-wrap">
-          <span className="text-[15px] font-semibold tracking-tight text-ink">
+          <span className={`text-[15px] font-semibold tracking-tight ${isDark ? 'text-white' : 'text-ink'}`}>
             {formatPrice(price)}
           </span>
           {oldPrice && (
@@ -597,7 +606,7 @@ export default function ProductCard({ product, onQuickView }) {
                       {imgUrl ? (
                         <img loading="lazy" src={getImageUrl(imgUrl)} alt={product.name} className="w-full h-full object-cover" />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-2xl">👕</div>
+                        <div className="w-full h-full flex items-center justify-center text-2xl">📦</div>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">

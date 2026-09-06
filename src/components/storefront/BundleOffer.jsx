@@ -83,7 +83,7 @@ export default function BundleOffer({
       {/* Section Header — refined, matching OffersSection language */}
       <button
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center gap-2 mb-3 group"
+        className="w-full flex items-center gap-2 py-2 -my-2 mb-3 group"
       >
         <div className="flex items-center gap-1.5">
           <div

@@ -73,7 +73,7 @@ export default memo(function AnnouncementBar() {
         }
 
         .announcement-item span:last-child {
-          font-family: 'Space Grotesk', 'Inter', sans-serif;
+          font-family: var(--font-display);
           font-size: 0.7rem;
           font-weight: 600;
           letter-spacing: 0.12em;

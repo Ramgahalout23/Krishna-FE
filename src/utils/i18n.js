@@ -159,7 +159,7 @@ const DEFAULT_EN_TRANSLATIONS = {
   'footer.bottom.made_with': 'Made with 🧡 in India',
 
   // ── Search ──
-  'search.placeholder': 'Search t-shirts...',
+  'search.placeholder': 'Search products...',
   'search.placeholder_modal': 'Search products...',
   'search.for_query': 'Search for "{{query}}"',
   'search.press_enter': 'Press Enter to see all results',
@@ -753,7 +753,7 @@ const DEFAULT_EN_TRANSLATIONS = {
   'products.clear_all': 'Clear all',
   'products.apply_filters': 'Apply Filters',
   'products.category': 'Category',
-  'products.search_placeholder': 'Search by product name, style, or keyword...',
+  'products.search_placeholder': 'Search by product name or keyword...',
   'products.search': 'Search',
   'products.results': 'results',
   'products.found': 'found',

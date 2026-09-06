@@ -361,7 +361,7 @@ function ReelBuyModal({ productId, onClose }) {
                 {imageSrc ? (
                   <img loading="lazy" decoding="async" src={imageSrc} alt={product.name} className="w-full h-full object-cover" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-3xl text-gray-200">👕</div>
+                  <div className="w-full h-full flex items-center justify-center text-3xl text-gray-200">📦</div>
                 )}
                 {displayDiscount && (
                   <div className="absolute top-1 left-1 px-1.5 py-0.5 bg-red-500 text-white text-[7px] font-bold rounded-md shadow-sm">
@@ -968,7 +968,7 @@ function SelektProductCard({ product, index }) {
         {imageSrc ? (
           <img loading="lazy" src={imageSrc} alt={product.name} className={`w-full h-full object-cover transition-all duration-500 ease-out group-hover:scale-105 ${isOutOfStock ? 'opacity-60 grayscale' : ''}`} />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-5xl text-gray-200">👕</div>
+          <div className="w-full h-full flex items-center justify-center text-5xl text-gray-200">📦</div>
         )}
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300 pointer-events-none" />
         <div className="absolute top-2 right-2 flex flex-col gap-1.5 z-10">

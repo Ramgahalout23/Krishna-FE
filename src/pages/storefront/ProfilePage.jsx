@@ -202,7 +202,7 @@ export default function ProfilePage() {
           </div>
           <button
             onClick={handleLogout}
-            className="relative inline-flex items-center gap-2 text-gold-soft/90 hover:text-gold-soft text-sm transition-colors touch-manipulation"
+            className="relative inline-flex items-center gap-2 text-gold-soft/90 hover:text-gold-soft text-sm py-2 -my-2 transition-colors touch-manipulation"
           >
             <LogOut size={16} /> {t('profile.sign_out')}
           </button>

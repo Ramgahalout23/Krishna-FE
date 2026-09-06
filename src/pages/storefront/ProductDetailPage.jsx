@@ -699,7 +699,7 @@ export default function ProductDetailPage() {
           left: 50%;
           transform: translateX(-50%);
           z-index: 3;
-          font-family: 'Space Grotesk', sans-serif;
+          font-family: var(--font-display);
           font-size: 6.5px;
           font-weight: 800;
           letter-spacing: 0.18em;
@@ -760,7 +760,7 @@ export default function ProductDetailPage() {
           gap: 10px;
           padding: 10px 12px;
           border-bottom: 1px solid rgba(255,255,255,0.08);
-          font-family: 'Space Grotesk', sans-serif;
+          font-family: var(--font-display);
           flex-shrink: 0;
           cursor: grab;
           touch-action: none;
@@ -813,12 +813,12 @@ export default function ProductDetailPage() {
 
       {/* Breadcrumb */}
       <div className="max-w-7xl mx-auto px-4 pt-4 pb-0">
-        <nav className="flex items-center gap-1.5 text-xs text-stone-400 tracking-wide overflow-x-auto whitespace-nowrap scrollbar-none">
-          <a href="/" className="hover:text-gold-dark transition-colors">Home</a>
+        <nav className="flex items-center gap-1.5 text-xs text-stone-400 tracking-wide overflow-x-auto whitespace-nowrap scrollbar-none py-1">
+          <a href="/" className="inline-block py-2 -my-2 hover:text-gold-dark transition-colors">Home</a>
           <span className="text-stone-300">/</span>
           <a
             href={typeof product.category === 'object' && product.category.slug ? `/products?category=${product.category.slug}` : '/products'}
-            className="hover:text-gold-dark transition-colors"
+            className="inline-block py-2 -my-2 hover:text-gold-dark transition-colors"
           >
             {typeof product.category === 'object' ? product.category.name : product.category || 'Products'}
           </a>
@@ -1393,7 +1393,7 @@ export default function ProductDetailPage() {
                 <h2 className="mt-3 font-editorial text-2xl sm:text-3xl font-medium text-ink tracking-tight leading-[1.1]">You May Also Like</h2>
               </div>
               <button
-                className="text-xs font-medium text-gold-dark hover:text-gold flex items-center gap-1 transition-all hover:gap-2"
+                className="text-xs font-medium text-gold-dark hover:text-gold flex items-center gap-1 py-2 -my-2 transition-all hover:gap-2"
                 onClick={() => navigate('/products')}
               >
                 View All <ArrowRight size={14} />

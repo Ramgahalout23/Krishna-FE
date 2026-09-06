@@ -110,8 +110,8 @@ export default function HeroBanner({
       </div>
 
       {/* ═══════ Content Layer ═══════ */}
-      <div className={`relative max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-8 lg:py-14 flex flex-col justify-between ${
-        current.displayMode === 'IMAGE_ONLY' ? 'min-h-[220px] sm:min-h-[340px] lg:min-h-[480px]' : 'min-h-[300px] sm:min-h-[420px] lg:min-h-[560px]'
+      <div className={`relative max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-14 flex flex-col justify-between ${
+        current.displayMode === 'IMAGE_ONLY' ? 'min-h-[170px] sm:min-h-[320px] lg:min-h-[480px]' : 'min-h-[240px] sm:min-h-[380px] lg:min-h-[540px]'
       }`}>
 
         {current.displayMode !== 'IMAGE_ONLY' && (
@@ -129,7 +129,7 @@ export default function HeroBanner({
 
             {/* Editorial serif headline */}
             <h1
-              className="font-editorial text-4xl sm:text-5xl lg:text-6xl font-medium tracking-tight text-white leading-[1.05] opacity-0"
+              className="font-editorial text-[34px] leading-[1.08] sm:text-5xl lg:text-6xl font-medium tracking-tight text-white opacity-0"
               style={{ animation: 'textRevealUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.25s forwards' }}
             >
               {current.title}
@@ -144,7 +144,7 @@ export default function HeroBanner({
             </p>
 
             {/* Buttons */}
-            <div className="pt-2 flex flex-wrap items-center gap-3 opacity-0" style={{ animation: 'textRevealUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.55s forwards' }}>
+            <div className="pt-1 flex flex-wrap items-center gap-3 opacity-0" style={{ animation: 'textRevealUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.55s forwards' }}>
               <button
                 onClick={() => navigate(current.ctaLink)}
                 className="group inline-flex items-center gap-2 px-7 py-3.5 bg-gold text-ink text-[12px] font-semibold uppercase tracking-[0.18em] rounded-full shadow-lg shadow-gold/20 transition-all duration-300 hover:bg-gold-soft hover:shadow-gold/40 hover:-translate-y-0.5 active:translate-y-0"

@@ -31,7 +31,7 @@ const HOMEPAGE_SECTIONS = [
   { key: 'flash_sales', label: 'Flash Sales', icon: '⚡', description: 'Active promotion banners with countdown' },
   { key: 'new_arrival_week', label: 'New Arrival of the Week', icon: '⭐', description: 'Editorial featured product hero' },
   { key: 'new_arrivals', label: 'New Arrivals', icon: '🆕', description: 'New arrivals product carousel' },
-  { key: 'curated_looks', label: 'Curated Looks', icon: '👕', description: 'Style inspiration gallery' },
+  { key: 'curated_looks', label: 'Curated Looks', icon: '📦', description: 'Style inspiration gallery' },
   { key: 'tshirt_customizer', label: 'T-Shirt Customizer', icon: '🎨', description: 'Design your own custom t-shirt CTA' },
   { key: 'categories', label: 'Shop by Category', icon: '📦', description: 'Category grid with editorial layout' },
   { key: 'best_sellers', label: 'Best Sellers', icon: '🔥', description: 'Trending products carousel' },
@@ -1087,7 +1087,7 @@ export default function SettingsAdminPage() {
                 border: '1px solid var(--border)',
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                  <span style={{ fontSize: '1.25rem' }}>👕</span>
+                  <span style={{ fontSize: '1.25rem' }}>📦</span>
                   <div>
                     <strong style={{ fontSize: '0.9rem' }}>Curated Looks</strong>
                     <p style={{ fontSize: '0.78rem', color: 'var(--muted)', margin: '0.15rem 0 0' }}>
@@ -1257,7 +1257,7 @@ export default function SettingsAdminPage() {
                             transition: 'opacity 0.15s ease',
                             pointerEvents: 'none',
                           }}
-                        >👕</div>
+                        >📦</div>
                       </div>
                     </div>
 
@@ -2434,7 +2434,7 @@ export default function SettingsAdminPage() {
               <div className="form-group form-full">
                 <textarea
                   rows={3}
-                  value={settings.footerBrandTagline || "India's favorite t-shirt brand. Premium quality, bold designs, and unbeatable comfort — all at prices that make you smile."}
+                  value={settings.footerBrandTagline || "Your everyday mart for toys, electronics, home & kitchen essentials. Quality products, fair prices, and free delivery across India."}
                   onChange={e => setSettings({ ...settings, footerBrandTagline: e.target.value })}
                   placeholder="Your brand tagline shown in the footer..."
                 />

@@ -12,7 +12,7 @@ export default function FooterTab({ settings, setSettings, loading, handleSaveSe
           <div className="form-group form-full">
             <textarea
               rows={3}
-              value={settings.footerBrandTagline || "India's favorite t-shirt brand. Premium quality, bold designs, and unbeatable comfort — all at prices that make you smile."}
+              value={settings.footerBrandTagline || "Your everyday mart for toys, electronics, home & kitchen essentials. Quality products, fair prices, and free delivery across India."}
               onChange={e => setSettings({ ...settings, footerBrandTagline: e.target.value })}
               placeholder="Your brand tagline shown in the footer..."
             />

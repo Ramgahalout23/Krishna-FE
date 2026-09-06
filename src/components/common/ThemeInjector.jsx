@@ -17,7 +17,7 @@ const THEME_VAR_MAP = {
   themeDangerColor:       ['--danger', '--error'],
   themeWarningColor:      ['--warning'],
   themeInfoColor:         ['--info'],
-  themeFontDisplay:       ['--font-display', '--font-label'],
+  themeFontDisplay:       ['--font-display', '--font-label', '--font-editorial'],
   themeFontBody:          ['--font-body'],
   themeFontHeadline:      ['--font-headline'],
   themeContainerMaxWidth: ['--container-max', '--max-width'],

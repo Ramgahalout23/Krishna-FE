@@ -106,7 +106,7 @@ export default defineConfig(({ mode }) => {
       // to Laravel dev server (port 8000 via php artisan serve)
       proxy: {
         '/api': {
-          target: 'http://localhost:8000',
+          target: 'http://127.0.0.1:8001',
           changeOrigin: true,
           secure: false,
           // Return JSON error instead of HTML so CORB doesn't block the response
@@ -130,17 +130,17 @@ export default defineConfig(({ mode }) => {
               });
               res.end(JSON.stringify({
                 success: false,
-                message: 'Backend server is not available. Please ensure the Laravel server is running on port 8000.',
+                message: 'Backend server is not available. Please ensure the Laravel server is running on port 8001.',
               }));
             });
           },
         },
         '/uploads': {
-          target: 'http://localhost:8000',
+          target: 'http://127.0.0.1:8001',
           changeOrigin: true,
         },
         '/storage': {
-          target: 'http://localhost:8000',
+          target: 'http://127.0.0.1:8001',
           changeOrigin: true,
         },
       },

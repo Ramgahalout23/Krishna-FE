@@ -9,12 +9,13 @@ export default function ProductGrid({
   subtitle = 'Trending Now',
   showHeader = true,
   viewAllLink = '/products',
+  tone = 'white', // 'white' | 'cream' — lets the homepage alternate section backgrounds
 }) {
   const navigate = useNavigate();
   if (!products || products.length === 0) return null;
 
   return (
-    <section className="py-12 sm:py-20 bg-white" id="catalog-section">
+    <section className={`py-12 sm:py-20 ${tone === 'cream' ? 'bg-cream' : 'bg-white'}`} id="catalog-section">
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
         {showHeader && (
           <div className="mb-8 sm:mb-12 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
@@ -39,7 +40,7 @@ export default function ProductGrid({
           </div>
         )}
 
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-3 sm:gap-x-6 gap-y-7 sm:gap-y-10">
+        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-x-3 sm:gap-x-6 gap-y-7 sm:gap-y-10">
           {products.slice(0, 12).map((product) => (
             <ProductCard key={product.id} product={product} onQuickView={onQuickView} />
           ))}

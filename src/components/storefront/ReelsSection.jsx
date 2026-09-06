@@ -155,6 +155,8 @@ function FashionShowcase({ reels }) {
   // ── Only the in-view reel's video plays (off-screen videos are paused) ──
   const videoRefs = useRef({});
   const [inViewReelId, setInViewReelId] = useState(null);
+  const prevActiveVideoRef = useRef(null);
+  const videoFollowTimer = useRef(null);
   // ── Mobile swipe affordance — hides once the user interacts ──
   const [, setShowSwipeHint] = useState(true);
   // ── Auto-scroll (same as the product carousel) — works on mobile too ──
@@ -462,12 +464,22 @@ function FashionShowcase({ reels }) {
 
   // Play the in-view reel's video; pause everything else (and everything while
   // the fullscreen player is open — it renders over this carousel).
+  // A newly-activated video restarts from 0 (Shorts behavior) so the centered
+  // reel always plays from its beginning, never mid-way from an earlier pass.
   useEffect(() => {
+    const activeId = inViewReelId === null ? null : String(inViewReelId);
     Object.entries(videoRefs.current).forEach(([id, v]) => {
       if (!v) return;
-      if (activeReelIndex === null && id === String(inViewReelId)) v.play().catch(() => {});
-      else v.pause();
+      if (activeReelIndex === null && id === activeId) {
+        if (prevActiveVideoRef.current !== id) {
+          try { v.currentTime = 0; } catch { /* seek before metadata is best-effort */ }
+        }
+        v.play().catch(() => {});
+      } else {
+        v.pause();
+      }
     });
+    prevActiveVideoRef.current = activeId;
   }, [inViewReelId, reels, activeReelIndex]);
 
   // Only auto-scroll while the carousel is actually on screen
@@ -497,20 +509,50 @@ function FashionShowcase({ reels }) {
 
   // Reset the fold position whenever the duplicated set re-renders (copy count
   // changes on resize) so the carousel never lands stuck past the wrap point.
+  // Threshold 1.5 copies: a scrollLeft of exactly ~1 copy is the intentional
+  // initial 3-card-peek position (centered on copy 1) and must not be folded.
   useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
     const cw = getCopyWidth();
-    if (cw > 0 && el.scrollLeft >= cw) {
+    if (cw > 0 && el.scrollLeft >= cw * 1.5) {
       el.scrollLeft = el.scrollLeft % cw;
     }
   }, [loopCopies, getCopyWidth]);
 
-  // Cleanup timers on unmount
+  // ── Load with a 3-card peek layout (Reels/Shorts style): center the first
+  // reel's SECOND copy, so the tail card of the first copy peeks in from the
+  // left edge and the next card peeks from the right — three cards visible on
+  // first paint instead of a half-empty track. The centered card is still
+  // reel[0], so dots (idx % reels.length) and play-order stay correct.
+  // Card data-reel-id is `${reel.id}-${positionInLoopedTrack}`, so the target
+  // is `${reels[0].id}-${reels.length}` (first card of the duplicated set).
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el || reels.length < 2) return;
+    // Mobile-only: the peek layout is a max-sm pattern (desktop starts at 0)
+    if (typeof window !== 'undefined' && window.innerWidth >= 640) return;
+    const centerId = `${reels[0].id}-${reels.length}`; // first card of the duplicated set
+    const applyInitialCenter = () => {
+      const cards = el.querySelectorAll('.reel-card');
+      const target = Array.from(cards).find((c) => c.dataset?.reelId === centerId);
+      if (!target) return false;
+      const targetCenter = target.offsetLeft + target.offsetWidth / 2;
+      el.scrollLeft = targetCenter - el.clientWidth / 2;
+      return true;
+    };
+    // Try immediately, then defer — card offsets need layout to settle and the
+    // loop copy-count may still be measuring.
+    if (!applyInitialCenter()) {
+      const raf = requestAnimationFrame(() => { if (!applyInitialCenter()) setTimeout(applyInitialCenter, 150); });
+      return () => cancelAnimationFrame(raf);
+    }
+  }, [reels]);
   useEffect(() => {
     return () => {
       if (autoplayRef.current) clearInterval(autoplayRef.current);
       if (autoplayRestartRef.current) clearTimeout(autoplayRestartRef.current);
+      if (videoFollowTimer.current) clearTimeout(videoFollowTimer.current);
     };
   }, []);
 
@@ -582,7 +624,7 @@ function FashionShowcase({ reels }) {
           )}
           <div
             ref={scrollRef}
-            className="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-2 sm:pb-2 max-sm:pb-0 max-sm:px-[calc(50vw-75px)] max-sm:snap-center max-sm:[scroll-snap-type:x_mandatory] sm:max-sm:gap-3"
+            className="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-2 sm:pb-2 max-sm:pb-0 max-sm:-mx-4 max-sm:px-[calc(50vw-75px)] max-sm:snap-center max-sm:[scroll-snap-type:x_mandatory] sm:max-sm:gap-3"
             style={{ scrollPaddingInline: 'max(0px, calc(50vw - 75px))' }}
             onScroll={(e) => {
               handleTrackInteraction();
@@ -598,6 +640,14 @@ function FashionShowcase({ reels }) {
                 if (dist < closestDist) { closestDist = dist; closestIdx = i; }
               });
               setMobileCenterIdx(closestIdx);
+              // Follow-play: the card nearest the viewport center is the one whose
+              // video plays (Reels/Shorts behavior). Debounced so fast flings don't
+              // flicker play across intermediate cards.
+              const centeredId = cards[closestIdx]?.dataset?.reelId;
+              if (centeredId) {
+                clearTimeout(videoFollowTimer.current);
+                videoFollowTimer.current = setTimeout(() => setInViewReelId(centeredId), 120);
+              }
             }}
             onPointerDown={handleTrackInteraction}
             onWheel={handleTrackInteraction}
@@ -1163,7 +1213,7 @@ function ReelPlayer({
                   {prodImg ? (
                     <img src={prodImg} alt="" className="w-full h-full object-cover" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-xl">👕</div>
+                    <div className="w-full h-full flex items-center justify-center text-xl">📦</div>
                   )}
                 </div>
                 <div className="flex-1 min-w-0">

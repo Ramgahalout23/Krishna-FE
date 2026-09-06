@@ -115,7 +115,7 @@ export default function OffersSection({ promotions = [] }) {
               <div className="relative z-10 flex flex-col gap-1 p-[14px_16px] flex-1">
                 {/* Offer title badge */}
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[9px] font-semibold uppercase tracking-[0.12em]"
+                  <span className="text-[10px] font-semibold uppercase tracking-[0.12em]"
                     style={{ color: `${gradient.accent}CC` }}>
                     {offer.title}
                   </span>
@@ -135,7 +135,7 @@ export default function OffersSection({ promotions = [] }) {
                     className="w-1 h-1 rounded-full shrink-0"
                     style={{ background: gradient.accent }}
                   />
-                  <span className="text-[8px] font-medium leading-tight text-white/50 group-hover:text-white/70 transition-colors duration-300">
+                  <span className="text-[10px] font-medium leading-tight text-white/55 group-hover:text-white/75 transition-colors duration-300">
                     {offer.tagline}
                   </span>
                 </div>

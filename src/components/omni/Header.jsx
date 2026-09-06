@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Search, ShoppingBag, Heart, Menu, X, Truck, ShieldCheck, User } from 'lucide-react';
+import SearchModal from '../common/SearchModal';
 import WishlistDrawer from './WishlistDrawer';
 import { motion, AnimatePresence } from 'framer-motion';
 import useCartStore from '../../store/cartStore';
@@ -18,6 +19,7 @@ export default function Header() {
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showWishlistDrawer, setShowWishlistDrawer] = useState(false);
+  const [showSearchModal, setShowSearchModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
@@ -87,19 +89,19 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md shadow-sm border-b border-stone-200/70">
       {/* Top Announcement Bar */}
-      <div className="bg-[#14110E] text-stone-200 text-xs py-2 px-4">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
-          <div className="flex items-center gap-4 text-stone-300">
-            <span className="flex items-center gap-1.5 text-gold-soft font-medium tracking-wide">
-              <Truck className="w-3.5 h-3.5" /> FREE Delivery on All Orders across India
+      <div className="bg-[#14110E] text-stone-200 text-xs py-1.5 px-4">
+        <div className="max-w-7xl mx-auto flex flex-row justify-between items-center gap-2">
+          <div className="flex items-center gap-4 text-stone-300 min-w-0">
+            <span className="flex items-center gap-1.5 text-gold-soft font-medium tracking-wide truncate">
+              <Truck className="w-3.5 h-3.5 shrink-0" /> FREE Delivery on All Orders across India
             </span>
             <span className="hidden md:inline text-stone-600">|</span>
             <span className="hidden md:flex items-center gap-1 text-stone-400 font-medium">
               <ShieldCheck className="w-3.5 h-3.5 text-gold-soft" /> Cash on Delivery (COD) Available
             </span>
           </div>
-          <div className="flex items-center gap-3 text-stone-300">
-            <span className="bg-gold/10 border border-gold/25 text-gold-soft px-2.5 py-0.5 rounded-full text-[10px] font-semibold tracking-[0.14em] uppercase">
+          <div className="flex items-center gap-3 text-stone-300 shrink-0">
+            <span className="hidden sm:inline-block bg-gold/10 border border-gold/25 text-gold-soft px-2.5 py-0.5 rounded-full text-[10px] font-semibold tracking-[0.14em] uppercase">
               7 Days Free Return
             </span>
           </div>
@@ -107,7 +109,7 @@ export default function Header() {
       </div>
 
       {/* Main Header Row */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 sm:py-3.5">
         <div className="flex items-center justify-between gap-4">
 
           {/* Logo */}
@@ -206,7 +208,7 @@ export default function Header() {
                                 className="w-11 h-11 object-cover rounded-lg border border-stone-200 group-hover:scale-105 transition-transform"
                               />
                             ) : (
-                              <div className="w-11 h-11 rounded-lg bg-stone-100 flex items-center justify-center text-lg">👕</div>
+                              <div className="w-11 h-11 rounded-lg bg-stone-100 flex items-center justify-center text-lg">📦</div>
                             )}
                             <div className="flex-1 min-w-0">
                               <h4 className="text-xs font-semibold text-stone-900 truncate group-hover:text-gold-dark transition-colors">
@@ -234,6 +236,16 @@ export default function Header() {
 
           {/* Action Icons & Cart */}
           <div className="flex items-center gap-2 sm:gap-3">
+
+            {/* Mobile Search Button (search bar is hidden below md) */}
+            <button
+              onClick={() => setShowSearchModal(true)}
+              className="md:hidden p-2.5 text-stone-700 hover:text-gold-dark hover:bg-cream rounded-full transition-colors"
+              aria-label="Search products"
+              title="Search"
+            >
+              <Search className="w-5 h-5" />
+            </button>
 
             {/* Wishlist Button */}
             <button
@@ -307,6 +319,12 @@ export default function Header() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Mobile Search Modal */}
+      <SearchModal
+        isOpen={showSearchModal}
+        onClose={() => setShowSearchModal(false)}
+      />
 
       {/* Wishlist Drawer */}
       <WishlistDrawer

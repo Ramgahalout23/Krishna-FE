@@ -415,7 +415,7 @@ function ProductCard({ product, className = '' }) {
               </>
             ) : (
               <div className={`w-full h-full flex items-center justify-center text-6xl transition-all duration-500 ${isOutOfStock ? 'opacity-20' : 'opacity-40'}`}>
-                👕
+                📦
               </div>
             )}
           </div>
@@ -775,7 +775,7 @@ function ProductCard({ product, className = '' }) {
                         return thumbUrl ? (
                           <img loading="lazy" src={thumbUrl} alt={product.name} className="w-full h-full object-cover" />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center text-2xl">👕</div>
+                          <div className="w-full h-full flex items-center justify-center text-2xl">📦</div>
                         );
                       })()}
                     </div>

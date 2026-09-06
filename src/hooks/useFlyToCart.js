@@ -58,7 +58,7 @@ export default function useFlyToCart() {
     if (imgSrc) {
       flyingEl.innerHTML = `<img src="${imgSrc}" style="width:100%;height:100%;object-fit:cover;display:block;" />`;
     } else {
-      flyingEl.innerHTML = `<div style="width:100%;height:100%;background:#232323;display:flex;align-items:center;justify-content:center;font-size:2rem;">👕</div>`;
+      flyingEl.innerHTML = `<div style="width:100%;height:100%;background:#232323;display:flex;align-items:center;justify-content:center;font-size:2rem;">📦</div>`;
     }
 
     document.body.appendChild(flyingEl);

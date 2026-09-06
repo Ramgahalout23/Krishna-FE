@@ -506,7 +506,7 @@ export default memo(function SearchProductCard({ product }) {
               />
             </>
           ) : (
-            <div className={`w-full h-full flex items-center justify-center text-7xl transition-all duration-500 ${isOutOfStock ? 'opacity-20' : 'opacity-40'}`}>👕</div>
+            <div className={`w-full h-full flex items-center justify-center text-7xl transition-all duration-500 ${isOutOfStock ? 'opacity-20' : 'opacity-40'}`}>📦</div>
           )}
         </div>
 
@@ -643,7 +643,7 @@ export default memo(function SearchProductCard({ product }) {
                         return imgUrl ? (
                           <img loading="lazy" src={imgUrl} alt={product.name} className="w-full h-full object-cover" />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center text-2xl">👕</div>
+                          <div className="w-full h-full flex items-center justify-center text-2xl">📦</div>
                         );
                       })()}
                     </div>

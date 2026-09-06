@@ -50,7 +50,7 @@ export default function FlashDeals({
           </div>
 
           {/* Countdown */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center flex-wrap gap-x-3 gap-y-2">
             <Clock className="w-4 h-4 text-gold-soft" />
             <span className="text-[10px] sm:text-xs font-medium uppercase tracking-[0.22em] text-stone-400">
               Deals Refresh In
@@ -65,10 +65,10 @@ export default function FlashDeals({
           </div>
         </div>
 
-        {/* Product Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
+        {/* Product Grid — 2-up mobile, 4-up desktop; cards are self-contained dark tiles */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-5">
           {displayProducts.map((product) => (
-            <ProductCard key={product.id} product={product} onQuickView={onQuickView} />
+            <ProductCard key={product.id} product={product} onQuickView={onQuickView} variant="dark" />
           ))}
         </div>
       </div>

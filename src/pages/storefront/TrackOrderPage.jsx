@@ -11,14 +11,14 @@ import { formatCurrency, formatDate } from '../../utils/formatters';
 import { ORDER_STATUSES } from '../../utils/constants';
 
 const STATUS_ICONS = {
-  PENDING: ClockIcon,
-  CONFIRMED: ClockIcon,
-  PROCESSING: CubeIcon,
-  SHIPPED: TruckIcon,
-  DELIVERED: CheckCircleIcon,
-  CANCELLED: ClockIcon,
-  RETURNED: CubeIcon,
-  RETURN_REQUESTED: CubeIcon,
+  PENDING: Clock,
+  CONFIRMED: Clock,
+  PROCESSING: Package,
+  SHIPPED: Truck,
+  DELIVERED: CheckCircle,
+  CANCELLED: Clock,
+  RETURNED: Package,
+  RETURN_REQUESTED: Package,
 };
 
 const TIMELINE_STEPS = [

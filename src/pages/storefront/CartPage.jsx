@@ -231,7 +231,7 @@ export default function CartPage() {
           {item.imageUrl ? (
             <img loading="lazy" src={getImageUrl(item.imageUrl)} alt={item.name} className={`w-full h-full object-cover hover:scale-110 transition-transform duration-500 ${isOOS ? 'grayscale opacity-60' : ''}`} />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-4xl">{item.image || '👕'}</div>
+            <div className="w-full h-full flex items-center justify-center text-4xl">{item.image || '📦'}</div>
           )}
         </Link>
 

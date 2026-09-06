@@ -12,6 +12,7 @@ import HeroBanner from '../../components/omni/HeroBanner';
 import FlashDeals from '../../components/omni/FlashDeals';
 import CategoryGrid from '../../components/omni/CategoryGrid';
 import ProductGrid from '../../components/omni/ProductGrid';
+import TrustFeatures from '../../components/omni/TrustFeatures';
 import QuickViewModal from '../../components/omni/QuickViewModal';
 
 // Below-the-fold sections — lazy-loaded so they never block first paint
@@ -67,6 +68,32 @@ function ScrollReveal({ children, delay = 0 }) {
   );
 }
 
+/* ── Gold Marquee Ribbon — animated strip of value props under the hero ── */
+function GoldMarquee() {
+  const items = [
+    'FREE Delivery Across India',
+    'Cash on Delivery Available',
+    '7 Days Easy Returns',
+    '100% Genuine Products',
+    'Same-Day Dispatch',
+    '₹100 Off Your First Order',
+  ];
+  // Duplicate the list so the loop is seamless
+  const loop = [...items, ...items];
+  return (
+    <div className="bg-gold overflow-hidden relative" aria-hidden="true">
+      <div className="flex whitespace-nowrap animate-marquee will-change-transform py-2.5">
+        {loop.map((item, i) => (
+          <span key={i} className="inline-flex items-center gap-3 mx-6 text-[11px] sm:text-xs font-semibold uppercase tracking-[0.22em] text-ink">
+            <span className="w-1.5 h-1.5 rounded-full bg-ink/60" />
+            {item}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /* ── Banner Card (standalone for performance) ── */
 function BannerCard({ banner, onNavigate }) {
   const url = banner.imageUrl || banner.image || '';
@@ -83,7 +110,7 @@ function BannerCard({ banner, onNavigate }) {
       <img
         src={imgUrl}
         alt={banner.title || 'Promotional banner'}
-        className="w-full h-36 sm:h-44 lg:h-52 object-cover transition-transform duration-700 ease-out group-hover:scale-[1.05]"
+        className="w-full h-48 sm:h-44 lg:h-52 object-cover transition-transform duration-700 ease-out group-hover:scale-[1.05]"
         loading="lazy"
       />
       {/* Warm editorial overlay */}
@@ -111,10 +138,11 @@ function BannerCard({ banner, onNavigate }) {
 }
 
 /* ════════════════════════════════════════════════
-   HOMEPAGE — THREVOLT Premium Editorial Structure
-   Hero → Perks → Sale Offers → Featured → Categories
-   → Flash Deals → Curated Collections → Best Sellers
-   → Brand Story → Testimonials → Reels → Trust Strip
+   HOMEPAGE — Premium Department-Store Editorial Layout
+   Hero → Gold Marquee → Trust Perks → Category Rail
+   → Flash Deals → Featured → Sale Offers → Best Sellers
+   → Curated Collections → Brand Story → Testimonials
+   → Reels
    ════════════════════════════════════════════════ */
 export default function HomePage() {
   const navigate = useNavigate();
@@ -179,7 +207,7 @@ export default function HomePage() {
 
   const categories = useMemo(() => {
     const all = homepageRes?.categories;
-    return Array.isArray(all) ? all.slice(0, 6) : [];
+    return Array.isArray(all) ? all : [];
   }, [homepageRes?.categories]);
 
   // All products combined
@@ -273,10 +301,26 @@ export default function HomePage() {
         <HeroBanner banners={banners} hasActiveSales={hasActiveSales} />
       </ScrollReveal>
 
-      {/* 2. Sale Offers — admin-controlled promotions */}
+      {/* 1b. Gold Marquee Ribbon — animated value-prop strip */}
+      <GoldMarquee />
+
+      {/* 2. Featured Products */}
+      {allProducts.length > 0 && (
+        <ScrollReveal delay={0.06}>
+          <ProductGrid
+            products={allProducts}
+            title={sectionTitles.featured}
+            subtitle={sectionTitles.featuredSubtitle}
+            showHeader={true}
+            onQuickView={(p) => setQuickViewProduct(p)}
+          />
+        </ScrollReveal>
+      )}
+
+      {/* 3. Sale Offers — admin-controlled promotions */}
       {saleBanners.length > 0 && (
         <ScrollReveal delay={0.05}>
-          <section className="py-8 sm:py-12 bg-white">
+          <section className="py-8 sm:py-12 bg-cream">
             <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
               <div className="mb-6 sm:mb-8">
                 <span className="inline-flex items-center gap-3 text-[11px] sm:text-xs font-medium text-gold-dark uppercase tracking-[0.28em]">
@@ -297,22 +341,22 @@ export default function HomePage() {
         </ScrollReveal>
       )}
 
-      {/* 3. Featured Products */}
-      {allProducts.length > 0 && (
-        <ScrollReveal delay={0.06}>
-          <ProductGrid
-            products={allProducts}
-            title={sectionTitles.featured}
-            subtitle={sectionTitles.featuredSubtitle}
-            showHeader={true}
+      {/* 4. Flash Deals — dark highlight moment, elevated above the fold */}
+      {hasActiveSales && flashDealProducts.length > 0 && (
+        <ScrollReveal delay={0.08}>
+          <FlashDeals
+            products={flashDealProducts}
             onQuickView={(p) => setQuickViewProduct(p)}
+            title={sectionTitles.flashDealsTitle}
+            badge={sectionTitles.flashDealsBadge}
+            discountLabel={sectionTitles.flashDealsDiscount}
           />
         </ScrollReveal>
       )}
 
-      {/* 4. Shop By Category */}
+      {/* 5. Shop By Category */}
       {categories.length > 0 && (
-        <ScrollReveal delay={0.08}>
+        <ScrollReveal delay={0.1}>
           <CategoryGrid
             categories={categories}
             onSelectCategory={(cat) => {
@@ -325,22 +369,24 @@ export default function HomePage() {
         </ScrollReveal>
       )}
 
-      {/* 6. Flash Deals — dark highlight moment */}
-      {hasActiveSales && flashDealProducts.length > 0 && (
-        <ScrollReveal delay={0.1}>
-          <FlashDeals
-            products={flashDealProducts}
+      {/* 6. Best Sellers — cream tone so it separates from the white Featured section */}
+      {bestSellers.length > 0 && (
+        <ScrollReveal delay={0.12}>
+          <ProductGrid
+            products={bestSellers}
+            title={sectionTitles.bestSellerTitle}
+            subtitle={sectionTitles.bestSellerSubtitle}
+            showHeader={true}
+            viewAllLink="/products"
+            tone="cream"
             onQuickView={(p) => setQuickViewProduct(p)}
-            title={sectionTitles.flashDealsTitle}
-            badge={sectionTitles.flashDealsBadge}
-            discountLabel={sectionTitles.flashDealsDiscount}
           />
         </ScrollReveal>
       )}
 
       {/* 7. Curated Collections — one editorial showcase for all campaign banners */}
       {collectionBanners.length > 0 && (
-        <ScrollReveal delay={0.12}>
+        <ScrollReveal delay={0.14}>
           <section className="py-12 sm:py-20 bg-cream">
             <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
               <div className="mb-8 sm:mb-12 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
@@ -364,28 +410,14 @@ export default function HomePage() {
         </ScrollReveal>
       )}
 
-      {/* 8. Best Sellers */}
-      {bestSellers.length > 0 && (
-        <ScrollReveal delay={0.14}>
-          <ProductGrid
-            products={bestSellers}
-            title={sectionTitles.bestSellerTitle}
-            subtitle={sectionTitles.bestSellerSubtitle}
-            showHeader={true}
-            viewAllLink="/products"
-            onQuickView={(p) => setQuickViewProduct(p)}
-          />
-        </ScrollReveal>
-      )}
-
-      {/* 9. Brand Story */}
+      {/* 8. Brand Story */}
       <ScrollReveal delay={0.16}>
         <Suspense fallback={null}>
           <BrandStory />
         </Suspense>
       </ScrollReveal>
 
-      {/* 6. Customer Reviews */}
+      {/* 9. Customer Reviews */}
       <ScrollReveal delay={0.18}>
         <Suspense fallback={null}>
           <Testimonials
@@ -396,7 +428,7 @@ export default function HomePage() {
         </Suspense>
       </ScrollReveal>
 
-      {/* 7. Reels — shoppable video (lazy-loaded) */}
+      {/* 10. Reels — shoppable video (lazy-loaded) */}
       {reelsEnabled && reels.length > 0 && (
         <ScrollReveal delay={0.2}>
           <Suspense fallback={null}>
@@ -404,6 +436,9 @@ export default function HomePage() {
           </Suspense>
         </ScrollReveal>
       )}
+
+      {/* 11. Trust Perks — closing reassurance before the footer */}
+      <TrustFeatures />
 
       {/* Quick View Modal */}
       <QuickViewModal

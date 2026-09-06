@@ -419,7 +419,7 @@ function NewArrivalCard({ product, index }) {
               />
             </>
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-7xl opacity-40">👕</div>
+            <div className="w-full h-full flex items-center justify-center text-7xl opacity-40">📦</div>
           )}
           {!imageLoaded && (
             <div className="absolute inset-0 bg-gradient-to-r from-gray-100 via-gray-200 to-gray-100 animate-shimmer bg-[length:200%_100%]" />
@@ -894,7 +894,7 @@ function NewArrivalCard({ product, index }) {
                         return thumbUrl ? (
                           <img loading="lazy" src={thumbUrl} alt={product.name} className="w-full h-full object-cover" />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center text-2xl">👕</div>
+                          <div className="w-full h-full flex items-center justify-center text-2xl">📦</div>
                         );
                       })()}
                     </div>

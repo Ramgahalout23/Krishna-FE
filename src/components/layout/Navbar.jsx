@@ -491,7 +491,7 @@ export default function Navbar() {
                                     </div>
                                   ) : (
                                     <div className="w-10 h-13 rounded-lg bg-gray-50 flex items-center justify-center flex-shrink-0 text-lg">
-                                      👕
+                                      📦
                                     </div>
                                   )}
                                   <div className="flex-1 min-w-0 text-left">

@@ -446,7 +446,7 @@ function OrderItemCard({ item, index, customDesign }) {
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-3xl">👕</div>
+            <div className="w-full h-full flex items-center justify-center text-3xl">📦</div>
           )}
           {isCustom && (
             <div className="absolute top-0.5 right-0.5 bg-black/70 backdrop-blur-sm text-white text-[6px] font-bold px-1 py-0.5 rounded-[3px] uppercase tracking-wider">

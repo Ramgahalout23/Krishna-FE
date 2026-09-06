@@ -168,7 +168,7 @@ export default memo(function CartDrawer() {
                     {item.imageUrl ? (
                       <img loading="lazy" src={getImageUrl(item.imageUrl)} alt={item.name} className={`w-full h-full object-cover ${isItemOOS ? 'grayscale opacity-60' : ''}`} />
                     ) : (
-                      item.image || '👕'
+                      item.image || '📦'
                     )}
                   </div>
                   <div className="flex-1 flex flex-col justify-between min-w-0">

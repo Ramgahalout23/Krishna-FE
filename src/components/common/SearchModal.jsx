@@ -10,14 +10,14 @@ import SearchProductCard from '../../components/product/SearchProductCard';
 import { CUSTOM_TEE_SLUG } from '../../utils/constants';
 
 const TRENDING_SEARCHES = [
-  'Oversized T-Shirt',
-  'Graphic Tees',
-  'White Polo',
-  'Black Hoodie',
-  'Cotton Crew Neck',
-  'Streetwear',
-  'Minimal Print',
-  'Boxy Fit',
+  'Toys & Games',
+  'Kitchen',
+  'Yoga Mat',
+  'Earbuds',
+  'Home Decor',
+  'Bedsheet',
+  'Power Bank',
+  'RC Car',
 ];
 
 const containerVariants = {

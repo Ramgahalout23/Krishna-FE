@@ -21,22 +21,25 @@ export default function PwaUpdatePrompt() {
   if (import.meta.env.DEV) return null;
 
   useEffect(() => {
-    const pwaModule = 'virtual:pwa-register';
-    import(/* @vite-ignore */ pwaModule).then(({ registerSW }) => {
-      const swRegistration = registerSW({
-        onNeedRefresh() {
-          setNeedRefresh(true);
-          setUpdateSW(() => () => {
-            swRegistration?.updateServiceWorker();
-            window.location.reload();
-          });
-        },
-        onOfflineReady() {
-          console.log('[PWA] App ready for offline use');
-        },
+    if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return;
+
+    // Listen for service worker updates using standard browser ServiceWorker API
+    navigator.serviceWorker.ready.then((registration) => {
+      registration.addEventListener('updatefound', () => {
+        const newWorker = registration.installing;
+        if (!newWorker) return;
+        newWorker.addEventListener('statechange', () => {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            setNeedRefresh(true);
+            setUpdateSW(() => () => {
+              newWorker.postMessage({ type: 'SKIP_WAITING' });
+              window.location.reload();
+            });
+          }
+        });
       });
     }).catch(() => {
-      // virtual:pwa-register not available — that's fine
+      // Service worker not active — ignore
     });
   }, []);
 

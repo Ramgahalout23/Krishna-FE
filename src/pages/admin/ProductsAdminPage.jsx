@@ -197,14 +197,21 @@ export default function ProductsAdminPage() {
     setShowVariants(false);
     setNewVariant(EMPTY_VARIANT);
     setShowModal(true);
+    if (Array.isArray(p.variants) && p.variants.length > 0) {
+      setProductVariants(p.variants);
+    }
     setVariantsLoading(true);
     try {
       const res = await adminAPI.getVariants(p.id);
       const data = res.data?.data || res.data || [];
       const list = Array.isArray(data) ? data : data.variants || [];
-      setProductVariants(list);
+      if (list.length > 0 || !Array.isArray(p.variants) || p.variants.length === 0) {
+        setProductVariants(list);
+      }
     } catch {
-      setProductVariants([]);
+      if (!Array.isArray(p.variants) || p.variants.length === 0) {
+        setProductVariants([]);
+      }
     } finally {
       setVariantsLoading(false);
     }

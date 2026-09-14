@@ -1025,7 +1025,7 @@ export default function VariantsAdminPage() {
                   <p style={{ fontSize: '0.7rem', color: '#64748b', marginBottom: '0.5rem', lineHeight: 1.4 }}>
                     Upload a product photo showing the style you want — AI will analyze its pose, lighting, composition, and background, then generate all variant images in the same style.
                   </p>
-                  <Image UploadZone label="" value={referenceImageUrl} onChange={setReferenceImageUrl} multiple={false} />
+                  <ImageUploadZone label="" value={referenceImageUrl} onChange={setReferenceImageUrl} multiple={false} />
                   {referenceImageUrl && (
                     <div style={{ fontSize: '0.7rem', color: '#0369a1', marginTop: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
                       <span>📎 Reference set</span>

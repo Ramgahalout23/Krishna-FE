@@ -273,15 +273,19 @@ export const getImageUrl = (url) => {
   }
 
   // Resolve relative URLs against the backend.
-  // Derives the backend origin from VITE_API_BASE_URL / VITE_API_URL.
-  // Falls back to '/api/v1' (relative) matching client.js — works on the
-  // same domain via Vite proxy (dev) or Laravel public/index.php (production).
-  const apiBase = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || '/api/v1';
+  // Derives the backend origin from VITE_API_BASE_URL / VITE_API_URL / VITE_ADMIN_API_BASE_URL.
+  const apiBase = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || import.meta.env.VITE_ADMIN_API_BASE_URL || '/api/v1';
 
   // Extract backend origin by removing API path suffixes (/api/v1, /api, etc.)
-  // e.g. 'https://api.example.com/api/v1' -> 'https://api.example.com'
-  //      '/api/v1' -> '' (empty = same origin)
-  const backendBase = apiBase.replace(/\/?api(\/v\d+)?\/?$/, '') || '';
+  // e.g. 'https://api.dotoydo.com/api/v1' -> 'https://api.dotoydo.com'
+  let backendBase = (apiBase.startsWith('http://') || apiBase.startsWith('https://'))
+    ? apiBase.replace(/\/?api(\/v\d+)?\/?$/, '')
+    : '';
+
+  // In production if frontend is on dotoydo.com and backendBase is not set, point to api.dotoydo.com
+  if (!backendBase && typeof window !== 'undefined' && window.location.hostname.includes('dotoydo.com')) {
+    backendBase = 'https://api.dotoydo.com';
+  }
 
   const cleanUrl = normalizedUrl.startsWith('/') ? normalizedUrl : `/${normalizedUrl}`;
   const absoluteUrl = `${backendBase}${cleanUrl}`;

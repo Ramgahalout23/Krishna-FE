@@ -1,5 +1,5 @@
 import { Upload, X, Loader2 } from 'lucide-react';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { adminAPI } from '../../api/admin';
 import toast from '../../utils/toast';
 import { getImageUrl, getVideoUrl } from '../../utils/formatters';
@@ -43,7 +43,22 @@ export default function ImageUploadZone({
 }) {
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
+  const [pendingPreviews, setPendingPreviews] = useState([]);
   const fileInputRef = useRef(null);
+
+  // In-memory map from server URLs to local blob URLs for instant, crystal-clear display
+  const blobMapRef = useRef({});
+
+  // Cleanup created blob URLs on unmount to avoid memory leaks
+  useEffect(() => {
+    return () => {
+      Object.values(blobMapRef.current).forEach(url => {
+        if (url && typeof url === 'string' && url.startsWith('blob:')) {
+          URL.revokeObjectURL(url);
+        }
+      });
+    };
+  }, []);
 
   const handleFileChange = async (e) => {
     const rawFiles = Array.from(e.target.files || []);
@@ -60,6 +75,14 @@ export default function ImageUploadZone({
       return;
     }
 
+    // ── Instant Client-Side Preview (0ms latency, user immediately sees exact photo) ──
+    const localPreviews = files.map(file => {
+      const blobUrl = URL.createObjectURL(file);
+      blobMapRef.current[blobUrl] = blobUrl;
+      return { file, blobUrl, name: file.name };
+    });
+
+    setPendingPreviews(localPreviews);
     setUploading(true);
     const formData = new FormData();
 
@@ -75,6 +98,13 @@ export default function ImageUploadZone({
           urls.push(dataObj.url);
         }
 
+        // Link returned server URLs to the local blob previews
+        urls.forEach((serverUrl, idx) => {
+          if (localPreviews[idx]?.blobUrl) {
+            blobMapRef.current[serverUrl] = localPreviews[idx].blobUrl;
+          }
+        });
+
         // Combine existing images with newly uploaded ones
         const currentUrls = normalizeUrls(value);
         const nextUrls = [...currentUrls, ...urls].slice(0, maxFiles);
@@ -86,6 +116,11 @@ export default function ImageUploadZone({
         const res = await adminAPI.uploadFile(formData);
         const dataObj = res.data?.data || res.data || {};
         const url = dataObj.url || (typeof dataObj === 'string' ? dataObj : '');
+
+        if (url && localPreviews[0]?.blobUrl) {
+          blobMapRef.current[url] = localPreviews[0].blobUrl;
+        }
+
         onChange(url);
         toast.success('Uploaded successfully!');
       }
@@ -93,6 +128,7 @@ export default function ImageUploadZone({
       console.error('Upload error:', err);
       toast.error(err.response?.data?.message || err.message || 'Failed to upload asset');
     } finally {
+      setPendingPreviews([]);
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
@@ -172,15 +208,19 @@ export default function ImageUploadZone({
         )}
 
         <div className="text-xs font-semibold text-text-secondary">
-          {uploading ? 'Uploading assets...' : 'Drag & Drop or Click to Upload'}
+          {uploading ? 'Uploading asset(s)...' : 'Drag & Drop or Click to Upload'}
         </div>
         <p className="text-[10px] text-text-muted" style={{ margin: 0 }}>{acceptHint}</p>
       </div>
 
       {/* Preview Section */}
-      {isVideo && value ? (
+      {isVideo && (value || pendingPreviews[0]) ? (
         <div className="relative rounded-lg overflow-hidden border border-border bg-black mt-1.5" style={{ position: 'relative' }}>
-          <video src={getVideoUrl(value)} controls className="w-full max-h-44 object-contain bg-black" />
+          <video
+            src={pendingPreviews[0]?.blobUrl || blobMapRef.current[value] || getVideoUrl(value)}
+            controls
+            className="w-full max-h-44 object-contain bg-black"
+          />
           <button
             type="button"
             onClick={() => handleRemove(value)}
@@ -191,7 +231,7 @@ export default function ImageUploadZone({
             <X size={14} />
           </button>
         </div>
-      ) : images.length > 0 ? (
+      ) : (images.length > 0 || pendingPreviews.length > 0) ? (
         <div
           className="grid grid-cols-4 sm:grid-cols-5 gap-2.5 mt-1.5"
           style={{
@@ -201,57 +241,98 @@ export default function ImageUploadZone({
             marginTop: '0.375rem'
           }}
         >
-          {images.map((imgUrl, idx) => (
+          {/* Confirmed / Saved Images */}
+          {images.map((imgUrl, idx) => {
+            // Prefer local high-res blob preview if available; fallback to getImageUrl
+            const displaySrc = blobMapRef.current[imgUrl] || getImageUrl(imgUrl);
+
+            return (
+              <div
+                key={`${idx}-${imgUrl}`}
+                className="relative aspect-square rounded-lg overflow-hidden border border-border group bg-white shadow-sm"
+                style={{
+                  position: 'relative',
+                  aspectRatio: '1 / 1',
+                  borderRadius: '8px',
+                  overflow: 'hidden',
+                  border: '1px solid var(--border, #e2e8f0)',
+                  background: '#fff'
+                }}
+              >
+                <img
+                  loading="lazy"
+                  src={displaySrc}
+                  alt={`Asset preview ${idx + 1}`}
+                  className="w-full h-full object-cover"
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                  onError={(e) => {
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = FALLBACK_IMAGE;
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleRemove(imgUrl);
+                  }}
+                  className="absolute top-1 right-1 w-6 h-6 rounded-full bg-black/75 hover:bg-black text-white flex items-center justify-center shadow transition-colors"
+                  style={{
+                    position: 'absolute',
+                    top: 4,
+                    right: 4,
+                    width: 24,
+                    height: 24,
+                    borderRadius: '50%',
+                    background: 'rgba(0, 0, 0, 0.75)',
+                    color: '#fff',
+                    border: 'none',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: 0
+                  }}
+                  title="Remove image"
+                >
+                  <X size={13} />
+                </button>
+              </div>
+            );
+          })}
+
+          {/* Pending / In-flight Upload Previews */}
+          {pendingPreviews.map((item, idx) => (
             <div
-              key={`${idx}-${imgUrl}`}
-              className="relative aspect-square rounded-lg overflow-hidden border border-border group bg-white shadow-sm"
+              key={`pending-${idx}`}
+              className="relative aspect-square rounded-lg overflow-hidden border border-blue-400 bg-gray-50 shadow-sm"
               style={{
                 position: 'relative',
                 aspectRatio: '1 / 1',
                 borderRadius: '8px',
                 overflow: 'hidden',
-                border: '1px solid var(--border, #e2e8f0)',
-                background: '#fff'
+                border: '2px dashed #3b82f6',
+                background: '#f8fafc'
               }}
             >
               <img
-                loading="lazy"
-                src={getImageUrl(imgUrl)}
-                alt={`Asset preview ${idx + 1}`}
-                className="w-full h-full object-cover"
-                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                onError={(e) => {
-                  e.currentTarget.onerror = null;
-                  e.currentTarget.src = FALLBACK_IMAGE;
-                }}
+                src={item.blobUrl}
+                alt="Uploading..."
+                className="w-full h-full object-cover opacity-60"
+                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', opacity: 0.6 }}
               />
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleRemove(imgUrl);
-                }}
-                className="absolute top-1 right-1 w-6 h-6 rounded-full bg-black/75 hover:bg-black text-white flex items-center justify-center shadow transition-colors"
+              <div
                 style={{
                   position: 'absolute',
-                  top: 4,
-                  right: 4,
-                  width: 24,
-                  height: 24,
-                  borderRadius: '50%',
-                  background: 'rgba(0, 0, 0, 0.75)',
-                  color: '#fff',
-                  border: 'none',
-                  cursor: 'pointer',
+                  inset: 0,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  padding: 0
+                  background: 'rgba(0,0,0,0.25)'
                 }}
-                title="Remove image"
               >
-                <X size={13} />
-              </button>
+                <Loader2 className="w-5 h-5 text-white animate-spin" />
+              </div>
             </div>
           ))}
         </div>

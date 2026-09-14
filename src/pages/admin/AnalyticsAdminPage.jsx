@@ -4,6 +4,7 @@ import { analyticsAPI } from '../../api/analytics';
 import { formatCurrency, formatNumber } from '../../utils/formatters';
 import DateRangePicker, { getDateParams, getDefaultDateRange } from '../../components/common/DateRangePicker';
 import RefreshControls from '../../components/common/RefreshControls';
+import RelativeTime from '../../components/common/RelativeTime';
 import useDashboardCache from '../../hooks/useDashboardCache';
 import useInterval from '../../hooks/useInterval';
 import AnalyticsSkeleton from '../../components/analytics/AnalyticsSkeleton';
@@ -30,34 +31,243 @@ const ANALYTICS_DEFAULTS = {
   userAnalytics: null,
 };
 
-const FALLBACK_REVENUE = [
-  { month: 'Jan', revenue: 32000 }, { month: 'Feb', revenue: 38000 }, { month: 'Mar', revenue: 41000 },
-  { month: 'Apr', revenue: 35000 }, { month: 'May', revenue: 48000 }, { month: 'Jun', revenue: 52000 },
-  { month: 'Jul', revenue: 61000 }, { month: 'Aug', revenue: 55000 }, { month: 'Sep', revenue: 67000 },
-  { month: 'Oct', revenue: 72000 }, { month: 'Nov', revenue: 68000 }, { month: 'Dec', revenue: 85000 },
-];
+/**
+ * Shown instead of a chart when the API returned no rows for the selected range.
+ * Never substitute placeholder numbers — an empty period must look empty.
+ */
+function ChartEmpty({ icon: Icon = BarChart3, message, height = 220 }) {
+  return (
+    <div style={{
+      height, display: 'flex', flexDirection: 'column', alignItems: 'center',
+      justifyContent: 'center', gap: '0.5rem', color: 'var(--muted)', fontSize: '0.8rem',
+    }}>
+      <Icon size={28} style={{ opacity: 0.3 }} />
+      <p>{message}</p>
+    </div>
+  );
+}
 
-const FALLBACK_CATEGORIES = [
-  { name: 'Fashion', revenue: 145000, orders: 312 }, { name: 'Accessories', revenue: 89000, orders: 215 },
-  { name: 'Jewellery', revenue: 112000, orders: 87 }, { name: 'Beauty', revenue: 56000, orders: 445 },
-  { name: 'Footwear', revenue: 67000, orders: 156 },
-];
+/**
+ * Total days covered by a { start, end } range, clamped to sane bounds.
+ * The analytics endpoints filter by `days`, so without this the date-range
+ * picker on this page silently changed nothing.
+ */
+function rangeToDays(range) {
+  const start = range?.start ? new Date(range.start) : null;
+  const end = range?.end ? new Date(range.end) : null;
+  if (!start || !end || Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return 30;
+  const days = Math.round((end - start) / 86400000);
+  return Math.min(365, Math.max(1, days));
+}
 
-const FALLBACK_ORDERS = [
-  { name: 'Processing', value: 40 }, { name: 'Delivered', value: 35 },
-  { name: 'Shipped', value: 15 }, { name: 'Cancelled', value: 7 }, { name: 'Returned', value: 3 },
-];
+/** Unwrap an axios response down to the Laravel `data` payload. */
+function unwrapPayload(res) {
+  return res?.data?.data ?? res?.data ?? null;
+}
 
-const FALLBACK_PRODUCTS = [
-  { productName: 'Classic White Tee', unitsSold: 245, revenue: 490000 },
-  { productName: 'Black Crew Neck', unitsSold: 198, revenue: 396000 },
-  { productName: 'Premium Hoodie', unitsSold: 156, revenue: 468000 },
-  { productName: 'Slim Fit Jeans', unitsSold: 134, revenue: 402000 },
-  { productName: 'Leather Jacket', unitsSold: 89, revenue: 445000 },
-  { productName: 'Summer Dress', unitsSold: 212, revenue: 424000 },
-  { productName: 'Sports Shoes', unitsSold: 167, revenue: 501000 },
-  { productName: 'Wool Scarf', unitsSold: 98, revenue: 98000 },
-];
+function toArrayOrEmpty(value) {
+  return Array.isArray(value) ? value : [];
+}
+
+/** Order-status rows arrive as raw counts; the UI renders percentages. */
+function normalizeOrderStatus(payload) {
+  const rows = toArrayOrEmpty(payload);
+  if (rows.length === 0) return [];
+  const total = rows.reduce((sum, row) => sum + Number(row?.value ?? 0), 0);
+  if (total <= 0) return [{ name: 'No Orders', value: 100 }];
+  return rows.map(row => ({
+    name: row.name,
+    value: Math.round((Number(row.value) / total) * 100),
+  }));
+}
+
+function normalizeHourly(payload) {
+  return toArrayOrEmpty(payload).map(h => {
+    const raw = h?.hour;
+    // getHourlyDistribution already returns a formatted label ("14:00"); only
+    // pad a bare hour number, otherwise the axis read "14:00:00".
+    const hour = typeof raw === 'number'
+      ? `${String(raw).padStart(2, '0')}:00`
+      : (raw != null ? String(raw) : '');
+    return {
+      hour,
+      orders: num(h?.orders),
+      revenue: num(h?.revenue),
+    };
+  });
+}
+
+const num = (value) => {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : 0;
+};
+
+/**
+ * Revenue trend rows come back as { date, revenue } (a daily series), not the
+ * { month, revenue } shape the chart was originally written against.
+ */
+function normalizeRevenueTrend(payload) {
+  return toArrayOrEmpty(payload?.trends ?? payload).map(row => ({
+    date: row?.date ?? row?.month ?? '',
+    revenue: num(row?.revenue),
+  }));
+}
+
+/**
+ * Category rows are raw Category models: revenue lives in `total_revenue` and
+ * units in `total_sold`. Mapping here keeps the chart's dataKeys meaningful.
+ */
+function normalizeCategories(payload) {
+  return toArrayOrEmpty(payload?.categories ?? payload).map(row => ({
+    name: row?.name ?? '—',
+    revenue: num(row?.total_revenue ?? row?.revenue),
+    orders: num(row?.total_sold ?? row?.orders),
+  }));
+}
+
+/**
+ * Top customers are raw User models: name is split, spend is `orders_sum_total`
+ * and the count is `orders_count`.
+ */
+function normalizeTopCustomers(payload) {
+  return toArrayOrEmpty(payload?.customers ?? payload).map(row => {
+    const name = [row?.first_name ?? row?.firstName, row?.last_name ?? row?.lastName]
+      .filter(Boolean).join(' ').trim();
+    const spent = num(row?.orders_sum_total ?? row?.totalSpent);
+    return {
+      id: row?.id,
+      name: name || row?.email || '—',
+      email: row?.email ?? '',
+      totalSpent: spent,
+      orderCount: num(row?.orders_count ?? row?.orderCount),
+      ltv: num(row?.ltv ?? spent),
+    };
+  });
+}
+
+/**
+ * Payment rows exist in two shapes:
+ *   aggregate  -> { method, percentage, count, total }
+ *   per-day    -> { payment_method, date, count, total }
+ * Both are normalised to what the pie/bar/table render.
+ */
+function normalizePaymentMethods(payload) {
+  const rows = toArrayOrEmpty(payload);
+  if (rows.length === 0) return [];
+
+  // Already aggregated
+  if (rows[0]?.method !== undefined) {
+    return rows.map(p => ({
+      method: p.method,
+      count: num(p.count),
+      revenue: num(p.total ?? p.revenue),
+      percentage: num(p.percentage),
+    }));
+  }
+
+  const byMethod = new Map();
+  rows.forEach(r => {
+    const key = r?.payment_method ?? 'Unknown';
+    const entry = byMethod.get(key) ?? { method: key, count: 0, revenue: 0, percentage: 0 };
+    entry.count += num(r?.count);
+    entry.revenue += num(r?.total ?? r?.revenue);
+    byMethod.set(key, entry);
+  });
+
+  const list = [...byMethod.values()];
+  const grandTotal = list.reduce((sum, entry) => sum + entry.revenue, 0);
+  list.forEach(entry => {
+    entry.percentage = grandTotal > 0 ? Math.round((entry.revenue / grandTotal) * 1000) / 10 : 0;
+  });
+
+  return list.sort((a, b) => b.revenue - a.revenue);
+}
+
+/**
+ * `sales` is a daily series (date, order_count, revenue, avg_order_value), but
+ * the stat cards treat it as a summary — so derive the summary here and keep
+ * the daily AOV available for the Daily Sales chart's AOV line.
+ */
+function normalizeSalesSummary(payload) {
+  const rows = toArrayOrEmpty(payload);
+  if (rows.length === 0) return { summary: null, aovByDate: {} };
+
+  const totalRevenue = rows.reduce((sum, row) => sum + num(row?.revenue), 0);
+  const totalOrders = rows.reduce((sum, row) => sum + num(row?.order_count ?? row?.orders), 0);
+  const aovByDate = {};
+  rows.forEach(row => {
+    if (row?.date) aovByDate[row.date] = num(row?.avg_order_value);
+  });
+
+  return {
+    summary: {
+      totalRevenue,
+      totalOrders,
+      averageOrderValue: totalOrders > 0 ? totalRevenue / totalOrders : 0,
+    },
+    aovByDate,
+  };
+}
+
+/**
+ * Map an analytics payload onto this page's state shape.
+ *
+ * Used by both the consolidated and the individual-call paths so they can never
+ * drift apart again — the frontend previously read field names the API has never
+ * returned (which is why several charts silently rendered zeros).
+ */
+function buildAnalyticsSnapshot(raw) {
+  const { summary: sales, aovByDate } = normalizeSalesSummary(raw?.sales);
+  const comparison = raw?.revenueComparison ?? null;
+  const userAnalytics = raw?.userAnalytics ?? null;
+  const metrics = raw?.dashboardSummary?.metrics ?? null;
+
+  return {
+    sales,
+    revenue: normalizeRevenueTrend(raw?.revenueTrends),
+    categories: normalizeCategories(raw?.categoryPerformance),
+    orderStatus: normalizeOrderStatus(raw?.orderStatus),
+    topCustomers: normalizeTopCustomers(raw?.topCustomers),
+    dashboardSummary: raw?.dashboardSummary ?? null,
+    dailySales: toArrayOrEmpty(raw?.dailySales).map(row => ({
+      ...row,
+      aov: num(row?.aov ?? aovByDate[row?.date]),
+    })),
+    hourlyData: normalizeHourly(raw?.hourlyDistribution),
+    revenueComparison: comparison
+      ? {
+        ...comparison,
+        // The UI renders these two totals; the API calls them thisMonth/lastMonth.
+        currentTotal: num(comparison.currentTotal ?? comparison.thisMonth),
+        previousTotal: num(comparison.previousTotal ?? comparison.lastMonth),
+      }
+      : null,
+    customerGrowth: toArrayOrEmpty(raw?.customerGrowth),
+    conversionMetrics: raw?.conversionMetrics ?? null,
+    // Prefer the aggregate breakdown; fall back to aggregating the daily series.
+    paymentMethodTrends: normalizePaymentMethods(raw?.paymentMethods ?? raw?.paymentTrends),
+    topProducts: toArrayOrEmpty(raw?.topProducts).slice(0, 10).map(p => ({
+      productId: p?.productId ?? p?.id,
+      productName: p?.productName ?? p?.name ?? '—',
+      unitsSold: num(p?.unitsSold ?? p?.sales_count),
+      revenue: num(p?.revenue),
+    })),
+    // userAnalytics carries no revenue/new-user fields — borrow them from the
+    // dashboard metrics so the customer cards aren't permanently zero.
+    userAnalytics: userAnalytics
+      ? {
+        ...userAnalytics,
+        newUsers: userAnalytics.newUsers ?? metrics?.newUsers ?? 0,
+        totalRevenue: userAnalytics.totalRevenue ?? metrics?.totalRevenue ?? 0,
+        averageOrderValue: userAnalytics.averageOrderValue ?? metrics?.avgOrderValue ?? 0,
+      }
+      : null,
+  };
+}
+
+// Set to false the first time the consolidated endpoint reports "not deployed"
+// (404/405/501) so we don't pay for a doomed request before every fallback.
+let consolidatedEndpointSupported = true;
 
 function analyticsReducer(state, action) {
   switch (action.type) {
@@ -70,11 +280,14 @@ function analyticsReducer(state, action) {
 
 export default function AnalyticsAdminPage() {
   const cache = useDashboardCache(10, 'analytics');
-  const fetchingRef = useRef(false);
+  // Monotonic request id — only the newest request is allowed to write state.
+  // Without this, switching date ranges mid-flight lets a slow older response
+  // overwrite the newer one (and clear the loading state too early).
+  const requestIdRef = useRef(0);
   const [dateRange, setDateRange] = useState(getDefaultDateRange());
   const [refreshInterval, setRefreshInterval] = useState(null);
   const [state, dispatch] = useReducer(analyticsReducer, ANALYTICS_DEFAULTS);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [lastRefreshed, setLastRefreshed] = useState(null);
   const [tab, setTab] = useState('overview');
   const [chartsReady, setChartsReady] = useState(false);
@@ -88,14 +301,13 @@ export default function AnalyticsAdminPage() {
 
   // ── Cache restore is now a single dispatch ──
   const loadAnalytics = useCallback(async (range, { skipCache = false, isBackground = false } = {}) => {
-    if (fetchingRef.current) return;
-    fetchingRef.current = true;
+    const requestId = ++requestIdRef.current;
 
     if (!skipCache) {
       const cached = cache.get(range);
       if (cached) {
-        fetchingRef.current = false;
         dispatch({ type: 'SET_MULTIPLE', payload: { ...ANALYTICS_DEFAULTS, ...cached } });
+        setLoading(false);
         return;
       }
     }
@@ -103,9 +315,34 @@ export default function AnalyticsAdminPage() {
     if (!isBackground) setLoading(true);
     const dateParams = getDateParams(range);
 
-    const fetched = { ...ANALYTICS_DEFAULTS };
+    // ── PRIMARY: the consolidated endpoint (1 request instead of 14) ──
+    // Every section it returns is the same value the individual endpoints
+    // return, so this is a drop-in replacement that removes 13 round trips.
+    try {
+      if (!consolidatedEndpointSupported) throw new Error('consolidated endpoint unavailable');
 
-    // ── Fire ALL API calls in parallel using Promise.allSettled ──
+      const fullRes = await analyticsAPI.getFullAnalytics({ ...dateParams, days: rangeToDays(range) });
+      const full = unwrapPayload(fullRes);
+      if (full && typeof full === 'object') {
+        const snapshot = buildAnalyticsSnapshot(full);
+        if (requestId !== requestIdRef.current) return;
+        cache.set(range, snapshot);
+        dispatch({ type: 'SET_MULTIPLE', payload: snapshot });
+        setLastRefreshed(new Date());
+        if (!isBackground) setLoading(false);
+        return;
+      }
+    } catch (err) {
+      // Consolidated endpoint unavailable — fall back to the individual calls.
+      // 404/405/501 mean it isn't deployed, so stop retrying it this session.
+      const status = err?.response?.status;
+      if (status === 404 || status === 405 || status === 501) {
+        consolidatedEndpointSupported = false;
+      }
+    }
+
+    // ── FALLBACK: individual API calls, normalised through the same snapshot
+    // builder so both paths can never return different shapes ──
     const [
       salesRes,
       revenueTrendsRes,
@@ -118,7 +355,7 @@ export default function AnalyticsAdminPage() {
       revenueCompRes,
       customerGrowthRes,
       conversionRes,
-      paymentTrendsRes,
+      paymentMethodsRes,
       productsRes,
       usersRes,
     ] = await Promise.allSettled([
@@ -133,106 +370,43 @@ export default function AnalyticsAdminPage() {
       analyticsAPI.getRevenueComparison(dateParams),
       analyticsAPI.getCustomerGrowth(dateParams),
       analyticsAPI.getConversionMetrics(dateParams),
-      analyticsAPI.getPaymentMethodTrends(dateParams),
+      // Aggregate per-method stats — the per-day series can't drive the pie/table.
+      analyticsAPI.getPaymentMethods(dateParams),
       analyticsAPI.getProducts(dateParams),
       analyticsAPI.getUsers(dateParams),
     ]);
 
-    // ── Process each result (only write to fetched — no individual state setters) ──
-
-    if (salesRes.status === 'fulfilled') {
-      const data = salesRes.value.data?.data || salesRes.value.data;
-      if (data) { fetched.sales = data; }
-    } else { console.warn('Sales API failed:', salesRes.reason); }
-
-    if (revenueTrendsRes.status === 'fulfilled') {
-      const data = revenueTrendsRes.value.data?.data?.trends || revenueTrendsRes.value.data?.trends || revenueTrendsRes.value.data?.data || [];
-      if (Array.isArray(data)) { fetched.revenue = data; }
-    } else { console.warn('Revenue trends API failed:', revenueTrendsRes.reason); }
-
-    if (categoryPerfRes.status === 'fulfilled') {
-      const data = categoryPerfRes.value.data?.data?.categories || categoryPerfRes.value.data?.categories || categoryPerfRes.value.data?.data || [];
-      if (Array.isArray(data)) { fetched.categories = data; }
-    } else { console.warn('Category performance API failed:', categoryPerfRes.reason); }
-
-    if (orderStatusRes.status === 'fulfilled') {
-      const data = orderStatusRes.value.data?.data || orderStatusRes.value.data || [];
-      if (Array.isArray(data) && data.length > 0) {
-        const total = data.reduce((a, b) => a + Number(b.value), 0);
-        if (total > 0) {
-          fetched.orderStatus = data.map(s => ({
-            name: s.name,
-            value: Math.round((Number(s.value) / total) * 100),
-          }));
-        } else {
-          fetched.orderStatus = [{ name: 'No Orders', value: 100 }];
-        }
-      }
-    } else { console.warn('Order status API failed:', orderStatusRes.reason); }
-
-
-    if (topCustomersRes.status === 'fulfilled') {
-      const data = topCustomersRes.value.data?.data?.customers || topCustomersRes.value.data?.customers || topCustomersRes.value.data?.data || [];
-      if (Array.isArray(data)) { fetched.topCustomers = data; }
-    } else { console.warn('Top customers API failed:', topCustomersRes.reason); }
-
-    if (dashboardSummaryRes.status === 'fulfilled') {
-      const data = dashboardSummaryRes.value.data?.data || dashboardSummaryRes.value.data;
-      if (data) { fetched.dashboardSummary = data; }
-    } else { console.warn('Dashboard summary API failed:', dashboardSummaryRes.reason); }
-
-    if (dailySalesRes.status === 'fulfilled') {
-      const data = dailySalesRes.value.data?.data || dailySalesRes.value.data || [];
-      if (Array.isArray(data)) { fetched.dailySales = data; }
-    } else { console.warn('Daily sales API failed:', dailySalesRes.reason); }
-
-    if (hourlyDistRes.status === 'fulfilled') {
-      const data = hourlyDistRes.value.data?.data || hourlyDistRes.value.data || [];
-      if (Array.isArray(data)) {
-        fetched.hourlyData = data.map(h => ({
-          hour: h.hour + ':00',
-          orders: h.orders,
-          revenue: h.revenue,
-        }));
-      }
-    } else { console.warn('Hourly distribution API failed:', hourlyDistRes.reason); }
-
-    if (revenueCompRes.status === 'fulfilled') {
-      const data = revenueCompRes.value.data?.data || revenueCompRes.value.data;
-      if (data) { fetched.revenueComparison = data; }
-    } else { console.warn('Revenue comparison API failed:', revenueCompRes.reason); }
-
-    if (customerGrowthRes.status === 'fulfilled') {
-      const data = customerGrowthRes.value.data?.data || customerGrowthRes.value.data || [];
-      if (Array.isArray(data)) { fetched.customerGrowth = data; }
-    } else { console.warn('Customer growth API failed:', customerGrowthRes.reason); }
-
-    if (conversionRes.status === 'fulfilled') {
-      const data = conversionRes.value.data?.data || conversionRes.value.data;
-      if (data) { fetched.conversionMetrics = data; }
-    } else { console.warn('Conversion metrics API failed:', conversionRes.reason); }
-
-    if (paymentTrendsRes.status === 'fulfilled') {
-      const data = paymentTrendsRes.value.data?.data || paymentTrendsRes.value.data || [];
-      if (Array.isArray(data)) { fetched.paymentMethodTrends = data; }
-    } else { console.warn('Payment method trends API failed:', paymentTrendsRes.reason); }
-
-    if (productsRes.status === 'fulfilled') {
-      const data = productsRes.value.data?.data || productsRes.value.data || [];
-      if (Array.isArray(data)) { fetched.topProducts = data.slice(0, 10); }
-    } else { console.warn('Product analytics API failed:', productsRes.reason); }
-
-    if (usersRes.status === 'fulfilled') {
-      const data = usersRes.value.data?.data || usersRes.value.data;
-      if (data) { fetched.userAnalytics = data; }
-    } else { console.warn('User analytics API failed:', usersRes.reason); }
-
-    // Log any failures for debugging
-    const failures = [salesRes, revenueTrendsRes, categoryPerfRes, orderStatusRes, topCustomersRes, dashboardSummaryRes, dailySalesRes, hourlyDistRes, revenueCompRes, customerGrowthRes, conversionRes, paymentTrendsRes, productsRes, usersRes]
-      .filter(r => r.status === 'rejected');
-    if (failures.length > 0) {
-      console.warn(`${failures.length} analytics API(s) failed (non-critical)`);
+    const settledPayload = (settled) => (settled.status === 'fulfilled' ? unwrapPayload(settled.value) : null);
+    const apiNames = ['Sales', 'Revenue trends', 'Category performance', 'Order status', 'Top customers',
+      'Dashboard summary', 'Daily sales', 'Hourly distribution', 'Revenue comparison', 'Customer growth',
+      'Conversion metrics', 'Payment methods', 'Products', 'Users'];
+    const settledResults = [salesRes, revenueTrendsRes, categoryPerfRes, orderStatusRes, topCustomersRes,
+      dashboardSummaryRes, dailySalesRes, hourlyDistRes, revenueCompRes, customerGrowthRes,
+      conversionRes, paymentMethodsRes, productsRes, usersRes];
+    const failedNames = settledResults.map((r, i) => (r.status === 'rejected' ? apiNames[i] : null)).filter(Boolean);
+    if (failedNames.length > 0) {
+      console.warn(`Analytics API(s) failed (non-critical): ${failedNames.join(', ')}`);
     }
+
+    const fetched = buildAnalyticsSnapshot({
+      sales: settledPayload(salesRes),
+      revenueTrends: settledPayload(revenueTrendsRes),
+      categoryPerformance: settledPayload(categoryPerfRes),
+      orderStatus: settledPayload(orderStatusRes),
+      topCustomers: settledPayload(topCustomersRes),
+      dashboardSummary: settledPayload(dashboardSummaryRes),
+      dailySales: settledPayload(dailySalesRes),
+      hourlyDistribution: settledPayload(hourlyDistRes),
+      revenueComparison: settledPayload(revenueCompRes),
+      customerGrowth: settledPayload(customerGrowthRes),
+      conversionMetrics: settledPayload(conversionRes),
+      paymentMethods: settledPayload(paymentMethodsRes),
+      topProducts: settledPayload(productsRes),
+      userAnalytics: settledPayload(usersRes),
+    });
+
+    // A newer request superseded this one — drop the stale payload.
+    if (requestId !== requestIdRef.current) return;
 
     // Cache the result and dispatch once (React 18+ batches into a single render)
     cache.set(range, fetched);
@@ -240,7 +414,6 @@ export default function AnalyticsAdminPage() {
 
     setLastRefreshed(new Date());
     if (!isBackground) setLoading(false);
-    fetchingRef.current = false;
   }, [cache]);
 
   // --- Manual refresh (bypasses cache) ---
@@ -256,7 +429,6 @@ export default function AnalyticsAdminPage() {
 
   useEffect(() => {
     loadAnalytics(dateRange);
-    return () => { fetchingRef.current = false; };
   }, [dateRange, loadAnalytics]);
 
   // Delay chart rendering until after layout is computed — prevents recharts -1 width/height
@@ -272,28 +444,36 @@ export default function AnalyticsAdminPage() {
   }, refreshInterval);
 
   // ── Derived data with useMemo (stable references) ──
+  // Read the `current`/`previous` series outside the memo — accessing a `.current`
+  // property inside one makes React Compiler treat it as a ref and skip optimizing.
+  const comparisonCurrent = revenueComparison?.current;
+  const comparisonPrevious = revenueComparison?.previous;
+
+  // The two series are consecutive periods (this month vs last month), so their
+  // dates never overlap — matching on the date string would plot each series in
+  // its own region of the chart instead of comparing them. Pair by day index.
   const comparisonChartData = useMemo(() => {
-    if (!revenueComparison) return [];
-    const currentMap = {};
-    (revenueComparison.current || []).forEach(d => { currentMap[d.date] = d.revenue; });
-    const previousMap = {};
-    (revenueComparison.previous || []).forEach(d => { previousMap[d.date] = d.revenue; });
+    const current = Array.isArray(comparisonCurrent) ? comparisonCurrent : [];
+    const previous = Array.isArray(comparisonPrevious) ? comparisonPrevious : [];
+    const length = Math.max(current.length, previous.length);
 
-    const allDates = [...new Set([
-      ...Object.keys(currentMap),
-      ...Object.keys(previousMap),
-    ])].sort();
-
-    return allDates.map((date, i) => ({
+    return Array.from({ length }, (_, i) => ({
       day: 'Day ' + (i + 1),
-      'Current Period': currentMap[date] || 0,
-      'Previous Period': previousMap[date] || 0,
+      'Current Period': Number(current[i]?.revenue) || 0,
+      'Previous Period': Number(previous[i]?.revenue) || 0,
     }));
-  }, [revenueComparison]);
+  }, [comparisonCurrent, comparisonPrevious]);
 
   const growthDisplay = useMemo(() =>
     customerGrowth.length > 0 ? customerGrowth.slice(-14) : [],
     [customerGrowth]
+  );
+
+  const topProductsChart = useMemo(() => topProducts.slice(0, 8), [topProducts]);
+
+  const paymentPieData = useMemo(() =>
+    paymentMethodTrends.map(p => ({ name: p.method, value: p.percentage })),
+    [paymentMethodTrends]
   );
 
   return (
@@ -311,20 +491,11 @@ export default function AnalyticsAdminPage() {
             onClearCache={handleClearCache}
             loading={loading}
           />
-          {lastRefreshed && (
-            <span
-              className="text-xs text-text-muted font-medium whitespace-nowrap"
-              title={'Last updated: ' + lastRefreshed.toLocaleString()}
-              style={{ animation: 'fadeIn 0.3s ease' }}
-            >
-              {'Updated ' + (function() {
-                var diff = Math.floor((Date.now() - lastRefreshed.getTime()) / 1000);
-                if (diff < 60) return 'just now';
-                if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
-                return lastRefreshed.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-              })()}
-            </span>
-          )}
+          <RelativeTime
+            date={lastRefreshed}
+            prefix="Updated "
+            className="text-xs text-text-muted font-medium whitespace-nowrap"
+          />
           <DateRangePicker value={dateRange} onChange={setDateRange} />
         </div>
       </div>
@@ -356,7 +527,7 @@ export default function AnalyticsAdminPage() {
       {tab === 'overview' && (
         <>
           <div className="stats-grid">
-            <div className="stat-card"><div className="stat-icon revenue"><DollarSign size={20} /></div><div className="stat-label">Total Revenue</div><div className="stat-val">{formatCurrency(dashboardSummary?.metrics?.totalRevenue || sales?.totalRevenue || sales?.revenue || sales?.total_revenue || 0)}</div><div className="stat-change stat-up">↑ {revenueComparison ? Math.abs(revenueComparison.changePercent ?? 0).toFixed(1) : '14.2'}% vs prev</div></div>
+            <div className="stat-card"><div className="stat-icon revenue"><DollarSign size={20} /></div><div className="stat-label">Total Revenue</div><div className="stat-val">{formatCurrency(dashboardSummary?.metrics?.totalRevenue || sales?.totalRevenue || sales?.revenue || sales?.total_revenue || 0)}</div>{revenueComparison && <div className={(revenueComparison.changePercent ?? 0) >= 0 ? 'stat-change stat-up' : 'stat-change stat-down'}>{(revenueComparison.changePercent ?? 0) >= 0 ? '↑ ' : '↓ '}{Math.abs(revenueComparison.changePercent ?? 0).toFixed(1)}% vs prev</div>}</div>
             <div className="stat-card"><div className="stat-icon orders"><Package size={20} /></div><div className="stat-label">Total Orders</div><div className="stat-val">{formatNumber(dashboardSummary?.metrics?.totalOrders || sales?.totalOrders || sales?.orders || sales?.total_orders || 0)}</div><div className="stat-change stat-up">↑ {conversionMetrics ? conversionMetrics.completedOrders : 0} completed</div></div>
             <div className="stat-card"><div className="stat-icon users"><Users size={20} /></div><div className="stat-label">Total Customers</div><div className="stat-val">{formatNumber(userAnalytics?.totalUsers || dashboardSummary?.metrics?.totalUsers || dashboardSummary?.totalCustomers || 0)}</div><div className="stat-change">{userAnalytics?.newUsers ? '↑ ' + userAnalytics.newUsers + ' new' : ''}</div></div>
             <div className="stat-card"><div className="stat-icon revenue"><BarChart3 size={20} /></div><div className="stat-label">AOV</div><div className="stat-val">{formatCurrency(dashboardSummary?.metrics?.avgOrderValue || dashboardSummary?.avgOrderValue || sales?.avgOrderValue || sales?.aov || sales?.average_order_value || 0)}</div><div className="stat-change">{conversionMetrics ? (conversionMetrics.conversionRate ?? 0).toFixed(1) + '% conv.' : ''}</div></div>
@@ -386,38 +557,48 @@ export default function AnalyticsAdminPage() {
 
           <div className="chart-grid">
             <div className="chart-card">
-              <div className="chart-title">Revenue Trend (Monthly)</div>
+              <div className="chart-title">Revenue Trend</div>
+              {revenue.length > 0 ? (
               <div style={{ width: '100%', height: 250, minWidth: '1px', minHeight: '1px' }}>
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={revenue.length ? revenue : FALLBACK_REVENUE} isAnimationActive={false}>
-                  <defs><linearGradient id="amberFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f59e0b" stopOpacity={0.3} /><stop offset="100%" stopColor="#f59e0b" stopOpacity={0} /></linearGradient></defs>
-                  <XAxis dataKey="month" tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
+                <AreaChart data={revenue} isAnimationActive={false}>
+                  <defs><linearGradient id="revenueTrendFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f59e0b" stopOpacity={0.3} /><stop offset="100%" stopColor="#f59e0b" stopOpacity={0} /></linearGradient></defs>
+                  <XAxis dataKey="date" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(v) => (v ? v.slice(5) : '')} />
                   <YAxis tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
                   <Tooltip formatter={(v) => formatCurrency(v)} contentStyle={{ borderRadius: 8, border: '1px solid #E8E2D9', fontSize: '0.8rem' }} />
-                  <Area type="monotone" dataKey="revenue" stroke="#f59e0b" strokeWidth={2} fill="url(#goldFill)" />
+                  <Area type="monotone" dataKey="revenue" stroke="#f59e0b" strokeWidth={2} fill="url(#revenueTrendFill)" />
                 </AreaChart>
               </ResponsiveContainer>
               </div>
+              ) : (
+                <ChartEmpty icon={DollarSign} message="No revenue data for this period" height={250} />
+              )}
             </div>
             <div className="chart-card">
               <div className="chart-title">Order Distribution</div>
+              {orderStatus.length > 0 ? (
+                <>
               <div style={{ width: '100%', height: 180, minWidth: '1px', minHeight: '1px' }}>
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart isAnimationActive={false}>
-                  <Pie data={orderStatus.length ? orderStatus : FALLBACK_ORDERS} innerRadius={45} outerRadius={70} dataKey="value" paddingAngle={3} strokeWidth={0}>
-                    {(orderStatus.length ? orderStatus : FALLBACK_ORDERS).map((_, i) => <Cell key={i} fill={COLORS[i]} />)}
+                  <Pie data={orderStatus} innerRadius={45} outerRadius={70} dataKey="value" paddingAngle={3} strokeWidth={0}>
+                    {orderStatus.map((_, i) => <Cell key={i} fill={COLORS[i]} />)}
                   </Pie>
                 </PieChart>
               </ResponsiveContainer>
               </div>
               <div style={{ padding: '0 0.5rem' }}>
-                {(orderStatus.length ? orderStatus : FALLBACK_ORDERS).map((s, i) => (
+                {orderStatus.map((s, i) => (
                   <div key={s.name} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.3rem', fontSize: '0.75rem' }}>
                     <div style={{ width: 8, height: 8, borderRadius: '50%', background: COLORS[i] }} />
                     <span style={{ flex: 1, color: 'var(--muted)' }}>{s.name}</span><strong>{s.value}%</strong>
                   </div>
                 ))}
               </div>
+                </>
+              ) : (
+                <ChartEmpty icon={Package} message="No order data for this period" height={260} />
+              )}
             </div>
           </div>
 
@@ -544,9 +725,10 @@ export default function AnalyticsAdminPage() {
         <>
           <div className="chart-card" style={{ marginBottom: '1.5rem' }}>
             <div className="chart-title">Top Products by Revenue</div>
+            {topProductsChart.length > 0 ? (
             <div style={{ width: '100%', height: 350, minWidth: '1px', minHeight: '1px' }}>
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={(topProducts.length ? topProducts : FALLBACK_PRODUCTS).slice(0, 8)} layout="vertical" margin={{ left: 100, right: 20 }} isAnimationActive={false}>
+              <BarChart data={topProductsChart} layout="vertical" margin={{ left: 100, right: 20 }} isAnimationActive={false}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
                 <XAxis type="number" tick={{ fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v) => '₹' + v/1000 + 'k'} />
                 <YAxis dataKey="productName" type="category" tick={{ fontSize: 11, width: 100 }} axisLine={false} tickLine={false} />
@@ -555,13 +737,15 @@ export default function AnalyticsAdminPage() {
               </BarChart>
             </ResponsiveContainer>
             </div>
+            ) : <ChartEmpty icon={Package} message="No product sales in this period" height={350} />}
           </div>
 
           <div className="chart-card" style={{ marginBottom: '1.5rem' }}>
             <div className="chart-title">Top Products by Units Sold</div>
+            {topProductsChart.length > 0 ? (
             <div style={{ width: '100%', height: 300, minWidth: '1px', minHeight: '1px' }}>
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={(topProducts.length ? topProducts : FALLBACK_PRODUCTS).slice(0, 8)} layout="vertical" margin={{ left: 100, right: 20 }} isAnimationActive={false}>
+              <BarChart data={topProductsChart} layout="vertical" margin={{ left: 100, right: 20 }} isAnimationActive={false}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
                 <XAxis type="number" tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
                 <YAxis dataKey="productName" type="category" tick={{ fontSize: 11, width: 100 }} axisLine={false} tickLine={false} />
@@ -570,14 +754,16 @@ export default function AnalyticsAdminPage() {
               </BarChart>
             </ResponsiveContainer>
             </div>
+            ) : <ChartEmpty icon={Package} message="No product sales in this period" height={300} />}
           </div>
 
           {/* Category Performance */}
           <div className="chart-card" style={{ marginBottom: '1.5rem' }}>
             <div className="chart-title">Category Performance</div>
+            {categories.length > 0 ? (
             <div style={{ width: '100%', height: 280, minWidth: '1px', minHeight: '1px' }}>
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={categories.length ? categories : FALLBACK_CATEGORIES} isAnimationActive={false}>
+              <BarChart data={categories} isAnimationActive={false}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                 <XAxis dataKey="name" tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
@@ -588,6 +774,7 @@ export default function AnalyticsAdminPage() {
               </BarChart>
             </ResponsiveContainer>
             </div>
+            ) : <ChartEmpty message="No category data in this period" height={280} />}
           </div>
 
           <div className="table-card">
@@ -595,7 +782,7 @@ export default function AnalyticsAdminPage() {
             <table className="admin-table">
               <thead><tr><th>#</th><th>Product / Category</th><th>Revenue</th><th>Units Sold</th><th>Unit Price</th></tr></thead>
               <tbody>
-                {(topProducts.length ? topProducts : FALLBACK_PRODUCTS).slice(0, 8).map((p, i) => (
+                {topProductsChart.map((p, i) => (
                   <tr key={p.productId || i}>
                     <td><span style={{ width: 24, height: 24, borderRadius: '50%', background: i === 0 ? 'var(--gold)' : 'var(--off-white)', color: i === 0 ? '#fff' : 'var(--muted)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem', fontWeight: 700 }}>{i + 1}</span></td>
                     <td><strong>{p.productName || p.name}</strong></td>
@@ -620,12 +807,13 @@ export default function AnalyticsAdminPage() {
           <div className="chart-grid" style={{ marginBottom: '1.5rem' }}>
             <div className="chart-card">
               <div className="chart-title">Payment Methods Distribution</div>
+              {paymentPieData.length > 0 ? (
               <div style={{ width: '100%', height: 220, minWidth: '1px', minHeight: '1px' }}>
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart isAnimationActive={false}>
-                  <Pie data={paymentMethodTrends.length > 0 ? paymentMethodTrends.map(p => ({ name: p.method, value: p.percentage })) : [{ name: 'Razorpay', value: 60 }, { name: 'COD', value: 25 }, { name: 'Wallet', value: 15 }]}
+                  <Pie data={paymentPieData}
                     innerRadius={55} outerRadius={85} dataKey="value" paddingAngle={3} strokeWidth={0}>
-                    {(paymentMethodTrends.length > 0 ? paymentMethodTrends : [{ method: 'Razorpay' }, { method: 'COD' }, { method: 'Wallet' }]).map((_, i) => (
+                    {paymentPieData.map((_, i) => (
                       <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
                     ))}
                   </Pie>
@@ -633,16 +821,14 @@ export default function AnalyticsAdminPage() {
                 </PieChart>
               </ResponsiveContainer>
               </div>
+              ) : <ChartEmpty icon={CreditCard} message="No payment data in this period" height={220} />}
             </div>
             <div className="chart-card">
               <div className="chart-title">Payment Methods by Revenue</div>
+              {paymentMethodTrends.length > 0 ? (
               <div style={{ width: '100%', height: 220, minWidth: '1px', minHeight: '1px' }}>
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={paymentMethodTrends.length > 0 ? paymentMethodTrends : [
-                  { method: 'Razorpay', revenue: 245000, count: 312 },
-                  { method: 'COD', revenue: 98000, count: 145 },
-                  { method: 'Wallet', revenue: 45000, count: 78 },
-                ]} layout="vertical" margin={{ left: 60, right: 10 }} isAnimationActive={false}>
+                <BarChart data={paymentMethodTrends} layout="vertical" margin={{ left: 60, right: 10 }} isAnimationActive={false}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
                   <XAxis type="number" tick={{ fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v) => '₹' + v/1000 + 'k'} />
                   <YAxis dataKey="method" type="category" tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
@@ -651,6 +837,7 @@ export default function AnalyticsAdminPage() {
                 </BarChart>
               </ResponsiveContainer>
               </div>
+              ) : <ChartEmpty icon={CreditCard} message="No payment data in this period" height={220} />}
             </div>
           </div>
 
@@ -659,7 +846,7 @@ export default function AnalyticsAdminPage() {
             <table className="admin-table">
               <thead><tr><th>Method</th><th>Transactions</th><th>Revenue</th><th>Share</th><th>Avg per Transaction</th></tr></thead>
               <tbody>
-                {(paymentMethodTrends.length ? paymentMethodTrends : []).map((p, i) => (
+                {paymentMethodTrends.map((p, i) => (
                   <tr key={p.method || i}>
                     <td><strong>{p.method}</strong></td>
                     <td>{p.count}</td>

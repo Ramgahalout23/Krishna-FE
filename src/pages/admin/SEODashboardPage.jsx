@@ -1,7 +1,8 @@
 import { Trophy, BarChart3, Globe, RefreshCw, TrendingUp, TrendingDown, Minus, Zap, Settings, FileText, Pencil, CheckCircle, ArrowRight, Award, GitBranch } from 'lucide-react';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { adminAPI } from '../../api/admin';
+import RelativeTime from '../../components/common/RelativeTime';
 import toast from '../../utils/toast';
 import { formatDate, formatTime } from '../../utils/formatters';
 import { XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Area, AreaChart } from 'recharts';
@@ -77,19 +78,55 @@ function ScoreDistChart({ distribution }) {
   );
 }
 
-function timeAgo(date) {
-  if (!date) return '';
-  const now = new Date();
-  const diffMs = now - date;
-  const diffSec = Math.floor(diffMs / 1000);
-  if (diffSec < 5) return 'just now';
-  if (diffSec < 60) return `${diffSec}s ago`;
-  const diffMin = Math.floor(diffSec / 60);
-  if (diffMin < 60) return `${diffMin}m ago`;
-  const diffHr = Math.floor(diffMin / 60);
-  if (diffHr < 24) return `${diffHr}h ago`;
-  const diffDay = Math.floor(diffHr / 24);
-  return `${diffDay}d ago`;
+const PAGE_STYLES = `
+  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  @keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+  .hover-shadow:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+`;
+
+const EMPTY_COVERAGE = { total: 0, with_seo: 0, coverage_pct: 0 };
+
+/**
+ * Auto-refresh toggle with a self-contained countdown.
+ *
+ * The ticking second lives here (not in the page) so the countdown never
+ * re-renders the charts — a per-second re-render of a recharts tree is the
+ * most expensive thing this page could do.
+ */
+function AutoRefreshToggle({ enabled, onToggle, intervalSec = 60, resetKey }) {
+  const [countdown, setCountdown] = useState(intervalSec);
+
+  useEffect(() => {
+    if (!enabled) return;
+    // Restart the countdown whenever a refresh actually lands (resetKey changes).
+    setCountdown(intervalSec);
+    const id = setInterval(() => {
+      setCountdown(prev => (prev <= 1 ? intervalSec : prev - 1));
+    }, 1000);
+    return () => clearInterval(id);
+  }, [enabled, intervalSec, resetKey]);
+
+  return (
+    <button
+      onClick={onToggle}
+      type="button"
+      title={enabled ? 'Click to pause auto-refresh' : 'Click to enable auto-refresh'}
+      style={{
+        fontSize: '0.7rem', color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: '0.4rem',
+        padding: '4px 10px', borderRadius: '10px', border: 'none', cursor: 'pointer',
+        background: enabled ? '#f0fdf4' : '#f5f5f5',
+        transition: 'all 0.2s',
+      }}
+    >
+      <span style={{
+        width: '6px', height: '6px', borderRadius: '50%',
+        background: enabled ? '#22c55e' : '#9ca3af',
+        animation: enabled ? 'pulse-dot 2s ease-in-out infinite' : 'none',
+        transition: 'all 0.3s',
+      }} />
+      {enabled ? `${countdown}s` : 'Paused'}
+    </button>
+  );
 }
 
 export default function SEODashboardPage() {
@@ -97,17 +134,13 @@ export default function SEODashboardPage() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [chartsReady, setChartsReady] = useState(false);
-  const [countdown, setCountdown] = useState(60);
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [lastRefreshed, setLastRefreshed] = useState(null);
-  const [, setTick] = useState(0);
-  const loadDashboardRef = useRef();
 
-  const loadDashboard = async () => {
+  const loadDashboard = useCallback(async () => {
     try {
       const res = await adminAPI.getSEODashboard();
       setData(res.data?.data || null);
-      setCountdown(60);
       setLastRefreshed(new Date());
     } catch (e) {
       console.warn('Failed to load SEO dashboard:', e);
@@ -115,11 +148,10 @@ export default function SEODashboardPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   // Delay chart rendering until after layout is computed — prevents recharts -1 width/height
   useEffect(() => {
-    loadDashboardRef.current = loadDashboard;
     const raf = requestAnimationFrame(() => setChartsReady(true));
     return () => cancelAnimationFrame(raf);
   }, []);
@@ -127,38 +159,17 @@ export default function SEODashboardPage() {
   // Initial load
   useEffect(() => {
     loadDashboard();
-  }, []);
+  }, [loadDashboard]);
 
-  // Auto-refresh every 60 seconds (only when enabled)
+  // Auto-refresh every 60 seconds (only when enabled, never on a hidden tab)
   useEffect(() => {
     if (!autoRefresh) return;
     const interval = setInterval(() => {
       if (typeof document !== 'undefined' && document.hidden) return;
-      loadDashboardRef.current();
+      loadDashboard();
     }, 60000);
     return () => clearInterval(interval);
-  }, [autoRefresh]);
-
-  // Reset countdown when re-enabling auto-refresh
-  useEffect(() => {
-    if (autoRefresh) setCountdown(60);
-  }, [autoRefresh]);
-
-  // Countdown tick (always runs to show paused state)
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCountdown(prev => Math.max(0, prev - 1));
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Re-render every 30s so relative time stays current
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTick(t => t + 1);
-    }, 30000);
-    return () => clearInterval(interval);
-  }, []);
+  }, [autoRefresh, loadDashboard]);
 
   if (loading) {
     return (
@@ -183,12 +194,32 @@ export default function SEODashboardPage() {
     );
   }
 
-  const { overview, seo_coverage, scores, score_trend, global_seo, robots, sitemap, advanced, recent_updates } = data;
-  const coverageColor = overview.seo_coverage_pct >= 80 ? '#22c55e' : overview.seo_coverage_pct >= 50 ? '#f59e0b' : '#ef4444';
-  const avgScoreColor = scores.average_score >= 80 ? '#22c55e' : scores.average_score >= 60 ? '#3b82f6' : scores.average_score >= 40 ? '#f59e0b' : '#ef4444';
-  const trendDirection = score_trend?.direction;
-  const trendChange = score_trend?.week_over_week_change || 0;
-  const trendDaily = score_trend?.daily || [];
+  // Normalise every section so a partial/older payload can't crash the render.
+  const overview = data.overview || {};
+  const seoCoveragePct = overview.seo_coverage_pct ?? 0;
+  const seo_coverage = {
+    products: data.seo_coverage?.products || EMPTY_COVERAGE,
+    categories: data.seo_coverage?.categories || EMPTY_COVERAGE,
+    pages: data.seo_coverage?.pages || EMPTY_COVERAGE,
+  };
+  const avgScore = data.scores?.average_score ?? 0;
+  const scores = {
+    average_score: avgScore,
+    scored_entities: data.scores?.scored_entities ?? 0,
+    distribution: data.scores?.distribution || {},
+  };
+  const score_trend = data.score_trend || {};
+  const global_seo = data.global_seo || {};
+  const robots = data.robots || {};
+  const sitemap = data.sitemap || {};
+  const advanced = data.advanced || {};
+  const recent_updates = Array.isArray(data.recent_updates) ? data.recent_updates : [];
+
+  const coverageColor = seoCoveragePct >= 80 ? '#22c55e' : seoCoveragePct >= 50 ? '#f59e0b' : '#ef4444';
+  const avgScoreColor = avgScore >= 80 ? '#22c55e' : avgScore >= 60 ? '#3b82f6' : avgScore >= 40 ? '#f59e0b' : '#ef4444';
+  const trendDirection = score_trend.direction;
+  const trendChange = score_trend.week_over_week_change || 0;
+  const trendDaily = Array.isArray(score_trend.daily) ? score_trend.daily : [];
 
   return (
     <div>
@@ -203,28 +234,17 @@ export default function SEODashboardPage() {
           </p>
         </div>
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-          <button
-            onClick={() => setAutoRefresh(prev => !prev)}
-            title={autoRefresh ? 'Click to pause auto-refresh' : 'Click to enable auto-refresh'}
-            style={{
-              fontSize: '0.7rem', color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: '0.4rem',
-              padding: '4px 10px', borderRadius: '10px', border: 'none', cursor: 'pointer',
-              background: autoRefresh ? '#f0fdf4' : '#f5f5f5',
-              transition: 'all 0.2s',
-            }}
-          >
-            <span style={{
-              width: '6px', height: '6px', borderRadius: '50%',
-              background: autoRefresh ? '#22c55e' : '#9ca3af',
-              animation: autoRefresh ? 'pulse-dot 2s ease-in-out infinite' : 'none',
-              transition: 'all 0.3s',
-            }} />
-            {autoRefresh ? `${countdown}s` : 'Paused'}
-          </button>
+          <AutoRefreshToggle
+            enabled={autoRefresh}
+            onToggle={() => setAutoRefresh(prev => !prev)}
+            resetKey={lastRefreshed}
+          />
           <span style={{ fontSize: '0.68rem', color: 'var(--muted)', opacity: 0.7, whiteSpace: 'nowrap' }}>
-            {lastRefreshed
-              ? `${timeAgo(lastRefreshed)} · ${formatTime(lastRefreshed, { hour: 'numeric', hour12: true })}`
-              : '—'}
+            {lastRefreshed ? (
+              <>
+                <RelativeTime date={lastRefreshed} /> · {formatTime(lastRefreshed, { hour: 'numeric', hour12: true })}
+              </>
+            ) : '—'}
           </span>
           <button className="btn-dark btn-sm" onClick={() => navigate('/admin/seo?tab=global')}>
             <Globe size={14} /> Edit Global SEO
@@ -238,8 +258,8 @@ export default function SEODashboardPage() {
       {/* Overview Cards */}
       <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
         <StatCard icon={Award} label="Avg SEO Score" value={scores.average_score} sub={`${scores.scored_entities} entities scored`} color={avgScoreColor} />
-        <StatCard icon={Globe} label="SEO Coverage" value={overview.seo_coverage_pct + '%'} sub={`${overview.seo_records_count}/${overview.total_entities} entities`} color={coverageColor} />
-        <StatCard icon={GitBranch} label="Sitemap Entries" value={sitemap.entries_count} sub={`Last: ${formatDate(sitemap.last_generated)}`} color="#3b82f6" onClick={() => navigate('/admin/seo?tab=sitemap')} />
+        <StatCard icon={Globe} label="SEO Coverage" value={seoCoveragePct + '%'} sub={`${overview.seo_records_count ?? 0}/${overview.total_entities ?? 0} entities`} color={coverageColor} />
+        <StatCard icon={GitBranch} label="Sitemap Entries" value={sitemap.entries_count ?? 0} sub={`Last: ${formatDate(sitemap.last_generated)}`} color="#3b82f6" onClick={() => navigate('/admin/seo?tab=sitemap')} />
         <StatCard icon={CheckCircle} label="Global SEO" value={global_seo.title ? 'Set' : 'Not Set'} sub={global_seo.title ? global_seo.title.slice(0, 30) + '…' : 'Add meta title'} color={global_seo.title ? '#22c55e' : '#ef4444'} onClick={() => navigate('/admin/seo?tab=global')} />
       </div>
 
@@ -357,7 +377,7 @@ export default function SEODashboardPage() {
             <div><strong>Site Title:</strong> {global_seo.title || <span style={{ color: '#ef4444' }}>Not set</span>}</div>
             <div><strong>Description:</strong> {global_seo.description ? global_seo.description.slice(0, 60) + '…' : <span style={{ color: '#ef4444' }}>Not set</span>}</div>
             <div><strong>Robots.txt:</strong> {robots.has_custom_robots ? <span style={{ color: '#22c55e' }}>Customized</span> : <span style={{ color: '#f59e0b' }}>Default</span>}</div>
-            <div><strong>Sitemap:</strong> {sitemap.entries_count > 0 ? `${sitemap.entries_count} URLs` : <span style={{ color: '#f59e0b' }}>Not generated</span>}</div>
+            <div><strong>Sitemap:</strong> {(sitemap.entries_count ?? 0) > 0 ? `${sitemap.entries_count} URLs` : <span style={{ color: '#f59e0b' }}>Not generated</span>}</div>
             <div><strong>Auto Schema:</strong> {advanced?.enable_auto_schema === 'true' ? <span style={{ color: '#22c55e' }}>Enabled</span> : <span style={{ color: '#f59e0b' }}>Disabled</span>}</div>
             <div><strong>IndexNow:</strong> {advanced?.enable_indexnow === 'true' ? <span style={{ color: '#22c55e' }}>Enabled</span> : <span style={{ color: '#f59e0b' }}>Disabled</span>}</div>
             {advanced?.google_analytics_id && <div><strong>Google Analytics:</strong> {advanced.google_analytics_id}</div>}
@@ -373,7 +393,7 @@ export default function SEODashboardPage() {
         {/* Recent Updates */}
         <div className="detail-panel" style={{ margin: 0 }}>
           <div className="detail-header"><h3>Recent SEO Updates</h3></div>
-          {recent_updates?.length > 0 ? (
+          {recent_updates.length > 0 ? (
             <div style={{ maxHeight: '280px', overflowY: 'auto' }}>
               {recent_updates.map((u, i) => (
                 <div key={u.id || i} style={{
@@ -382,7 +402,7 @@ export default function SEODashboardPage() {
                 }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {u.meta_title || u.entity_type + ' #' + (u.entity_id?.slice(0, 8) || '')}
+                      {u.meta_title || `${u.entity_type || 'entity'} #${String(u.entity_id ?? '').slice(0, 8)}`}
                     </div>
                     <div style={{ color: 'var(--muted)', fontSize: '0.7rem' }}>
                       {u.entity_type} · {formatDate(u.updated_at)}
@@ -409,11 +429,7 @@ export default function SEODashboardPage() {
         </div>
       </div>
 
-      <style>{`
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        @keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-        .hover-shadow:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
-      `}</style>
+      <style>{PAGE_STYLES}</style>
     </div>
   );
 }

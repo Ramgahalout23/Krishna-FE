@@ -1,5 +1,5 @@
 import { BarChart3, Globe, Upload, ShoppingBag, Users, Star, Megaphone, TrendingUp, DollarSign, Settings, Smartphone, Download, Eye, Package, Tag, CreditCard, RotateCcw, Truck, MessageCircle, Bell, FileText, Image, Video, Layout, Mail, LogOut, Store, ClipboardList, Palette, Ticket, BellPlus, Grid, Languages, Terminal, ShieldCheck, Clock, Link, Target, History, ShoppingCart, Sparkles, BookOpen, SearchCode, Percent, Menu, X } from 'lucide-react';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { adminAPI } from '../../api/admin';
 import { useSettings } from '../../store/useSettings';
@@ -110,8 +110,19 @@ export default function AdminSidebar() {
 
   const [badgeCounts, setBadgeCounts] = useState({ products: null, orders: null, abandoned: null, reviews: null, notifications: null });
 
+  // The badge counts are a nice-to-have; refetching 4 endpoints on every single
+  // navigation was pure overhead. Refetch at most once a minute (and only while
+  // the tab is visible) — live updates still arrive over the socket below.
+  const lastCountsFetchRef = useRef(0);
+  const COUNTS_TTL_MS = 60000;
+
   useEffect(() => {
     let active = true;
+    const now = Date.now();
+    if (now - lastCountsFetchRef.current < COUNTS_TTL_MS) return undefined;
+    if (typeof document !== 'undefined' && document.hidden) return undefined;
+    lastCountsFetchRef.current = now;
+
     const fetchCounts = async () => {
       const token = localStorage.getItem('adminToken') || localStorage.getItem('authToken');
       if (!token) return;

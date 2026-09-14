@@ -1,14 +1,16 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { adminAPI } from '../../api/admin';
 import { formatDate, getImageUrl, getPromotionImage } from '../../utils/formatters';
 import Pagination from '../../components/admin/Pagination';
 import ExportCSVModal from '../../components/admin/ExportCSVModal';
-import { downloadBlob } from '../../utils/download';
+import useAsyncExport from '../../hooks/useAsyncExport';
 import toast from '../../utils/toast';
 import { Sparkles } from 'lucide-react';
 
 export default function PromotionsAdminPage() {
   const [promotions, setPromotions] = useState([]);
+  // Only the newest listing request may write state.
+  const requestIdRef = useRef(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -32,10 +34,12 @@ export default function PromotionsAdminPage() {
   const pageSizeOptions = [10, 25, 50, 100];
 
   const load = async (page = 1) => {
+    const requestId = ++requestIdRef.current;
     setLoading(true);
     try {
       const params = { page, limit: pageSize, search: debouncedSearch || undefined, status: statusFilter !== 'ALL' ? statusFilter : undefined };
       const r = await adminAPI.getPromotions(params);
+      if (requestId !== requestIdRef.current) return;
       const data = r.data?.data || r.data;
       const list = data?.items || data?.promotions || data || [];
       setPromotions(Array.isArray(list) ? list : []);
@@ -43,7 +47,13 @@ export default function PromotionsAdminPage() {
       setCurrentPage(pag.page || page);
       setTotalPages(pag.pages || pag.totalPages || Math.ceil((pag.total || list.length) / pageSize) || 1);
       setTotalItems(pag.total || list.length);
-    } catch (e) { setError('Failed to load promotions'); console.warn('Failed to load promotions:', e); } finally { setLoading(false); }
+    } catch (e) {
+      if (requestId !== requestIdRef.current) return;
+      setError('Failed to load promotions');
+      console.warn('Failed to load promotions:', e);
+    } finally {
+      if (requestId === requestIdRef.current) setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -58,10 +68,9 @@ export default function PromotionsAdminPage() {
     load(currentPage);
   }, [currentPage]);
 
+  // CSV Export (shared async-job hook)
   const [showExportModal, setShowExportModal] = useState(false);
-  const [exporting, setExporting] = useState(false);
-  const [exportStatus, setExportStatus] = useState(null);
-  const [exportError, setExportError] = useState(null);
+  const { runExport, exporting, exportStatus, exportError, resetExport } = useAsyncExport();
 
   const PROMOTION_COLUMNS = [
     { key: 'title', label: 'Title' },
@@ -75,44 +84,18 @@ export default function PromotionsAdminPage() {
     { key: 'createdAt', label: 'Created Date' },
   ];
 
-  const handleExportCSV = async (selectedColumns) => {
-    setExporting(true); setExportStatus('dispatching'); setExportError(null);
-    try {
-      const filters = { search: debouncedSearch || undefined, status: statusFilter !== 'ALL' ? statusFilter : undefined };
-      Object.keys(filters).forEach(k => { if (filters[k] === undefined) delete filters[k]; });
-      const dispatchRes = await adminAPI.dispatchExport({ type: 'promotions', filters, columns: selectedColumns });
-      const jobId = dispatchRes.data?.data?.id;
-      if (!jobId) throw new Error('No job ID returned');
-      setExportStatus('processing');
-      const poll = async () => {
-        try {
-          const statusRes = await adminAPI.checkExportStatus(jobId);
-          const status = statusRes.data?.data?.status;
-          if (status === 'completed') {
-            const downloadRes = await adminAPI.downloadExport(jobId);
-            const filename = statusRes.data?.data?.file_name || `promotions-export-${new Date().toISOString().slice(0, 10)}.csv`;
-            downloadBlob(downloadRes, filename);
-            setExportStatus('completed');
-            toast.success('Promotions exported successfully');
-            setTimeout(() => { setShowExportModal(false); setExportStatus(null); }, 1500);
-          } else if (status === 'failed') {
-            throw new Error(statusRes.data?.data?.error_message || 'Export failed');
-          } else {
-            setTimeout(poll, 1500);
-          }
-        } catch (pollErr) {
-          console.error('Export poll error:', pollErr);
-          setExportStatus('failed'); setExportError(pollErr.response?.data?.message || pollErr.message || 'Export failed');
-          toast.error('Export failed');
-        }
-      };
-      poll().catch(() => {});
-    } catch (err) {
-      console.error('Export failed:', err);
-      setExportStatus('failed'); setExportError(err.response?.data?.message || err.message || 'Failed to export promotions');
-      toast.error('Export failed');
-    } finally { setExporting(false); }
-  };
+  const handleExportCSV = (selectedColumns) => runExport({
+    type: 'promotions',
+    filters: { search: debouncedSearch || undefined, status: statusFilter !== 'ALL' ? statusFilter : undefined },
+    columns: selectedColumns,
+    filename: `promotions-export-${new Date().toISOString().slice(0, 10)}.csv`,
+  });
+
+  useEffect(() => {
+    if (exportStatus !== 'completed') return;
+    const t = setTimeout(() => { setShowExportModal(false); resetExport(); }, 1500);
+    return () => clearTimeout(t);
+  }, [exportStatus, resetExport]);
 
   const openCreate = () => { setEditing(null); setForm({ name: '', type: 'PERCENTAGE', value: '', imageUrl: '', linkUrl: '', startDate: '', endDate: '', active: true, productIds: [], categoryIds: [], offerBadge: '', offerHighlight: '', offerTagline: '', offerTheme: '', autoApply: false }); setShowModal(true); };
   const openEdit = (p) => { setEditing(p); setForm({ name: p.title || '', type: 'PERCENTAGE', value: p.discount || '', imageUrl: getPromotionImage(p) || '', linkUrl: p.linkUrl || '', startDate: p.startDate?.split('T')[0] || '', endDate: p.endDate?.split('T')[0] || '', active: p.status === 'ACTIVE' || p.isActive, productIds: p.productIds || p.products?.map(pr => pr.id) || [], categoryIds: p.categoryIds || p.categories?.map(c => c.id) || [], offerBadge: p.offerBadge || '', offerHighlight: p.offerHighlight || '', offerTagline: p.offerTagline || '', offerTheme: p.offerTheme || '', autoApply: p.autoApply ?? false }); setShowModal(true); };
@@ -237,7 +220,7 @@ export default function PromotionsAdminPage() {
 
       <ExportCSVModal
         isOpen={showExportModal}
-        onClose={() => { setShowExportModal(false); setExportStatus(null); setExportError(null); }}
+        onClose={() => { setShowExportModal(false); resetExport(); }}
         columns={PROMOTION_COLUMNS}
         onExport={handleExportCSV}
         exporting={exporting}
@@ -547,7 +530,7 @@ function CategoryMultiSelect({ selected, onChange }) {
         const normalized = Array.isArray(list) ? list : [];
         _cachedCategories = normalized;
         setCategories(normalized);
-      } catch {} finally { setLoading(false); }
+      } catch { /* categories are optional reference data */ } finally { setLoading(false); }
     })();
   }, []);
 

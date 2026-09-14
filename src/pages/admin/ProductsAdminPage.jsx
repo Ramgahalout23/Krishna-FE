@@ -7,7 +7,7 @@ import ImageUploadZone from '../../components/common/ImageUploadZone';
 import { aiAPI } from '../../api/ai';
 import ExportCSVModal from '../../components/admin/ExportCSVModal';
 import Pagination from '../../components/admin/Pagination';
-import { downloadBlob } from '../../utils/download';
+import useAsyncExport from '../../hooks/useAsyncExport';
 import AdminPageShell from '../../components/admin/AdminPageShell';
 
 const EMPTY = { name: '', price: '', oldPrice: '', cost: '', description: '', shortDescription: '', categoryId: '', sku: '', quantity: '', images: '', status: 'DRAFT', badge: '' };
@@ -17,11 +17,16 @@ export default function ProductsAdminPage() {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  // Monotonic request id — only the newest listing request may write state, so
+  // a slower earlier response can't overwrite results from a newer page/search.
+  const loadRequestIdRef = useRef(0);
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('ALL');
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(EMPTY);
+  // Whether the opened product actually carried gallery data (see openEdit)
+  const [imagesLoaded, setImagesLoaded] = useState(true);
   const [detail, setDetail] = useState(null);
 
   // Variants inline management
@@ -41,11 +46,9 @@ export default function ProductsAdminPage() {
   // Search debouncing
   const [debouncedSearch, setDebouncedSearch] = useState('');
 
-  // CSV Export state (async job-based)
+  // CSV Export (shared async-job hook)
   const [showExportModal, setShowExportModal] = useState(false);
-  const [exporting, setExporting] = useState(false);
-  const [exportStatus, setExportStatus] = useState(null);
-  const [exportError, setExportError] = useState(null);
+  const { runExport, exporting, exportStatus, exportError, resetExport } = useAsyncExport();
 
   const PRODUCT_COLUMNS = [
     { key: 'name', label: 'Product Name' },
@@ -63,74 +66,21 @@ export default function ProductsAdminPage() {
     { key: 'createdAt', label: 'Created Date' },
   ];
 
-  const handleExport = async (selectedColumns) => {
-    setExporting(true);
-    setExportStatus('dispatching');
-    setExportError(null);
-    try {
-      // 1. Dispatch the export job
-      const filters = {
-        search: debouncedSearch || undefined,
-        status: filter !== 'ALL' ? filter : undefined,
-      };
-      // Clean undefined values
-      Object.keys(filters).forEach(k => { if (filters[k] === undefined) delete filters[k]; });
+  const handleExport = (selectedColumns) => runExport({
+    type: 'products',
+    filters: { search: debouncedSearch || undefined, status: filter !== 'ALL' ? filter : undefined },
+    columns: selectedColumns,
+    filename: `products-export-${new Date().toISOString().slice(0, 10)}.csv`,
+  });
 
-      const dispatchRes = await adminAPI.dispatchExport({
-        type: 'products',
-        filters,
-        columns: selectedColumns,
-      });
-
-      const jobId = dispatchRes.data?.data?.id;
-      if (!jobId) throw new Error('No job ID returned');
-
-      setExportStatus('processing');
-
-      // 2. Poll for completion
-      const poll = async () => {
-        try {
-          const statusRes = await adminAPI.checkExportStatus(jobId);
-          const status = statusRes.data?.data?.status;
-
-          if (status === 'completed') {
-            // 3. Download the completed file
-            const downloadRes = await adminAPI.downloadExport(jobId);
-            const filename = statusRes.data?.data?.file_name || `products-export-${new Date().toISOString().slice(0, 10)}.csv`;
-            downloadBlob(downloadRes, filename);
-            setExportStatus('completed');
-            toast.success('Products exported successfully');
-            setTimeout(() => {
-              setShowExportModal(false);
-              setExportStatus(null);
-            }, 1500);
-          } else if (status === 'failed') {
-            throw new Error(statusRes.data?.data?.error_message || 'Export failed');
-          } else {
-            // Still processing — poll again after 1.5s
-            setTimeout(poll, 1500);
-          }
-        } catch (pollErr) {
-          // Catch poll/download errors to avoid unhandled promise rejections
-          console.error('Export poll error:', pollErr);
-          if (!exportStatus || exportStatus === 'processing') {
-            setExportStatus('failed');
-            setExportError(pollErr.response?.data?.message || pollErr.message || 'Export failed');
-            toast.error('Export failed');
-          }
-        }
-      };
-
-      poll().catch(() => {});
-    } catch (err) {
-      console.error('Export failed:', err);
-      setExportStatus('failed');
-      setExportError(err.response?.data?.message || err.message || 'Failed to export products');
-      toast.error('Export failed');
-    } finally {
-      setExporting(false);
-    }
-  };
+  useEffect(() => {
+    if (exportStatus !== 'completed') return;
+    const t = setTimeout(() => {
+      setShowExportModal(false);
+      resetExport();
+    }, 1500);
+    return () => clearTimeout(t);
+  }, [exportStatus, resetExport]);
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -140,6 +90,7 @@ export default function ProductsAdminPage() {
   }, [search]);
 
   const load = async (page = 1) => {
+    const requestId = ++loadRequestIdRef.current;
     setLoading(true);
     try {
       // Load categories once if they are not already loaded
@@ -177,6 +128,8 @@ export default function ProductsAdminPage() {
       // Fallback: Laravel paginator { current_page, data: [...], last_page, total }
       const prod = responseData.products || responseData.data || [];
       if (!Array.isArray(prod)) throw new Error('Unexpected products response format');
+      // A newer request superseded this one — drop the stale payload.
+      if (requestId !== loadRequestIdRef.current) return;
       setProducts(prod);
 
       const pag = responseData.pagination;
@@ -191,10 +144,12 @@ export default function ProductsAdminPage() {
         setTotalItems(responseData.total || prod.length);
       }
     } catch (err) {
+      // Ignore failures from a request that has already been superseded.
+      if (requestId !== loadRequestIdRef.current) return;
       console.error('Failed to load products:', err);
       toast.error('Failed to load products');
     } finally {
-      setLoading(false);
+      if (requestId === loadRequestIdRef.current) setLoading(false);
     }
   };
 
@@ -212,9 +167,15 @@ export default function ProductsAdminPage() {
     load(currentPage);
   }, [currentPage]);
 
-  const openCreate = () => { setEditing(null); setForm(EMPTY); setShowModal(true); };
+  const openCreate = () => { setEditing(null); setForm(EMPTY); setImagesLoaded(true); setShowModal(true); };
   const openEdit = async (p) => {
     setEditing(p);
+    // Some product payloads (e.g. list rows from an older API) omit the gallery
+    // entirely. Saving an empty gallery back would delete the product's photos,
+    // so remember whether the row actually carried image data and only send
+    // `images` when it did.
+    const hadImageData = ['images', 'productimage', 'image', 'imageUrl', 'image_url'].some(k => k in p);
+    setImagesLoaded(hadImageData);
     const imgsStr = getProductImages(p).join(', ') || p.image || '';
     setForm({
       name: p.name || '',
@@ -250,17 +211,28 @@ export default function ProductsAdminPage() {
   };
 
   const handleSave = async () => {
+    // Validate up front — the API rejects these (name/price are required and
+    // products.category_id is NOT NULL), so catching it here saves a round trip.
+    if (!form.name?.trim()) { toast.error('Product name is required'); return; }
+    if (!form.categoryId) { toast.error('Please choose a category'); return; }
+    if (!form.price || Number(form.price) <= 0) { toast.error('Price must be greater than 0'); return; }
+
     const payload = {
       ...form,
       price: Number(form.price),
       oldPrice: form.oldPrice ? Number(form.oldPrice) : null,
       cost: form.cost ? Number(form.cost) : undefined,
       quantity: form.quantity ? Number(form.quantity) : 0,
-      images: form.images ? form.images.split(',').map(url => url.trim()).filter(Boolean) : [],
       badge: form.badge || null,
       hoverImageUrl: form.hoverImageUrl || null,
       videoUrl: form.videoUrl || null
     };
+    if (imagesLoaded) {
+      payload.images = form.images ? form.images.split(',').map(url => url.trim()).filter(Boolean) : [];
+    } else {
+      // Leave the stored gallery untouched rather than replacing it with nothing.
+      delete payload.images;
+    }
     try {
       if (editing) {
         const r = await adminAPI.updateProduct(editing.id, payload);
@@ -623,8 +595,8 @@ export default function ProductsAdminPage() {
             <div className="modal-body">
               <div className="form-grid">
                 <div className="form-group"><label>Product Name *</label><input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="e.g. Silk Evening Gown" /></div>
-                <div className="form-group"><label>Category</label>
-                  <select value={form.categoryId} onChange={e => setForm({ ...form, categoryId: e.target.value })}>
+                <div className="form-group"><label>Category *</label>
+                  <select required value={form.categoryId} onChange={e => setForm({ ...form, categoryId: e.target.value })}>
                     <option value="">Select Category</option>
                     {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                   </select>
@@ -973,7 +945,7 @@ export default function ProductsAdminPage() {
       {/* CSV Export Modal */}
       <ExportCSVModal
         isOpen={showExportModal}
-        onClose={() => { setShowExportModal(false); setExportStatus(null); setExportError(null); }}
+        onClose={() => { setShowExportModal(false); resetExport(); }}
         columns={PRODUCT_COLUMNS}
         onExport={handleExport}
         exporting={exporting}

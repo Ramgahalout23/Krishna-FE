@@ -1,5 +1,5 @@
 import { Users, Activity, Globe, TrendingUp, AlertTriangle, RefreshCw, Eye, Clock, BarChart3, Table2, ExternalLink, Download, Calendar } from 'lucide-react';
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { trackingAPI } from '../../api/tracking';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, CartesianGrid } from 'recharts';
 import { getSourceLabel, getSourceColor, getSourceIcon } from '../../utils/trafficSource';
@@ -38,42 +38,65 @@ function CustomPieTooltip({ active, payload }) {
   );
 }
 
+// ── Formatters for the tracking KPIs ──
+function formatDuration(seconds) {
+  const s = Math.max(0, Math.round(Number(seconds) || 0));
+  if (s < 60) return s + 's';
+  const m = Math.floor(s / 60);
+  const rem = s % 60;
+  return rem > 0 ? `${m}m ${rem}s` : `${m}m`;
+}
+
+function truncateUrl(url, max = 30) {
+  if (!url) return 'Unknown';
+  return url.length > max ? url.substring(0, max) + '...' : url;
+}
+
 // ── Overview Tab ──
-function OverviewTab({ loading, chartsReady, dashboard, pageViews, events, activeSessions }) {
-  const stats = dashboard?.pageViewStats || { totalViews: 0, uniqueVisitors: 0 };
-  const sessionStats = dashboard?.sessionStats || { totalSessions: 0, avgDuration: 0, bounceRate: 0 };
-  const eventStats = dashboard?.eventStats || { totalEvents: 0 };
+function OverviewTab({ loading, chartsReady, dashboard, eventStats, activeSessions }) {
+  // The tracking dashboard endpoint returns snake_case `page_views` / `session_stats`.
+  const pageViews = dashboard?.page_views || { total: 0, today: 0, unique_urls: 0, unique_visitors: 0 };
+  const sessionStats = dashboard?.session_stats || { total_sessions: 0, avg_duration: 0, bounce_rate: 0 };
+  const activeCount = dashboard?.active_sessions || 0;
+  const totalEvents = eventStats?.total_events || 0;
   const [sourceFilter, setSourceFilter] = useState('all');
 
+  const sessions = useMemo(
+    () => (Array.isArray(activeSessions) ? activeSessions : []),
+    [activeSessions]
+  );
+
   const uniqueSources = useMemo(() => {
-    if (!Array.isArray(activeSessions)) return [];
     const sources = new Set();
-    activeSessions.forEach(s => {
+    sessions.forEach(s => {
       if (s.source) sources.add(s.source);
     });
     return ['all', ...Array.from(sources).sort()];
-  }, [activeSessions]);
+  }, [sessions]);
 
-  const filteredSessions = useMemo(() => {
-    if (!Array.isArray(activeSessions)) return [];
-    if (sourceFilter === 'all') return activeSessions;
-    return activeSessions.filter(s => s.source === sourceFilter);
-  }, [activeSessions, sourceFilter]);
-
-  const eventChartData = useMemo(() =>
-    Array.isArray(events) ? events.slice(0, 10).map((e) => ({
-      name: e.eventName || e.eventType,
-      count: e._count?.id || e.count || 0,
-    })) : [],
-    [events]
+  const filteredSessions = useMemo(() =>
+    sourceFilter === 'all' ? sessions : sessions.filter(s => s.source === sourceFilter),
+    [sessions, sourceFilter]
   );
 
+  // Event stats arrive as { total_events, today, by_type: { eventType: count } }.
+  const eventChartData = useMemo(() =>
+    Object.entries(eventStats?.by_type || {})
+      .map(([name, count]) => ({ name, count: Number(count) || 0 }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10),
+    [eventStats]
+  );
+
+  // Top pages come from the dashboard payload as [{ url, views }].
   const pageViewChartData = useMemo(() =>
-    Array.isArray(pageViews) ? pageViews.slice(0, 8).map((p) => ({
-      name: p.url ? (p.url.length > 30 ? p.url.substring(0, 30) + '...' : p.url) : 'Unknown',
-      views: p._count?.url || p.count || 0,
-    })) : [],
-    [pageViews]
+    Array.isArray(dashboard?.top_pages)
+      ? dashboard.top_pages.slice(0, 8).map((p) => ({
+        name: truncateUrl(p.url),
+        views: Number(p.views) || 0,
+      }))
+      : [],
+    [dashboard]
   );
 
     if (loading) return <div className="flex items-center justify-center h-64 text-text-muted"><div className="text-center"><RefreshCw size={24} className="animate-spin mx-auto mb-2" /><p>Loading tracking data...</p></div></div>;
@@ -87,47 +110,48 @@ function OverviewTab({ loading, chartsReady, dashboard, pageViews, events, activ
             <div className="w-9 h-9 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center"><Eye size={18} /></div>
             <div className="text-[10px] font-semibold text-text-muted uppercase tracking-wider">Page Views</div>
           </div>
-          <div className="text-2xl font-bold text-text-primary font-display">{(stats.totalViews || 0).toLocaleString()}</div>
+          <div className="text-2xl font-bold text-text-primary font-display">{(pageViews.total || 0).toLocaleString()}</div>
+          <div className="text-[10px] text-text-muted mt-1">{(pageViews.today || 0).toLocaleString()} today</div>
         </div>
         <div className="bg-white p-5 rounded-2xl border border-border shadow-soft">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-9 h-9 rounded-lg bg-green-100 text-green-600 flex items-center justify-center"><Users size={18} /></div>
             <div className="text-[10px] font-semibold text-text-muted uppercase tracking-wider">Unique Visitors</div>
           </div>
-          <div className="text-2xl font-bold text-text-primary font-display">{(stats.uniqueVisitors || 0).toLocaleString()}</div>
+          <div className="text-2xl font-bold text-text-primary font-display">{(pageViews.unique_visitors || 0).toLocaleString()}</div>
+          <div className="text-[10px] text-text-muted mt-1">{pageViews.unique_urls || 0} unique pages</div>
         </div>
         <div className="bg-white p-5 rounded-2xl border border-border shadow-soft">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-9 h-9 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center"><Activity size={18} /></div>
             <div className="text-[10px] font-semibold text-text-muted uppercase tracking-wider">Events</div>
           </div>
-          <div className="text-2xl font-bold text-text-primary font-display">{(eventStats.totalEvents || 0).toLocaleString()}</div>
+          <div className="text-2xl font-bold text-text-primary font-display">{(totalEvents || 0).toLocaleString()}</div>
+          <div className="text-[10px] text-text-muted mt-1">{(eventStats?.today || 0).toLocaleString()} today</div>
         </div>
         <div className="bg-white p-5 rounded-2xl border border-border shadow-soft">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-9 h-9 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center"><Clock size={18} /></div>
             <div className="text-[10px] font-semibold text-text-muted uppercase tracking-wider">Avg Session</div>
           </div>
-          <div className="text-2xl font-bold text-text-primary font-display">{sessionStats.avgDuration || 0}s</div>
+          <div className="text-2xl font-bold text-text-primary font-display">{formatDuration(sessionStats.avg_duration)}</div>
         </div>
         <div className="bg-white p-5 rounded-2xl border border-border shadow-soft">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-9 h-9 rounded-lg bg-red-100 text-red-600 flex items-center justify-center"><AlertTriangle size={18} /></div>
             <div className="text-[10px] font-semibold text-text-muted uppercase tracking-wider">Bounce Rate</div>
           </div>
-          <div className="text-2xl font-bold text-text-primary font-display">{sessionStats.bounceRate || 0}%</div>
+          <div className="text-2xl font-bold text-text-primary font-display">{sessionStats.bounce_rate || 0}%</div>
         </div>
       </div>
 
       {/* Session Stats */}
-      {dashboard?.sessionStats && (
-        <div className="flex gap-4 mb-6 text-xs flex-wrap">
-          <span className="font-semibold text-text-muted">Total Sessions: <strong className="text-text-primary">{sessionStats.totalSessions || 0}</strong></span>
-          <span className="font-semibold text-text-muted">Active Now: <strong className="text-green-600">{dashboard.activeSessions || 0}</strong></span>
-          <span className="font-semibold text-text-muted">Avg Duration: <strong className="text-text-primary">{sessionStats.avgDuration || 0}s</strong></span>
-          <span className="font-semibold text-text-muted">Bounced: <strong className="text-red-600">{sessionStats.bounceRate || 0}%</strong></span>
-        </div>
-      )}
+      <div className="flex gap-4 mb-6 text-xs flex-wrap">
+        <span className="font-semibold text-text-muted">Total Sessions: <strong className="text-text-primary">{sessionStats.total_sessions || 0}</strong></span>
+        <span className="font-semibold text-text-muted">Active Now: <strong className="text-green-600">{activeCount || 0}</strong></span>
+        <span className="font-semibold text-text-muted">Avg Duration: <strong className="text-text-primary">{formatDuration(sessionStats.avg_duration)}</strong></span>
+        <span className="font-semibold text-text-muted">Bounced: <strong className="text-red-600">{sessionStats.bounce_rate || 0}%</strong></span>
+      </div>
 
       {/* Top Pages & Events */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
@@ -187,7 +211,7 @@ function OverviewTab({ loading, chartsReady, dashboard, pageViews, events, activ
           <h3 className="font-display font-bold text-sm text-text-primary">Active Sessions</h3>
           <span className="text-xs text-text-muted ml-auto">
             {filteredSessions.length}
-            {sourceFilter !== 'all' ? ` of ${activeSessions.length}` : ''} active
+            {sourceFilter !== 'all' ? ` of ${sessions.length}` : ''} active
           </span>
         </div>
 
@@ -215,7 +239,7 @@ function OverviewTab({ loading, chartsReady, dashboard, pageViews, events, activ
           </div>
         )}
 
-        {Array.isArray(activeSessions) && activeSessions.length > 0 ? (
+        {sessions.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
@@ -232,10 +256,10 @@ function OverviewTab({ loading, chartsReady, dashboard, pageViews, events, activ
               <tbody>
                 {filteredSessions.slice(0, 10).map((s) => (
                   <tr key={s.id} className="border-b border-border/50 hover:bg-surface/50 text-sm">
-                    <td className="p-3 text-xs font-mono text-text-muted">{s.sessionId?.substring(0, 12)}...</td>
-                    <td className="p-3 text-text-primary">{s.userId ? s.userId.substring(0, 8) : 'Guest'}</td>
-                    <td className="p-3 text-center">{s.pageViews || 0}</td>
-                    <td className="p-3 text-center text-xs text-text-muted">{s.duration ? s.duration + 's' : 'Live'}</td>
+                    <td className="p-3 text-xs font-mono text-text-muted">{String(s.session_id || s.id || '').substring(0, 12)}...</td>
+                    <td className="p-3 text-text-primary">{s.user_id ? String(s.user_id).substring(0, 8) : 'Guest'}</td>
+                    <td className="p-3 text-center">{s.page_views || 0}</td>
+                    <td className="p-3 text-center text-xs text-text-muted">{s.duration ? formatDuration(s.duration) : 'Live'}</td>
                     <td className="p-3 text-xs text-text-muted">{s.device || s.browser || '—'}</td>
                     <td className="p-3">
                       <span className="inline-flex items-center gap-1 text-xs font-medium" title={s.source || 'Direct'}>
@@ -284,7 +308,7 @@ const DATE_RANGES = [
 ];
 
 // ── Traffic Sources Tab ──
-function TrafficSourcesTab({ chartsReady }) {
+function TrafficSourcesTab() {
   const [trafficData, setTrafficData] = useState({ sources: [], utmCampaigns: [] });
   const [loading, setLoading] = useState(true);
   const [dateRange, setDateRange] = useState('all');
@@ -301,25 +325,25 @@ function TrafficSourcesTab({ chartsReady }) {
   }, []);
 
   const loadTrafficSources = useCallback((range, start, end) => {
-    let mounted = true;
+    let cancelled = false;
     setLoading(true);
     const params = getParams(range, start, end);
-    trackingAPI.getTrafficSources?.(params)
+    trackingAPI.getTrafficSources(params)
       .then(r => {
-        if (!mounted) return;
+        if (cancelled) return;
         const data = r.data?.data || r.data || {};
         setTrafficData({
-          sources: data.sources || [],
-          utmCampaigns: data.utm_campaigns || [],
+          sources: Array.isArray(data.sources) ? data.sources : [],
+          utmCampaigns: Array.isArray(data.utm_campaigns) ? data.utm_campaigns : [],
         });
       })
       .catch(() => {
-        if (mounted) setTrafficData({ sources: [], utmCampaigns: [] });
+        if (!cancelled) setTrafficData({ sources: [], utmCampaigns: [] });
       })
       .finally(() => {
-        if (mounted) setLoading(false);
+        if (!cancelled) setLoading(false);
       });
-    return () => { mounted = false; };
+    return () => { cancelled = true; };
   }, [getParams]);
 
   useEffect(() => {
@@ -382,7 +406,7 @@ function TrafficSourcesTab({ chartsReady }) {
       });
     }
 
-    const csvContent = rows.map(r => r.map(c => `"${(c || '').replace(/"/g, '""')}"`).join(',')).join('\\n');
+    const csvContent = rows.map(r => r.map(c => `"${String(c ?? '').replace(/"/g, '""')}"`).join(',')).join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -510,7 +534,7 @@ function TrafficSourcesTab({ chartsReady }) {
         {/* Pie Chart */}
         <div className="bg-white p-5 rounded-2xl border border-border shadow-soft">
           <h3 className="font-display font-bold text-sm text-text-primary mb-4">Traffic Source Distribution</h3>
-          {chartsReady && pieData.length > 0 ? (
+          {pieData.length > 0 ? (
             <div className="h-[320px]">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -661,25 +685,33 @@ export default function TrackingAdminPage() {
   const [dashboard, setDashboard] = useState(null);
   const [loading, setLoading] = useState(true);
   const [chartsReady, setChartsReady] = useState(false);
-  const [events, setEvents] = useState([]);
-  const [pageViews, setPageViews] = useState([]);
+  const [eventStats, setEventStats] = useState(null);
   const [activeSessions, setActiveSessions] = useState([]);
+  const mountedRef = useRef(true);
+
+  // Re-assert `true` on mount: StrictMode runs the cleanup once during its
+  // double-invoke, so a cleanup-only effect would leave this stuck at false.
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
 
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const [dashRes, eventsRes, viewsRes, sessionsRes] = await Promise.all([
+      // Top pages/page-view totals already ship with the dashboard payload,
+      // so a separate /pageviews/stats round-trip is not needed.
+      const [dashRes, eventsRes, sessionsRes] = await Promise.all([
         trackingAPI.getTrackingDashboard().catch(() => ({ data: null })),
         trackingAPI.getEventStats().catch(() => ({ data: null })),
-        trackingAPI.getPageViewStats().catch(() => ({ data: null })),
         trackingAPI.getActiveSessions().catch(() => ({ data: null })),
       ]);
-      setDashboard(dashRes.data?.data || dashRes.data);
-      setEvents(eventsRes.data?.data?.eventTypeBreakdown || []);
-      setPageViews(viewsRes.data?.data?.topPages || []);
-      setActiveSessions(sessionsRes.data?.data || []);
+      if (!mountedRef.current) return;
+      setDashboard(dashRes.data?.data || null);
+      setEventStats(eventsRes.data?.data || null);
+      setActiveSessions(sessionsRes.data?.data?.sessions || []);
     } catch (e) { console.warn('Tracking data load failed:', e); }
-    setLoading(false);
+    if (mountedRef.current) setLoading(false);
   }, []);
 
   // Delay chart rendering until after layout is computed — prevents recharts -1 width/height
@@ -729,13 +761,12 @@ export default function TrackingAdminPage() {
           loading={loading}
           chartsReady={chartsReady}
           dashboard={dashboard}
-          pageViews={pageViews}
-          events={events}
+          eventStats={eventStats}
           activeSessions={activeSessions}
         />
       )}
       {tab === 'traffic-sources' && (
-        <TrafficSourcesTab chartsReady={chartsReady} />
+        <TrafficSourcesTab />
       )}
     </div>
   );

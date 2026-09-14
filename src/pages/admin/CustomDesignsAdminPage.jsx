@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { adminAPI } from '../../api/admin';
 import { formatCurrency, formatDate } from '../../utils/formatters';
 import toast from '../../utils/toast';
@@ -37,6 +37,7 @@ function computeCounts(designs) {
   return counts;
 }
 
+
 /* ═══════════ EXTRACT BACK DESIGN URL FROM DESIGN_NOTES JSON ═══════════ */
 function getBackDesignUrl(design) {
   if (!design?.design_notes) return null;
@@ -53,26 +54,41 @@ export default function CustomDesignsAdminPage() {
   const [designs, setDesigns] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
+  // Only the newest listing request may write state.
+  const requestIdRef = useRef(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [expandedDesign, setExpandedDesign] = useState(null); // design id
+  // Store-wide per-status counts from the dedicated stats endpoint. Deriving
+  // them from `designs` only ever counted the current page.
+  const [statusCounts, setStatusCounts] = useState(null);
   const [designNotes, setDesignNotes] = useState({}); // designId -> admin notes text
   const [savingNotes, setSavingNotes] = useState({});  // designId -> bool
 
+  // Debounce the search box — `load` used to depend on the raw `search` value,
+  // so every keystroke fired a request.
+  useEffect(() => {
+    const handler = setTimeout(() => setDebouncedSearch(search), 400);
+    return () => clearTimeout(handler);
+  }, [search]);
+
   // ── Load custom designs from the dedicated API ──
   const load = useCallback(async (page = 1) => {
+    const requestId = ++requestIdRef.current;
     setLoading(true);
     try {
       const params = {
         page,
         limit: 50,
       };
-      if (search) params.search = search;
+      if (debouncedSearch) params.search = debouncedSearch;
       if (statusFilter !== 'ALL') params.status = statusFilter;
 
       const r = await adminAPI.getCustomDesigns(params);
+      if (requestId !== requestIdRef.current) return;
       const list = r.data?.data || [];
       setDesigns(Array.isArray(list) ? list : []);
 
@@ -81,14 +97,28 @@ export default function CustomDesignsAdminPage() {
       setTotalPages(pag.pages || Math.ceil((pag.total || list.length) / 50) || 1);
       setTotalItems(pag.total || list.length);
     } catch (err) {
+      if (requestId !== requestIdRef.current) return;
       console.error('Failed to load custom designs:', err);
       toast.error('Failed to load custom designs');
     } finally {
-      setLoading(false);
+      if (requestId === requestIdRef.current) setLoading(false);
     }
-  }, [search, statusFilter]);
+  }, [debouncedSearch, statusFilter]);
 
   useEffect(() => { load(1); }, [load]);
+
+  const loadCounts = useCallback(async () => {
+    try {
+      const r = await adminAPI.getCustomDesignStats();
+      const data = r.data?.data || r.data;
+      if (data && typeof data === 'object') setStatusCounts(data);
+    } catch (err) {
+      // Counts are advisory — the list and filters still work.
+      console.warn('Failed to load custom design counts:', err);
+    }
+  }, []);
+
+  useEffect(() => { loadCounts(); }, [loadCounts]);
 
   // ── Update design status via dedicated API ──
   const updateDesignStatus = useCallback(async (designId, newStatus) => {
@@ -100,11 +130,12 @@ export default function CustomDesignsAdminPage() {
 
       await adminAPI.updateCustomDesignStatus(designId, { status: newStatus });
       toast.success(`Design status updated to ${DESIGN_STATUSES[newStatus]?.label}`);
+      loadCounts();
     } catch (err) {
-      toast.error('Failed to update status');
+      toast.error(err?.response?.data?.message || 'Failed to update status');
       load(currentPage);
     }
-  }, [currentPage, load]);
+  }, [currentPage, load, loadCounts]);
 
   // ── Save admin notes via dedicated API ──
   const handleSaveNotes = useCallback(async (designId) => {
@@ -119,7 +150,7 @@ export default function CustomDesignsAdminPage() {
       ));
       toast.success('Notes saved');
     } catch (err) {
-      toast.error('Failed to save notes');
+      toast.error(err?.response?.data?.message || 'Failed to save notes');
     } finally {
       setSavingNotes(prev => ({ ...prev, [designId]: false }));
     }
@@ -130,7 +161,9 @@ export default function CustomDesignsAdminPage() {
   useSocketEvent('order:updated', handleDesignUpdate, [currentPage, load]);
   useOrderCreated(() => { load(1); }, [load]);
 
-  const counts = computeCounts(designs);
+  // Prefer the store-wide totals; fall back to counting the loaded page.
+  const counts = { ...computeCounts(designs), ...(statusCounts || {}) };
+  if (statusCounts) counts.ALL = Number(statusCounts.ALL ?? counts.ALL);
 
   return (
     <AdminPageShell

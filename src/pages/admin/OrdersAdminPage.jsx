@@ -1,11 +1,12 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { adminAPI } from '../../api/admin';
+import { analyticsAPI } from '../../api/analytics';
 import { formatCurrency, formatDate } from '../../utils/formatters';
 import { ORDER_STATUSES } from '../../utils/constants';
 import toast from '../../utils/toast';
-import { downloadBlob } from '../../utils/download';
 import { useOrderStatusUpdates, useOrderCreated } from '../../hooks/useSocket';
+import useAsyncExport from '../../hooks/useAsyncExport';
 import ExportCSVModal from '../../components/admin/ExportCSVModal';
 import Pagination from '../../components/admin/Pagination';
 import AdminPageShell from '../../components/admin/AdminPageShell';
@@ -16,6 +17,12 @@ export default function OrdersAdminPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
+  // Only the newest listing request may write state — socket-driven refreshes
+  // and rapid filter changes would otherwise let a slow response win.
+  const loadRequestIdRef = useRef(0);
+  // Store-wide per-status totals (the table only holds one page).
+  const [statusCounts, setStatusCounts] = useState({});
+  const countsTimerRef = useRef(null);
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
@@ -27,11 +34,9 @@ export default function OrdersAdminPage() {
   // Search debouncing
   const [debouncedSearch, setDebouncedSearch] = useState('');
 
-  // CSV Export state (async job-based)
+  // CSV Export state (async job-based, shared hook)
   const [showExportModal, setShowExportModal] = useState(false);
-  const [exporting, setExporting] = useState(false);
-  const [exportStatus, setExportStatus] = useState(null);
-  const [exportError, setExportError] = useState(null);
+  const { runExport, exporting, exportStatus, exportError, resetExport } = useAsyncExport();
 
   const ORDER_COLUMNS = [
     { key: 'orderNumber', label: 'Order Number' },
@@ -50,70 +55,60 @@ export default function OrdersAdminPage() {
     return () => clearTimeout(handler);
   }, [search]);
 
-  const handleExportCSV = async (selectedColumns) => {
-    setExporting(true);
-    setExportStatus('dispatching');
-    setExportError(null);
+  const handleExportCSV = (selectedColumns) => runExport({
+    type: 'orders',
+    filters: { status: statusFilter !== 'ALL' ? statusFilter : undefined, search: debouncedSearch || undefined },
+    columns: selectedColumns,
+    filename: `orders-export-${new Date().toISOString().slice(0, 10)}.csv`,
+  });
+
+  // Auto-close the modal shortly after a successful export.
+  useEffect(() => {
+    if (exportStatus !== 'completed') return;
+    const t = setTimeout(() => {
+      setShowExportModal(false);
+      resetExport();
+    }, 1500);
+    return () => clearTimeout(t);
+  }, [exportStatus, resetExport]);
+
+  /**
+   * Store-wide per-status counts. The table only holds the current page, so
+   * deriving counts from `orders` displayed at most `pageSize` per status and
+   * showed "0" for any status that happened to fall on another page.
+   */
+  const loadCounts = useCallback(async () => {
     try {
-      const filters = {
-        status: statusFilter !== 'ALL' ? statusFilter : undefined,
-        search: debouncedSearch || undefined,
-      };
-      Object.keys(filters).forEach(k => { if (filters[k] === undefined) delete filters[k]; });
-
-      const dispatchRes = await adminAPI.dispatchExport({
-        type: 'orders',
-        filters,
-        columns: selectedColumns,
+      const r = await analyticsAPI.getOrderStatus();
+      const rows = r.data?.data || r.data || [];
+      if (!Array.isArray(rows)) return;
+      const next = {};
+      rows.forEach(row => {
+        if (row?.name) next[row.name] = Number(row.value) || 0;
       });
-
-      const jobId = dispatchRes.data?.data?.id;
-      if (!jobId) throw new Error('No job ID returned');
-
-      setExportStatus('processing');
-
-      const poll = async () => {
-        try {
-          const statusRes = await adminAPI.checkExportStatus(jobId);
-          const status = statusRes.data?.data?.status;
-
-          if (status === 'completed') {
-            const downloadRes = await adminAPI.downloadExport(jobId);
-            const filename = statusRes.data?.data?.file_name || `orders-export-${new Date().toISOString().slice(0, 10)}.csv`;
-            downloadBlob(downloadRes, filename);
-            setExportStatus('completed');
-            toast.success('Orders exported successfully');
-            setTimeout(() => {
-              setShowExportModal(false);
-              setExportStatus(null);
-            }, 1500);
-          } else if (status === 'failed') {
-            throw new Error(statusRes.data?.data?.error_message || 'Export failed');
-          } else {
-            setTimeout(poll, 1500);
-          }
-        } catch (pollErr) {
-          console.error('Export poll error:', pollErr);
-          if (!exportStatus || exportStatus === 'processing') {
-            setExportStatus('failed');
-            setExportError(pollErr.response?.data?.message || pollErr.message || 'Export failed');
-            toast.error('Export failed');
-          }
-        }
-      };
-
-      poll().catch(() => {});
+      setStatusCounts(next);
     } catch (err) {
-      console.error('Export failed:', err);
-      setExportStatus('failed');
-      setExportError(err.response?.data?.message || err.message || 'Failed to export orders');
-      toast.error('Export failed');
-    } finally {
-      setExporting(false);
+      // Counts are advisory — the table and filters remain usable.
+      console.warn('Failed to load order status counts:', err);
     }
-  };
+  }, []);
+
+  // Coalesce socket-driven count refreshes into one request per second.
+  const scheduleCountsRefresh = useCallback(() => {
+    if (countsTimerRef.current) return;
+    countsTimerRef.current = setTimeout(() => {
+      countsTimerRef.current = null;
+      loadCounts();
+    }, 1000);
+  }, [loadCounts]);
+
+  useEffect(() => {
+    loadCounts();
+    return () => { if (countsTimerRef.current) clearTimeout(countsTimerRef.current); };
+  }, [loadCounts]);
 
   const load = async (page = 1) => {
+    const requestId = ++loadRequestIdRef.current;
     setLoading(true);
     try {
       const params = {
@@ -124,6 +119,8 @@ export default function OrdersAdminPage() {
       };
 
       const r = await adminAPI.getOrders(params);
+      if (requestId !== loadRequestIdRef.current) return;
+
       const list = r.data?.data?.orders || r.data?.orders || r.data?.data || [];
       setOrders(Array.isArray(list) ? list : []);
 
@@ -132,12 +129,19 @@ export default function OrdersAdminPage() {
       setTotalPages(pag.pages || Math.ceil((pag.total || list.length) / pageSize) || 1);
       setTotalItems(pag.total || list.length);
     } catch (err) {
+      if (requestId !== loadRequestIdRef.current) return;
       console.error('Failed to load orders:', err);
       toast.error('Failed to load orders');
     } finally {
-      setLoading(false);
+      if (requestId === loadRequestIdRef.current) setLoading(false);
     }
   };
+
+  // Always call the latest `load` from socket callbacks. The socket handlers are
+  // memoized on `[currentPage]`, so without this they would keep using the
+  // closure captured before the last search/filter change.
+  const loadRef = useRef(load);
+  useEffect(() => { loadRef.current = load; });
 
   // Reset page when search, statusFilter, or page size changes
   useEffect(() => {
@@ -156,26 +160,28 @@ export default function OrdersAdminPage() {
   // Real-time order updates via WebSocket
   const handleOrderUpdate = useCallback((data) => {
     console.debug('[Realtime] Order update:', data);
-    load(currentPage);
+    loadRef.current(currentPage);
+    scheduleCountsRefresh();
     if (data.status) {
       toast(
         `Order ${data.orderNumber || data.orderId?.slice(0, 8)} → ${ORDER_STATUSES[data.status]?.label || data.status}`,
         { icon: '\u{1F504}', duration: 4000 }
       );
     }
-  }, [currentPage]);
+  }, [currentPage, scheduleCountsRefresh]);
 
   useOrderStatusUpdates(handleOrderUpdate, [currentPage]);
 
   // Handle new order created events — auto-refresh list + show notification
   const handleOrderCreated = useCallback((data) => {
     console.debug('[Realtime] New order:', data);
-    load(currentPage);
+    loadRef.current(currentPage);
+    scheduleCountsRefresh();
     toast.success(
       `\u{1F195} New order ${data.orderNumber ? `#${data.orderNumber}` : ''} \u2014 ${formatCurrency(data.summary?.total ?? data.total ?? 0)}`,
       { duration: 6000 }
     );
-  }, [currentPage]);
+  }, [currentPage, scheduleCountsRefresh]);
 
   useOrderCreated(handleOrderCreated, [currentPage]);
 
@@ -185,11 +191,12 @@ export default function OrdersAdminPage() {
       setOrders(orders.map(o => o.id === id ? { ...o, status } : o));
       toast.success(`Status updated to ${ORDER_STATUSES[status]?.label || status}`);
       await load(currentPage);
+      loadCounts();
     } catch { toast.error('Failed to update status'); }
   };
 
   const counts = Object.fromEntries(
-    Object.keys(ORDER_STATUSES).map(s => [s, orders.filter(o => o.status === s).length])
+    Object.keys(ORDER_STATUSES).map(s => [s, statusCounts[s] ?? 0])
   );
 
   return (
@@ -262,7 +269,7 @@ export default function OrdersAdminPage() {
       {/* CSV Export Modal */}
       <ExportCSVModal
         isOpen={showExportModal}
-        onClose={() => { setShowExportModal(false); setExportStatus(null); setExportError(null); }}
+        onClose={() => { setShowExportModal(false); resetExport(); }}
         columns={ORDER_COLUMNS}
         onExport={handleExportCSV}
         exporting={exporting}

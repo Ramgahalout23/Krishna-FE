@@ -1,12 +1,11 @@
-import { useState, useEffect } from 'react';
-import { adminAPI } from '../../api/admin';
+import { useState, useEffect, useRef } from 'react';
 import { shippingAPI } from '../../api/shipping';
 import AdminPageShell from '../../components/admin/AdminPageShell';
 import { formatDate, formatDateTime } from '../../utils/formatters';
 import { SHIPPING_STATUSES } from '../../utils/constants';
 import Pagination from '../../components/admin/Pagination';
 import ExportCSVModal from '../../components/admin/ExportCSVModal';
-import { downloadBlob } from '../../utils/download';
+import useAsyncExport from '../../hooks/useAsyncExport';
 import toast from '../../utils/toast';
 
 const EMPTY_SHIP = { orderId: '', carrier: '', trackingNumber: '' };
@@ -41,11 +40,12 @@ export default function ShippingAdminPage() {
   const [pageSize, setPageSize] = useState(10);
   const pageSizeOptions = [10, 25, 50, 100];
 
-  // CSV Export
+  // CSV Export (shared async-job hook)
   const [showExportModal, setShowExportModal] = useState(false);
-  const [exporting, setExporting] = useState(false);
-  const [exportStatus, setExportStatus] = useState(null);
-  const [exportError, setExportError] = useState(null);
+  const { runExport, exporting, exportStatus, exportError, resetExport } = useAsyncExport();
+
+  // Only the newest shipment listing request may write state.
+  const requestIdRef = useRef(0);
 
   const SHIPMENT_COLUMNS = [
     { key: 'orderId', label: 'Order ID' },
@@ -59,49 +59,37 @@ export default function ShippingAdminPage() {
     { key: 'createdAt', label: 'Created Date' },
   ];
 
-  const handleExportCSV = async (selectedColumns) => {
-    setExporting(true); setExportStatus('dispatching'); setExportError(null);
+  const handleExportCSV = (selectedColumns) => runExport({
+    type: 'shipments',
+    filters: { search: debouncedSearch || undefined, status: statusFilter !== 'ALL' ? statusFilter : undefined },
+    columns: selectedColumns,
+    filename: `shipments-export-${new Date().toISOString().slice(0, 10)}.csv`,
+  });
+
+  useEffect(() => {
+    if (exportStatus !== 'completed') return;
+    const t = setTimeout(() => { setShowExportModal(false); resetExport(); }, 1500);
+    return () => clearTimeout(t);
+  }, [exportStatus, resetExport]);
+
+  // Zones are reference data — loaded once, not on every shipment page/search.
+  const loadZones = async () => {
     try {
-      const filters = { search: debouncedSearch || undefined, status: statusFilter !== 'ALL' ? statusFilter : undefined };
-      Object.keys(filters).forEach(k => { if (filters[k] === undefined) delete filters[k]; });
-      const dispatchRes = await adminAPI.dispatchExport({ type: 'shipments', filters, columns: selectedColumns });
-      const jobId = dispatchRes.data?.data?.id;
-      if (!jobId) throw new Error('No job ID returned');
-      setExportStatus('processing');
-      const poll = async () => {
-        try {
-          const statusRes = await adminAPI.checkExportStatus(jobId);
-          const status = statusRes.data?.data?.status;
-          if (status === 'completed') {
-            const downloadRes = await adminAPI.downloadExport(jobId);
-            const filename = statusRes.data?.data?.file_name || `shipments-export-${new Date().toISOString().slice(0, 10)}.csv`;
-            downloadBlob(downloadRes, filename);
-            setExportStatus('completed');
-            toast.success('Shipments exported successfully');
-            setTimeout(() => { setShowExportModal(false); setExportStatus(null); }, 1500);
-          } else if (status === 'failed') {
-            throw new Error(statusRes.data?.data?.error_message || 'Export failed');
-          } else {
-            setTimeout(poll, 1500);
-          }
-        } catch (pollErr) {
-          console.error('Export poll error:', pollErr);
-          if (!exportStatus || exportStatus === 'processing') {
-            setExportStatus('failed'); setExportError(pollErr.response?.data?.message || pollErr.message || 'Export failed');
-            toast.error('Export failed');
-          }
-        }
-      };
-      poll().catch(() => {});
-    } catch (err) {
-      console.error('Export failed:', err);
-      setExportStatus('failed'); setExportError(err.response?.data?.message || err.message || 'Failed to export shipments');
-      toast.error('Export failed');
-    } finally { setExporting(false); }
+      const r = await shippingAPI.getZones();
+      // `/shipping/zones/list` returns a paginated envelope `{ items, ... }`,
+      // not a bare array — reading it as one left the zones tab permanently empty.
+      const payload = r.data?.data || r.data || {};
+      const list = payload?.items || payload?.zones || (Array.isArray(payload) ? payload : []);
+      setZones(Array.isArray(list) ? list : []);
+    } catch (e) {
+      console.warn('Failed to load zones:', e);
+    }
   };
 
   const loadShipments = async (page = 1) => {
+    const requestId = ++requestIdRef.current;
     setLoading(true);
+    setError(null);
     try {
       const params = {
         page,
@@ -110,20 +98,20 @@ export default function ShippingAdminPage() {
         status: statusFilter !== 'ALL' ? statusFilter : undefined
       };
       const r = await shippingAPI.getAll(params);
+      if (requestId !== requestIdRef.current) return;
       const data = r.data?.data || r.data;
-      const list = data?.shipments || data?.items || data || [];
+      const list = data?.items || data?.shipments || data || [];
       setShipments(Array.isArray(list) ? list : []);
-      const pag = r.data?.pagination || data?.pagination || {};
-      setCurrentPage(pag.page || page);
-      setTotalPages(pag.pages || pag.totalPages || Math.ceil((pag.total || list.length) / pageSize) || 1);
-      setTotalItems(pag.total || list.length);
-    } catch (e) { setError('Failed to load shipments'); console.warn('Failed to load shipments:', e); }
-    try {
-      const r = await shippingAPI.getZones();
-      const list = r.data?.data?.zones || r.data?.zones || r.data?.data || [];
-      setZones(Array.isArray(list) ? list : []);
-    } catch (e) { setError(prev => prev || 'Failed to load shipping zones'); console.warn('Failed to load zones:', e); }
-    setLoading(false);
+      setCurrentPage(data?.page || page);
+      setTotalPages(data?.total_pages || Math.ceil((data?.total || list.length) / pageSize) || 1);
+      setTotalItems(data?.total ?? list.length);
+    } catch (e) {
+      if (requestId !== requestIdRef.current) return;
+      setError('Failed to load shipments');
+      console.warn('Failed to load shipments:', e);
+    } finally {
+      if (requestId === requestIdRef.current) setLoading(false);
+    }
   };
 
   // Reset page when search or filter changes
@@ -141,8 +129,18 @@ export default function ShippingAdminPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps -- loadShipments changes on every render; adding it would cause infinite re-fetch loop
   }, [currentPage]);
 
+  // Zones are reference data — fetch once instead of on every shipment reload.
+  useEffect(() => { loadZones(); }, []);
+
   const handleCreateShipment = async () => {
-    try { const r = await shippingAPI.create(form); setShipments([r.data || { ...form, id: Date.now().toString(), status: 'PENDING' }, ...shipments]); setShowModal(false); toast.success('Shipment created'); } catch { toast.error('Failed'); }
+    try {
+      await shippingAPI.create(form);
+      setShowModal(false);
+      toast.success('Shipment created');
+      // Re-read from the server. Previously a locally-fabricated row (with a
+      // Date.now() id and no tracking number) was prepended and never corrected.
+      loadShipments(currentPage);
+    } catch { toast.error('Failed'); }
   };
 
   const handleUpdateStatus = async (id, status) => {
@@ -150,7 +148,13 @@ export default function ShippingAdminPage() {
   };
 
   const handleCreateZone = async () => {
-    try { const r = await shippingAPI.createZone({ ...zoneForm, regions: zoneForm.regions.split(',').map(s => s.trim()) }); setZones([...zones, r.data || zoneForm]); setZoneModal(false); setZoneForm(EMPTY_ZONE); toast.success('Zone created'); } catch { toast.error('Failed'); }
+    try {
+      await shippingAPI.createZone({ ...zoneForm, regions: zoneForm.regions.split(',').map(s => s.trim()) });
+      setZoneModal(false);
+      setZoneForm(EMPTY_ZONE);
+      toast.success('Zone created');
+      loadZones();
+    } catch { toast.error('Failed'); }
   };
 
   return (
@@ -252,7 +256,7 @@ export default function ShippingAdminPage() {
 
       <ExportCSVModal
         isOpen={showExportModal}
-        onClose={() => { setShowExportModal(false); setExportStatus(null); setExportError(null); }}
+        onClose={() => { setShowExportModal(false); resetExport(); }}
         columns={SHIPMENT_COLUMNS}
         onExport={handleExportCSV}
         exporting={exporting}

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { adminAPI } from '../../api/admin';
 import { formatCurrency, formatDate, formatDateTime } from '../../utils/formatters';
 import toast from '../../utils/toast';
@@ -74,6 +74,10 @@ export default function ReturnsAdminPage() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [debouncedSearch, setDebouncedSearch] = useState('');
+  // Store-wide per-status totals returned by the API (the table only holds one page).
+  const [statusCounts, setStatusCounts] = useState({});
+  // Only the newest listing request may write state.
+  const requestIdRef = useRef(0);
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -98,6 +102,7 @@ export default function ReturnsAdminPage() {
   }, [search]);
 
   const loadRequests = async (page = 1) => {
+    const requestId = ++requestIdRef.current;
     setLoading(true);
     try {
       const params = { page, limit: pageSize };
@@ -105,17 +110,20 @@ export default function ReturnsAdminPage() {
       if (debouncedSearch) params.search = debouncedSearch;
 
       const r = await adminAPI.getReturnRequests(params);
+      if (requestId !== requestIdRef.current) return;
       const raw = r.data?.data || r.data || {};
       const list = Array.isArray(raw) ? raw : raw?.data || raw?.requests || [];
       setRequests(Array.isArray(list) ? list : []);
+      if (raw?.counts && typeof raw.counts === 'object') setStatusCounts(raw.counts);
       setCurrentPage(raw.current_page || raw.page || page);
       setTotalPages(raw.last_page || raw.pages || raw.totalPages || Math.ceil((raw.total || list.length) / pageSize) || 1);
       setTotalItems(raw.total || list.length);
     } catch (err) {
+      if (requestId !== requestIdRef.current) return;
       console.error('Failed to load return requests:', err);
       toast.error('Failed to load return requests');
     } finally {
-      setLoading(false);
+      if (requestId === requestIdRef.current) setLoading(false);
     }
   };
 
@@ -194,7 +202,7 @@ export default function ReturnsAdminPage() {
       const data = r.data?.data || r.data;
       setDetailModal({ open: true, loading: false, data });
     } catch (err) {
-      toast.error('Failed to load return request details');
+      toast.error(err?.response?.data?.message || 'Failed to load return request details');
       setDetailModal({ open: false, loading: false, data: null });
     }
   };
@@ -215,11 +223,13 @@ export default function ReturnsAdminPage() {
     return parts.join('\n');
   };
 
+  // Prefer the API's store-wide totals; fall back to the visible page only if
+  // the backend did not return counts.
   const counts = {
-    PENDING: Array.isArray(requests) ? requests.filter(r => r.status === 'PENDING').length : 0,
-    APPROVED: Array.isArray(requests) ? requests.filter(r => r.status === 'APPROVED').length : 0,
-    REJECTED: Array.isArray(requests) ? requests.filter(r => r.status === 'REJECTED').length : 0,
-    COMPLETED: Array.isArray(requests) ? requests.filter(r => r.status === 'COMPLETED').length : 0,
+    PENDING: Number(statusCounts.PENDING ?? (Array.isArray(requests) ? requests.filter(r => r.status === 'PENDING').length : 0)),
+    APPROVED: Number(statusCounts.APPROVED ?? (Array.isArray(requests) ? requests.filter(r => r.status === 'APPROVED').length : 0)),
+    REJECTED: Number(statusCounts.REJECTED ?? (Array.isArray(requests) ? requests.filter(r => r.status === 'REJECTED').length : 0)),
+    COMPLETED: Number(statusCounts.COMPLETED ?? (Array.isArray(requests) ? requests.filter(r => r.status === 'COMPLETED').length : 0)),
   };
 
   return (

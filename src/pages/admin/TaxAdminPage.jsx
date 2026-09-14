@@ -1,6 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { taxAPI } from '../../api/tax';
 import { settingsAPI } from '../../api/settings';
+import { formatCurrency } from '../../utils/formatters';
+import Pagination from '../../components/admin/Pagination';
 import toast from '../../utils/toast';
 
 const COUNTRIES = [
@@ -48,6 +50,15 @@ export default function TaxAdminPage() {
   const [taxForm, setTaxForm] = useState(EMPTY_FORM);
   const [selectedCountry, setSelectedCountry] = useState('');
 
+  // Pagination — `/tax-rates` returns a paginator envelope.
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [pageSize, setPageSize] = useState(20);
+  const pageSizeOptions = [10, 20, 50, 100];
+  // Only the newest request may write state.
+  const requestIdRef = useRef(0);
+
   // Global settings
   const [settings, setSettings] = useState({
     taxRate: '',
@@ -57,30 +68,39 @@ export default function TaxAdminPage() {
   });
   const [globalSaving, setGlobalSaving] = useState(false);
 
-  const loadTaxRates = async () => {
+  const loadTaxRates = async (page = 1) => {
+    const requestId = ++requestIdRef.current;
     setLoading(true);
     try {
-      const res = await taxAPI.getAll();
-      const data = res.data?.data || [];
-      setTaxRates(Array.isArray(data) ? data : []);
+      const res = await taxAPI.getAll({ page, per_page: pageSize });
+      if (requestId !== requestIdRef.current) return;
+      const payload = res.data?.data || {};
+      // The endpoint returns a paginator envelope ({ current_page, data: [...] }).
+      // This used to be treated as a bare array, so `Array.isArray` was always
+      // false and the table rendered empty regardless of how many rates existed.
+      const list = Array.isArray(payload) ? payload : (payload.data || []);
+      setTaxRates(Array.isArray(list) ? list : []);
+      setCurrentPage(payload.current_page || payload.page || page);
+      setTotalPages(payload.last_page || payload.pages || Math.ceil((payload.total || list.length) / pageSize) || 1);
+      setTotalItems(payload.total ?? list.length);
     } catch (err) {
+      if (requestId !== requestIdRef.current) return;
       console.warn('Failed to load tax rates:', err);
       toast.error('Failed to load tax rates');
     } finally {
-      setLoading(false);
+      if (requestId === requestIdRef.current) setLoading(false);
     }
   };
 
   const loadSettings = async () => {
     try {
+      // One request instead of four — the settings index returns every key.
+      const res = await settingsAPI.getAll();
+      const all = res.data?.data || res.data || {};
       const keys = ['taxRate', 'taxCalculation', 'freeShippingThreshold', 'shippingFlatRate'];
-      const results = await Promise.allSettled(
-        keys.map(key => settingsAPI.getSetting(key).catch(() => ({ data: { data: { value: null } } })))
-      );
       const updates = {};
-      keys.forEach((key, i) => {
-        const val = results[i].status === 'fulfilled' ? results[i].value?.data?.data?.value : null;
-        if (val !== null && val !== undefined) updates[key] = val;
+      keys.forEach(key => {
+        if (all[key] !== null && all[key] !== undefined) updates[key] = all[key];
       });
       setSettings(prev => ({ ...prev, ...updates }));
     } catch {
@@ -88,10 +108,12 @@ export default function TaxAdminPage() {
     }
   };
 
+  useEffect(() => { loadSettings(); }, []);
+
   useEffect(() => {
-    loadTaxRates();
-    loadSettings();
-  }, []);
+    loadTaxRates(currentPage);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- loadTaxRates changes on every render; adding it would cause a re-fetch loop
+  }, [currentPage, pageSize]);
 
   const resetForm = () => {
     setEditingTaxRate(null);
@@ -104,7 +126,8 @@ export default function TaxAdminPage() {
     setSelectedCountry(rate.country || '');
     setTaxForm({
       name: rate.name || '',
-      rate: rate.rate?.toString() || '',
+      // DB decimal comes back as "18.00000" — normalise for the number input.
+      rate: rate.rate != null && rate.rate !== '' ? String(Number(rate.rate)) : '',
       type: rate.type || 'PERCENTAGE',
       country: rate.country || '',
       state: rate.state || '',
@@ -134,7 +157,7 @@ export default function TaxAdminPage() {
       toast.success('Tax rate created');
       setShowModal(false);
       resetForm();
-      loadTaxRates();
+      loadTaxRates(currentPage);
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to create tax rate');
     } finally {
@@ -144,6 +167,11 @@ export default function TaxAdminPage() {
 
   const handleUpdate = async () => {
     if (!taxForm.name.trim() || !editingTaxRate) return;
+    // Mirrors handleCreate — without this an empty rate serialised to NaN.
+    if (!taxForm.rate || Number.isNaN(parseFloat(taxForm.rate)) || parseFloat(taxForm.rate) < 0) {
+      toast.error('Valid tax rate is required');
+      return;
+    }
     setSaving(true);
     try {
       const payload = {
@@ -160,7 +188,7 @@ export default function TaxAdminPage() {
       toast.success('Tax rate updated');
       setShowModal(false);
       resetForm();
-      loadTaxRates();
+      loadTaxRates(currentPage);
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to update tax rate');
     } finally {
@@ -173,9 +201,9 @@ export default function TaxAdminPage() {
     try {
       await taxAPI.delete(id);
       toast.success('Tax rate deleted');
-      loadTaxRates();
+      loadTaxRates(currentPage);
     } catch (err) {
-      toast.error('Failed to delete tax rate');
+      toast.error(err?.response?.data?.message || 'Failed to delete tax rate');
     }
   };
 
@@ -183,22 +211,26 @@ export default function TaxAdminPage() {
     try {
       await taxAPI.update(rate.id, { isActive: !rate.isActive });
       toast.success(rate.isActive ? 'Tax rate disabled' : 'Tax rate enabled');
-      loadTaxRates();
+      loadTaxRates(currentPage);
     } catch (err) {
-      toast.error('Failed to toggle tax rate');
+      toast.error(err?.response?.data?.message || 'Failed to toggle tax rate');
     }
   };
 
   const handleGlobalSave = async () => {
     setGlobalSaving(true);
     try {
-      await settingsAPI.updateSetting('taxRate', settings.taxRate);
-      await settingsAPI.updateSetting('taxCalculation', settings.taxCalculation);
-      await settingsAPI.updateSetting('freeShippingThreshold', settings.freeShippingThreshold);
-      await settingsAPI.updateSetting('shippingFlatRate', settings.shippingFlatRate);
+      // Single bulk write — previously four sequential requests, any of which
+      // could fail halfway and leave the settings partially applied.
+      await settingsAPI.updateSettings({
+        taxRate: settings.taxRate,
+        taxCalculation: settings.taxCalculation,
+        freeShippingThreshold: settings.freeShippingThreshold,
+        shippingFlatRate: settings.shippingFlatRate,
+      });
       toast.success('Tax & Shipping settings saved');
     } catch (err) {
-      toast.error('Failed to save settings');
+      toast.error(err?.response?.data?.message || 'Failed to save settings');
     } finally {
       setGlobalSaving(false);
     }
@@ -272,7 +304,7 @@ export default function TaxAdminPage() {
       {/* Tax Rates List */}
       <div className="table-card">
         <div className="table-toolbar">
-          <span className="table-count">{taxRates.length} tax rate{taxRates.length !== 1 ? 's' : ''}</span>
+          <span className="table-count">{totalItems} tax rate{totalItems !== 1 ? 's' : ''}</span>
           <div style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>
             Higher priority rates take precedence. Leave country blank for a global default.
           </div>
@@ -328,7 +360,9 @@ export default function TaxAdminPage() {
                       color: '#f59e0b',
                       fontWeight: 700,
                     }}>
-                      {rate.type === 'PERCENTAGE' ? `${rate.rate}%` : `\$${rate.rate}`}
+                      {rate.type === 'PERCENTAGE'
+                        ? `${rate.rate != null && rate.rate !== '' ? Number(rate.rate) : 0}%`
+                        : formatCurrency(rate.rate)}
                     </span>
                   </td>
                   <td style={{ fontSize: '0.85rem' }}>
@@ -366,6 +400,17 @@ export default function TaxAdminPage() {
             )}
           </tbody>
         </table>
+
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          onPageChange={setCurrentPage}
+          itemLabel="tax rate"
+          pageSize={pageSize}
+          onPageSizeChange={(size) => { setPageSize(size); setCurrentPage(1); }}
+          pageSizeOptions={pageSizeOptions}
+        />
       </div>
 
       {/* Create/Edit Modal */}

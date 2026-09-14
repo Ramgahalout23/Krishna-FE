@@ -1,12 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { couponsAPI } from '../../api/coupons';
-import { adminAPI } from '../../api/admin';
 import AdminPageShell from '../../components/admin/AdminPageShell';
 import { formatCurrency, formatDate } from '../../utils/formatters';
 import { COUPON_TYPES } from '../../utils/constants';
 import Pagination from '../../components/admin/Pagination';
 import ExportCSVModal from '../../components/admin/ExportCSVModal';
-import { downloadBlob } from '../../utils/download';
+import useAsyncExport from '../../hooks/useAsyncExport';
 import toast from '../../utils/toast';
 import { BarChart3, Ticket, Edit, Plus, X, Download, Dices } from 'lucide-react';
 
@@ -23,11 +22,12 @@ export default function CouponsAdminPage() {
   const [bulkForm, setBulkForm] = useState({ count: 10, prefix: 'SALE', discountValue: 10 });
   const [analytics, setAnalytics] = useState(null);
 
-  // CSV Export state (async job-based)
+  // CSV Export (shared async-job hook)
   const [showExportModal, setShowExportModal] = useState(false);
-  const [exporting, setExporting] = useState(false);
-  const [exportStatus, setExportStatus] = useState(null);
-  const [exportError, setExportError] = useState(null);
+  const { runExport, exporting, exportStatus, exportError, resetExport } = useAsyncExport();
+
+  // Only the newest listing request may write state.
+  const requestIdRef = useRef(0);
 
   const COUPON_COLUMNS = [
     { key: 'code', label: 'Code' },
@@ -67,6 +67,7 @@ export default function CouponsAdminPage() {
   const pageSizeOptions = [10, 25, 50, 100];
 
   const load = async (page = 1) => {
+    const requestId = ++requestIdRef.current;
     setLoading(true);
     try {
       const params = {
@@ -78,6 +79,7 @@ export default function CouponsAdminPage() {
       else if (activeFilter === 'INACTIVE') params.isActive = false;
 
       const r = await couponsAPI.getAll(params);
+      if (requestId !== requestIdRef.current) return;
       const data = r.data?.data || r.data;
       const list = data?.coupons || data?.items || data || [];
       setCoupons(Array.isArray(list) ? list : []);
@@ -85,7 +87,13 @@ export default function CouponsAdminPage() {
       setCurrentPage(pag.page || page);
       setTotalPages(pag.pages || pag.totalPages || Math.ceil((pag.total || list.length) / pageSize) || 1);
       setTotalItems(pag.total || list.length);
-    } catch (e) { setError('Failed to load coupons'); console.warn('Failed to load coupons:', e); } finally { setLoading(false); }
+    } catch (e) {
+      if (requestId !== requestIdRef.current) return;
+      setError('Failed to load coupons');
+      console.warn('Failed to load coupons:', e);
+    } finally {
+      if (requestId === requestIdRef.current) setLoading(false);
+    }
   };
 
   // Reset page when search or filter changes
@@ -102,68 +110,21 @@ export default function CouponsAdminPage() {
     load(currentPage);
   }, [currentPage]);
 
-  const handleExportCSV = async (selectedColumns) => {
-    setExporting(true);
-    setExportStatus('dispatching');
-    setExportError(null);
-    try {
-      const filters = {
-        search: debouncedSearch || undefined,
-        isActive: activeFilter === 'ALL' ? undefined : activeFilter === 'ACTIVE',
-      };
-      Object.keys(filters).forEach(k => { if (filters[k] === undefined) delete filters[k]; });
+  const handleExportCSV = (selectedColumns) => runExport({
+    type: 'coupons',
+    filters: {
+      search: debouncedSearch || undefined,
+      isActive: activeFilter === 'ALL' ? undefined : activeFilter === 'ACTIVE',
+    },
+    columns: selectedColumns,
+    filename: `coupons-export-${new Date().toISOString().slice(0, 10)}.csv`,
+  });
 
-      const dispatchRes = await adminAPI.dispatchExport({
-        type: 'coupons',
-        filters,
-        columns: selectedColumns,
-      });
-
-      const jobId = dispatchRes.data?.data?.id;
-      if (!jobId) throw new Error('No job ID returned');
-
-      setExportStatus('processing');
-
-      const poll = async () => {
-        try {
-          const statusRes = await adminAPI.checkExportStatus(jobId);
-          const status = statusRes.data?.data?.status;
-
-          if (status === 'completed') {
-            const downloadRes = await adminAPI.downloadExport(jobId);
-            const filename = statusRes.data?.data?.file_name || `coupons-export-${new Date().toISOString().slice(0, 10)}.csv`;
-            downloadBlob(downloadRes, filename);
-            setExportStatus('completed');
-            toast.success('Coupons exported successfully');
-            setTimeout(() => {
-              setShowExportModal(false);
-              setExportStatus(null);
-            }, 1500);
-          } else if (status === 'failed') {
-            throw new Error(statusRes.data?.data?.error_message || 'Export failed');
-          } else {
-            setTimeout(poll, 1500);
-          }
-        } catch (pollErr) {
-          console.error('Export poll error:', pollErr);
-          if (!exportStatus || exportStatus === 'processing') {
-            setExportStatus('failed');
-            setExportError(pollErr.response?.data?.message || pollErr.message || 'Export failed');
-            toast.error('Export failed');
-          }
-        }
-      };
-
-      poll().catch(() => {});
-    } catch (err) {
-      console.error('Export failed:', err);
-      setExportStatus('failed');
-      setExportError(err.response?.data?.message || err.message || 'Failed to export coupons');
-      toast.error('Export failed');
-    } finally {
-      setExporting(false);
-    }
-  };
+  useEffect(() => {
+    if (exportStatus !== 'completed') return;
+    const t = setTimeout(() => { setShowExportModal(false); resetExport(); }, 1500);
+    return () => clearTimeout(t);
+  }, [exportStatus, resetExport]);
 
   const openCreate = () => { setEditing(null); setForm(EMPTY); setShowModal(true); };
   const openEdit = (c) => { 
@@ -345,7 +306,7 @@ export default function CouponsAdminPage() {
       {/* CSV Export Modal */}
       <ExportCSVModal
         isOpen={showExportModal}
-        onClose={() => { setShowExportModal(false); setExportStatus(null); setExportError(null); }}
+        onClose={() => { setShowExportModal(false); resetExport(); }}
         columns={COUPON_COLUMNS}
         onExport={handleExportCSV}
         exporting={exporting}

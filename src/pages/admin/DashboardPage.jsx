@@ -1,11 +1,12 @@
-import { useState, useEffect, useCallback, useMemo, useReducer } from 'react';
+import { useState, useEffect, useCallback, useMemo, useReducer, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, AreaChart, Area, LineChart, Line, Legend, CartesianGrid } from 'recharts';
 import { adminAPI } from '../../api/admin';
 import { analyticsAPI } from '../../api/analytics';
-import { formatDateTime, formatTime } from '../../utils/formatters';
+import { formatDateTime } from '../../utils/formatters';
 import DateRangePicker, { getDateParams, getDefaultDateRange } from '../../components/common/DateRangePicker';
 import RefreshControls from '../../components/common/RefreshControls';
+import RelativeTime from '../../components/common/RelativeTime';
 import useDashboardCache from '../../hooks/useDashboardCache';
 import useInterval from '../../hooks/useInterval';
 import DashboardSkeleton from '../../components/dashboard/SkeletonLoader';
@@ -29,12 +30,26 @@ const FORMAT_TOOLTIP_CURRENCY = (v, name) => name === 'revenue' ? '₹' + Number
 const FORMAT_AVG_RATING = (v) => [Number(v).toFixed(2), 'Avg Rating'];
 const FORMAT_PIE_PCT = (v) => (v ?? 0).toFixed(1) + '%';
 
+// Set to false the first time the consolidated endpoint reports "not deployed"
+// (404/405/501). Prevents paying for a doomed request plus a 13-call fallback
+// on every single refresh for the rest of the session.
+let consolidatedEndpointSupported = true;
+
 // ── Stable element-level config constants (stable references prevent re-render loops) ──
 const BAR_RADIUS_4 = [4, 4, 0, 0];
 const BAR_RADIUS_3 = [3, 3, 0, 0];
 const BAR_RADIUS_2 = [2, 2, 0, 0];
 const DOT_BLACK = { r: 3, fill: '#292524' };
 const DOT_AMBER = { r: 3, fill: '#f59e0b' };
+
+/**
+ * The API already returns a formatted hour label ("02:00"). Pad only a bare
+ * hour number — appending ":00" unconditionally rendered "02:00:00" on the axis.
+ */
+function formatHourLabel(raw) {
+  if (typeof raw === 'number') return `${String(raw).padStart(2, '0')}:00`;
+  return raw != null ? String(raw) : '';
+}
 
 const DASHBOARD_DEFAULTS = {
   metrics: { totalRevenue: 0, ordersToday: 0, activeUsers: 0, pendingReviews: 0, lowStockCount: 0, totalOrders: 0, newUsers: 0, avgOrderValue: 0, revenueChangePercent: 0, ordersChangePercent: 0 },
@@ -68,6 +83,43 @@ function mapOrders(orders) {
 }
 
 /**
+ * Payment rows exist in two shapes:
+ *   aggregate -> { method, percentage, count, total }
+ *   per-day   -> { payment_method, date, count, total }
+ * This page's pie/legend/table need the aggregate one, so per-day rows are
+ * grouped by method and their share recomputed.
+ */
+function normalizePaymentMethods(payload) {
+  if (!Array.isArray(payload) || payload.length === 0) return [];
+
+  if (payload[0]?.method !== undefined) {
+    return payload.map(p => ({
+      method: p.method,
+      count: Number(p.count) || 0,
+      revenue: Number(p.total ?? p.revenue) || 0,
+      percentage: Number(p.percentage) || 0,
+    }));
+  }
+
+  const byMethod = new Map();
+  payload.forEach(row => {
+    const key = row?.payment_method ?? 'Unknown';
+    const entry = byMethod.get(key) ?? { method: key, count: 0, revenue: 0, percentage: 0 };
+    entry.count += Number(row?.count) || 0;
+    entry.revenue += Number(row?.total ?? row?.revenue) || 0;
+    byMethod.set(key, entry);
+  });
+
+  const list = [...byMethod.values()];
+  const grandTotal = list.reduce((sum, entry) => sum + entry.revenue, 0);
+  list.forEach(entry => {
+    entry.percentage = grandTotal > 0 ? Math.round((entry.revenue / grandTotal) * 1000) / 10 : 0;
+  });
+
+  return list.sort((a, b) => b.revenue - a.revenue);
+}
+
+/**
  * Normalise an API response: unwrap .data?.data -> .data.
  */
 function unwrap(res) {
@@ -89,6 +141,9 @@ function dashboardReducer(state, action) {
 export default function DashboardPage() {
   const navigate = useNavigate();
   const cache = useDashboardCache(5, 'dashboard'); // Keep up to 5 date ranges in cache
+  // Only the newest in-flight request may write state; a slow response for a
+  // previously selected range must never overwrite the current range's data.
+  const requestIdRef = useRef(0);
   const [dateRange, setDateRange] = useState(getDefaultDateRange());
   const [refreshInterval, setRefreshInterval] = useState(null);
 
@@ -113,6 +168,7 @@ export default function DashboardPage() {
 
   // ── Core fetcher: uses the consolidated backend endpoint ──
   const fetchDashboardData = useCallback(async (range, { skipCache = false, isBackground = false } = {}) => {
+    const requestId = ++requestIdRef.current;
     const dateParams = getDateParams(range);
 
     // Check cache first (unless forced refresh)
@@ -125,14 +181,18 @@ export default function DashboardPage() {
       }
     }
 
-    if (!isBackground && !cache.get(range)) setLoading(true);
+    // Only show the skeleton when there is nothing already on screen for this
+    // range — a manual refresh of the visible range should not tear down charts.
+    if (!isBackground && !cache.has(range)) setLoading(true);
 
     try {
+      if (!consolidatedEndpointSupported) throw new Error('consolidated endpoint unavailable');
+
       // PRIMARY: use the consolidated endpoint (1 API call instead of 14)
       const fullRes = await adminAPI.getFullDashboard({ ...dateParams });
       const full = unwrap(fullRes);
 
-      if (full) {
+      if (full && requestId === requestIdRef.current) {
         // Build all dashboard data synchronously, then dispatch once.
         // React 18+ automatically batches the dispatch + state updates
         // into a single render — no need for setTimeout(0) yielding.
@@ -178,11 +238,16 @@ export default function DashboardPage() {
 
         // 9. Hourly distribution
         if (Array.isArray(full.hourlyDist)) {
-          d.hourlyData = full.hourlyDist.map(h => ({ hour: (h.hour || '') + ':00', orders: h.orders, revenue: h.revenue }));
+          d.hourlyData = full.hourlyDist.map(h => ({ hour: formatHourLabel(h?.hour), orders: h?.orders ?? 0, revenue: h?.revenue ?? 0 }));
         }
 
-        // 10. Payment methods
-        if (Array.isArray(full.paymentTrends)) d.paymentMethods = full.paymentTrends;
+        // 10. Payment methods — prefer the aggregate breakdown; `paymentTrends`
+        // is a per-day series and cannot drive the pie/legend directly.
+        if (Array.isArray(full.paymentMethods)) {
+          d.paymentMethods = normalizePaymentMethods(full.paymentMethods);
+        } else if (Array.isArray(full.paymentTrends)) {
+          d.paymentMethods = normalizePaymentMethods(full.paymentTrends);
+        }
 
         // 11. Conversion metrics
         if (full.conversion) d.conversionMetrics = full.conversion;
@@ -201,8 +266,15 @@ export default function DashboardPage() {
         setLastRefreshed(new Date());
         return;
       }
-    } catch {
-      // Consolidated endpoint failed — fall back to individual calls
+
+      if (full) return; // superseded by a newer request — discard
+    } catch (err) {
+      // Consolidated endpoint failed — fall back to individual calls.
+      // A 404/405/501 means it isn't deployed, so stop retrying it this session.
+      const status = err?.response?.status;
+      if (status === 404 || status === 405 || status === 501) {
+        consolidatedEndpointSupported = false;
+      }
     }
 
     // ── FALLBACK: individual API calls (original behaviour) ──
@@ -289,7 +361,7 @@ export default function DashboardPage() {
     if (hourlyDistRes.status === 'fulfilled') {
       const hd = unwrap(hourlyDistRes.value) || [];
       if (Array.isArray(hd)) {
-        fetched.hourlyData = hd.map(h => ({ hour: h.hour + ':00', orders: h.orders, revenue: h.revenue }));
+        fetched.hourlyData = hd.map(h => ({ hour: formatHourLabel(h?.hour), orders: h?.orders ?? 0, revenue: h?.revenue ?? 0 }));
       }
     }
 
@@ -309,6 +381,9 @@ export default function DashboardPage() {
     if (reviewAnalyticsRes.status === 'fulfilled') {
       fetched.reviewAnalytics = unwrap(reviewAnalyticsRes.value);
     }
+
+    // A newer request superseded this one — drop the stale payload.
+    if (requestId !== requestIdRef.current) return;
 
     // Track API errors
     const apiNames = ['Dashboard Metrics', 'System Health', 'Activity Logs', 'Orders', 'Order Status', 'Top Products', 'Revenue Comparison', 'Customer Growth', 'Hourly Distribution', 'Payment Methods', 'Conversion Metrics', 'Daily Sales', 'Review Analytics'];
@@ -345,8 +420,9 @@ export default function DashboardPage() {
     fetchDashboardData(dateRange);
   }, [dateRange, fetchDashboardData]);
 
-  // ── Auto-refresh interval ──
+  // ── Auto-refresh interval (skipped while the tab is in the background) ──
   useInterval(() => {
+    if (typeof document !== 'undefined' && document.hidden) return;
     fetchDashboardData(dateRange, { skipCache: true, isBackground: true });
   }, refreshInterval);
 
@@ -355,19 +431,25 @@ export default function DashboardPage() {
     revenueComparison, customerGrowth, hourlyData, paymentMethods,
     conversionMetrics, dailySales, reviewAnalytics } = data;
 
+  // Read the `current`/`previous` series outside the memo — accessing a `.current`
+  // property inside one makes React Compiler treat it as a ref and skip optimizing.
+  const comparisonCurrent = revenueComparison?.current;
+  const comparisonPrevious = revenueComparison?.previous;
+
+  // The two series are consecutive periods (this month vs last month), so their
+  // dates never overlap — matching on the date string would plot each series in
+  // its own region of the chart instead of comparing them. Pair by day index.
   const comparisonChartData = useMemo(() => {
-    if (!revenueComparison) return [];
-    const currentMap = {};
-    (revenueComparison.current || []).forEach(d => { currentMap[d.date] = d.revenue; });
-    const previousMap = {};
-    (revenueComparison.previous || []).forEach(d => { previousMap[d.date] = d.revenue; });
-    const allDates = [...new Set([...Object.keys(currentMap), ...Object.keys(previousMap)])].sort();
-    return allDates.map((date, i) => ({
+    const current = Array.isArray(comparisonCurrent) ? comparisonCurrent : [];
+    const previous = Array.isArray(comparisonPrevious) ? comparisonPrevious : [];
+    const length = Math.max(current.length, previous.length);
+
+    return Array.from({ length }, (_, i) => ({
       day: 'Day ' + (i + 1),
-      'Current Period': currentMap[date] || 0,
-      'Previous Period': previousMap[date] || 0,
+      'Current Period': Number(current[i]?.revenue) || 0,
+      'Previous Period': Number(previous[i]?.revenue) || 0,
     }));
-  }, [revenueComparison]);
+  }, [comparisonCurrent, comparisonPrevious]);
 
   const growthDisplay = useMemo(() =>
     Array.isArray(customerGrowth) ? customerGrowth.slice(-14) : [],
@@ -421,20 +503,12 @@ export default function DashboardPage() {
             onClearCache={handleClearCache}
             loading={loading}
           />
-          {lastRefreshed && (
-            <span
-              className="text-xs text-text-muted font-medium whitespace-nowrap"
-              title={'Last updated: ' + formatDateTime(lastRefreshed)}
-              style={{ animation: 'fadeIn 0.3s ease' }}
-            >
-              {'Updated ' + (function() {
-                var diff = Math.floor((Date.now() - lastRefreshed.getTime()) / 1000);
-                if (diff < 60) return 'just now';
-                if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
-                return formatTime(lastRefreshed);
-              })()}
-            </span>
-          )}
+          <RelativeTime
+            date={lastRefreshed}
+            prefix="Updated "
+            className="text-xs text-text-muted font-medium whitespace-nowrap"
+            title={'Last updated: ' + formatDateTime(lastRefreshed)}
+          />
           <DateRangePicker value={dateRange} onChange={setDateRange} />
           <button className="px-4 py-2.5 border border-border rounded-xl bg-white hover:border-primary hover:text-primary transition-colors text-sm font-medium text-text-primary shadow-soft flex items-center gap-2" onClick={() => navigate('/admin/analytics')}>
             <BarChart3 size={16} /> Analytics
@@ -550,6 +624,9 @@ export default function DashboardPage() {
             <button className="text-xs font-semibold text-amber-600 hover:underline" onClick={() => navigate('/admin/orders')}>View All</button>
           </div>
           <div className="flex-1 overflow-auto max-h-[420px]">
+            {liveOrders.length === 0 && (
+              <div className="p-8 text-center text-text-muted text-sm">No orders in this period yet</div>
+            )}
             {liveOrders.map((order, idx) => (
               <div key={order.id + '-' + idx} className="flex items-center gap-3 px-5 py-3.5 border-b border-border/50 last:border-0 hover:bg-surface transition-colors">
                 <div className="w-8 h-8 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center text-xs font-bold shrink-0">
@@ -575,7 +652,7 @@ export default function DashboardPage() {
           <h3 className="font-display font-bold text-text-primary text-lg mb-1">Revenue Comparison</h3>
           <p className="text-xs text-text-muted mb-4">
             {revenueComparison ? (
-              <>Current vs Previous Period &middot; Change: <span className={(revenueComparison.changePercent ?? 0) >= 0 ? 'text-success font-bold' : 'text-danger font-bold'}>{revenueComparison.changePercent >= 0 ? '+' : ''}{(revenueComparison.changePercent ?? 0).toFixed(1)}%</span></>
+              <>Current vs Previous Period &middot; Change: <span className={(revenueComparison.changePercent ?? 0) >= 0 ? 'text-success font-bold' : 'text-danger font-bold'}>{(revenueComparison.changePercent ?? 0) >= 0 ? '+' : ''}{(revenueComparison.changePercent ?? 0).toFixed(1)}%</span></>
             ) : 'Comparing current vs previous period'}
           </p>
           <div className="h-[280px]" style={{ minWidth: '1px', minHeight: '1px', width: '100%' }}>

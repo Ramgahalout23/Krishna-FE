@@ -250,6 +250,7 @@ export default function ImageUploadZone({
               <div
                 key={`${idx}-${imgUrl}`}
                 className="relative aspect-square rounded-lg overflow-hidden border border-border group bg-white shadow-sm"
+                title={imgUrl}
                 style={{
                   position: 'relative',
                   aspectRatio: '1 / 1',
@@ -266,6 +267,21 @@ export default function ImageUploadZone({
                   className="w-full h-full object-cover"
                   style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                   onError={(e) => {
+                    const currentSrc = e.currentTarget.src || '';
+                    // 1. If loaded from frontend host (dotoydo.com) instead of api host, retry against api.dotoydo.com
+                    if (!currentSrc.includes('api.dotoydo.com') && (imgUrl.includes('/storage/') || imgUrl.includes('storage/'))) {
+                      const storagePath = imgUrl.replace(/^.*storage\//, 'storage/');
+                      const retryUrl = `https://api.dotoydo.com/${storagePath}`;
+                      if (currentSrc !== retryUrl) {
+                        e.currentTarget.src = retryUrl;
+                        return;
+                      }
+                    }
+                    // 2. If blocked due to http on https, upgrade to https
+                    if (currentSrc.startsWith('http://')) {
+                      e.currentTarget.src = currentSrc.replace(/^http:\/\//, 'https://');
+                      return;
+                    }
                     e.currentTarget.onerror = null;
                     e.currentTarget.src = FALLBACK_IMAGE;
                   }}

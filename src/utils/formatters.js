@@ -255,10 +255,17 @@ export const getImageUrl = (url) => {
   if (typeof url !== 'string') return TRANSPARENT_PIXEL;
 
   // Normalize Windows-style backslashes to standard forward slashes
-  const normalizedUrl = url.replace(/\\/g, '/');
+  let normalizedUrl = url.replace(/\\/g, '/').trim();
 
   // Data URIs and blob URIs are inline and need no resolution or optimization
   if (normalizedUrl.startsWith('data:') || normalizedUrl.startsWith('blob:')) return normalizedUrl;
+
+  // Upgrade http to https on https environments for dotoydo.com to prevent mixed-content blocks
+  if (typeof window !== 'undefined' && window.location.protocol === 'https:' && normalizedUrl.startsWith('http://')) {
+    if (normalizedUrl.includes('dotoydo.com')) {
+      normalizedUrl = normalizedUrl.replace(/^http:\/\//i, 'https://');
+    }
+  }
 
   // If Cloudinary is configured, proxy ALL image URLs through fetch-based CDN
   // for automatic WebP/AVIF conversion (f_auto) and optimal compression (q_auto).
@@ -282,9 +289,14 @@ export const getImageUrl = (url) => {
     ? apiBase.replace(/\/?api(\/v\d+)?\/?$/, '')
     : '';
 
-  // In production if frontend is on dotoydo.com and backendBase is not set, point to api.dotoydo.com
+  // In production if frontend is on dotoydo.com and backendBase is not set, point to https://api.dotoydo.com
   if (!backendBase && typeof window !== 'undefined' && window.location.hostname.includes('dotoydo.com')) {
     backendBase = 'https://api.dotoydo.com';
+  }
+
+  // Ensure backendBase uses https if on https protocol
+  if (typeof window !== 'undefined' && window.location.protocol === 'https:' && backendBase.startsWith('http://')) {
+    backendBase = backendBase.replace(/^http:\/\//i, 'https://');
   }
 
   const cleanUrl = normalizedUrl.startsWith('/') ? normalizedUrl : `/${normalizedUrl}`;

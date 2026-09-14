@@ -27,7 +27,7 @@ export default function ImageUploadZone({
 
     try {
       if (multiple) {
-        files.forEach(file => formData.append('files', file));
+        files.forEach(file => formData.append('files[]', file));
         const res = await adminAPI.uploadMultipleFiles(formData);
         const urls = res.data?.data?.files?.map(f => f.url) || [];
         

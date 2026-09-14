@@ -10,7 +10,7 @@ import Pagination from '../../components/admin/Pagination';
 import useAsyncExport from '../../hooks/useAsyncExport';
 import AdminPageShell from '../../components/admin/AdminPageShell';
 
-const EMPTY = { name: '', price: '', oldPrice: '', cost: '', description: '', shortDescription: '', categoryId: '', sku: '', quantity: '', images: '', status: 'DRAFT', badge: '' };
+const EMPTY = { name: '', price: '', oldPrice: '', cost: '', description: '', shortDescription: '', categoryId: '', sku: '', quantity: '', images: '', hoverImageUrl: '', videoUrl: '', status: 'DRAFT', badge: '' };
 const EMPTY_VARIANT = { sku: '', price: '', stock: '', color: '', size: '', images: '', description: '' };
 
 export default function ProductsAdminPage() {
@@ -228,7 +228,13 @@ export default function ProductsAdminPage() {
       videoUrl: form.videoUrl || null
     };
     if (imagesLoaded) {
-      payload.images = form.images ? form.images.split(',').map(url => url.trim()).filter(Boolean) : [];
+      if (Array.isArray(form.images)) {
+        payload.images = form.images.map(u => typeof u === 'object' ? u?.url : u).filter(Boolean);
+      } else if (typeof form.images === 'string') {
+        payload.images = form.images ? form.images.split(',').map(url => url.trim()).filter(Boolean) : [];
+      } else {
+        payload.images = [];
+      }
     } else {
       // Leave the stored gallery untouched rather than replacing it with nothing.
       delete payload.images;
@@ -621,35 +627,36 @@ export default function ProductsAdminPage() {
                 <div className="form-group"><label>SKU</label><input value={form.sku} onChange={e => setForm({ ...form, sku: e.target.value })} placeholder="SKU-001" /></div>
                 <div className="form-group"><label>Stock Quantity</label><input type="number" value={form.quantity} onChange={e => setForm({ ...form, quantity: e.target.value })} placeholder="50" /></div>
                 <div className="form-group form-full">
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <ImageUploadZone
-                      label="Product Images"
-                      value={form.images}
-                      onChange={urls => setForm({ ...form, images: urls })}
-                      multiple={true}
-                    />
-                    <div style={{ fontSize: '0.72rem', color: 'var(--muted)', marginTop: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                       <span>💡</span>
                       <span>The <strong>first image</strong> is the default. Set a dedicated <strong>hover image</strong> below for the hover effect.</span>
                     </div>
+                    <button
+                      type="button"
+                      onClick={handleAIGenerateImage}
+                      disabled={aiLoading.image}
+                      className="btn-ghost btn-sm"
+                      style={{ fontSize: '0.7rem', padding: '0.25rem 0.5rem', color: '#2563eb', display: 'flex', alignItems: 'center', gap: '0.25rem', whiteSpace: 'nowrap', flexShrink: 0 }}
+                      title="Generate product image with DALL-E AI"
+                    >
+                      {aiLoading.image ? <span className="spinner" style={{ width: 12, height: 12 }} /> : '🖼️'} {aiLoading.image ? 'Generating...' : 'AI Generate Image'}
+                    </button>
+                  </div>
+                  <ImageUploadZone
+                    label="Product Images"
+                    value={form.images}
+                    onChange={urls => setForm({ ...form, images: urls })}
+                    multiple={true}
+                  />
                 </div>
-                <div className="form-group">
+                <div className="form-group form-full">
                   <ImageUploadZone
                     label="Hover Image (appears on product card hover)"
                     value={form.hoverImageUrl || ''}
                     onChange={url => setForm({ ...form, hoverImageUrl: url })}
                     multiple={false}
                   />
-                    <button
-                      onClick={handleAIGenerateImage}
-                      disabled={aiLoading.image}
-                      className="btn-ghost btn-sm"
-                      style={{ fontSize: '0.7rem', padding: '0.25rem 0.5rem', color: '#2563eb', display: 'flex', alignItems: 'center', gap: '0.25rem', whiteSpace: 'nowrap', marginLeft: '0.5rem', flexShrink: 0 }}
-                      title="Generate product image with DALL-E AI"
-                    >
-                      {aiLoading.image ? <span className="spinner" style={{ width: 12, height: 12 }} /> : '🖼️'} {aiLoading.image ? 'Generating...' : 'AI Generate Image'}
-                    </button>
-                  </div>
                 </div>
                 <div className="form-group form-full">
                   <ImageUploadZone

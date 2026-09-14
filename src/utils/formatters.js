@@ -247,11 +247,18 @@ export const TRANSPARENT_PIXEL = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP//
 export const getImageUrl = (url) => {
   if (!url) return TRANSPARENT_PIXEL;
 
+  // If passed an object { url: ... } or { src: ... }, unwrap it safely
+  if (typeof url === 'object') {
+    url = url.url || url.src || '';
+    if (!url) return TRANSPARENT_PIXEL;
+  }
+  if (typeof url !== 'string') return TRANSPARENT_PIXEL;
+
   // Normalize Windows-style backslashes to standard forward slashes
   const normalizedUrl = url.replace(/\\/g, '/');
 
-  // Data URIs are inline and need no resolution or optimization
-  if (normalizedUrl.startsWith('data:')) return normalizedUrl;
+  // Data URIs and blob URIs are inline and need no resolution or optimization
+  if (normalizedUrl.startsWith('data:') || normalizedUrl.startsWith('blob:')) return normalizedUrl;
 
   // If Cloudinary is configured, proxy ALL image URLs through fetch-based CDN
   // for automatic WebP/AVIF conversion (f_auto) and optimal compression (q_auto).
@@ -312,9 +319,22 @@ export const getProductImage = (product) => {
     const first = product.images[0];
     return typeof first === 'object' ? (first?.url || null) : first;
   }
+  // If product.images is a string (comma-separated or JSON string)
+  if (typeof product.images === 'string' && product.images.trim()) {
+    const trimmed = product.images.trim();
+    if (trimmed.startsWith('[')) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return typeof parsed[0] === 'object' ? (parsed[0]?.url || null) : parsed[0];
+        }
+      } catch {}
+    }
+    const first = trimmed.split(',')[0]?.trim();
+    if (first) return first;
+  }
   // Direct url fields (check both camelCase and snake_case)
   return product.imageUrl || product.image_url || product.image || null;
-
 };
 
 /**
@@ -388,6 +408,19 @@ export const getProductImages = (product) => {
   // Standard images array
   if (Array.isArray(product.images) && product.images.length > 0) {
     return product.images.map(img => typeof img === 'object' ? img?.url : img).filter(Boolean);
+  }
+  // String images (comma-separated or JSON array)
+  if (typeof product.images === 'string' && product.images.trim()) {
+    const trimmed = product.images.trim();
+    if (trimmed.startsWith('[')) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        if (Array.isArray(parsed)) {
+          return parsed.map(img => typeof img === 'object' ? img?.url : img).filter(Boolean);
+        }
+      } catch {}
+    }
+    return trimmed.split(',').map(s => s.trim()).filter(Boolean);
   }
   // Direct url fields
   if (product.imageUrl) return [product.imageUrl];
